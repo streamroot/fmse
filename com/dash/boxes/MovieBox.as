@@ -1,0 +1,48 @@
+
+
+package com.dash.boxes {
+
+import flash.utils.ByteArray;
+
+public class MovieBox extends Box {
+    private var _traks:Vector.<TrackBox> = new Vector.<TrackBox>();
+    private var _mvex:MovieExtendsBox;
+
+    public function MovieBox(offset:uint, size:uint) {
+        super(offset, size);
+    }
+
+    public function get traks():Vector.<TrackBox> {
+        return _traks;
+    }
+
+    public function get mvex():MovieExtendsBox {
+        return _mvex;
+    }
+
+    override protected function parseChildBox(type:String, offset:uint, size:uint, ba:ByteArray):Boolean {
+        if (type == "trak") {
+            parseTrackBox(offset, size, ba);
+            return true;
+        }
+
+        if (type == "mvex") {
+            parseMovieExtendsBox(offset, size, ba);
+            return true;
+        }
+
+        return false;
+    }
+
+    private function parseMovieExtendsBox(offset:uint, size:uint, ba:ByteArray):void {
+        _mvex = new MovieExtendsBox(offset, size);
+        _mvex.parse(ba);
+    }
+
+    private function parseTrackBox(offset:uint, size:uint, ba:ByteArray):void {
+        var trak:TrackBox = new TrackBox(offset, size);
+        trak.parse(ba);
+        _traks.push(trak);
+    }
+}
+}
