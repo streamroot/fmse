@@ -1,4 +1,6 @@
-SourceBufferWrapper = function (swfObj) {
+"use strict";
+
+var SourceBuffer = function (mediaSource, type, swfObj) {
 
 	var _init 		= function(){},
 
@@ -66,3 +68,5 @@ SourceBufferWrapper = function (swfObj) {
 
 	
 }
+
+module.exports = SourceBuffer;

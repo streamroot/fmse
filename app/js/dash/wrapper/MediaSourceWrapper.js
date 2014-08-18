@@ -1,6 +1,7 @@
 "use strict";
+var SourceBuffer = require('./SourceBuffer');
 
-MediaSourceWrapper = function () {
+var MediaSourceWrapper = function () {
 
 	if (window.MediaSource !== null) {
 		_mediaSource = new MediaSource();
@@ -53,14 +54,22 @@ MediaSourceWrapper = function () {
 
 	_addSourceBuffer 		= function(type){
 		var sourceBuffer;
-		sourceBuffer = new SourceBuffer(this);
+		sourceBuffer = new SourceBuffer(this, type, swfobj);
 		_sourceBuffers.push(sourceBuffer);
 		return sourceBuffer;
 	},
 	_removeSourceBuffer 	= function(){},
 	_endOfStream 			= function(){};
 	
-	init();
+	_callback 	= function (e){
+		_swfobj = e.ref;
+		setTimeout(function(){
+			init();
+		},1500);
+	}
+	swfobject.embedSWF("pluginPlayer.swf", "flash_blob", "450", "600", "10.0.0", false, false, false, false, _callback);
+
+	
 	return self;
 
 }
