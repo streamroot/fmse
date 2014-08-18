@@ -16,7 +16,9 @@ var MediaSourceWrapper = function () {
 
 	var self = this,
 	_init 		= function(){
-		this.readyState = 'open'
+		_readyState 	= 'open'
+		this.readyState = _readyState;
+		this.swfobject 	= _swfobject;
 		this.trigger({{type:'sourceopen'}})
 	},
 	
