@@ -60,7 +60,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		return window.btoa(binary);
 	},	
 
-	_remove     			= = function (start,end){
+	_remove     		  = function (start,end){
 		_swfobj.removeBuffer(start,end);
 	};
 	
