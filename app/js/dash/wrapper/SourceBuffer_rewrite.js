@@ -32,6 +32,25 @@ var SourceBuffer = function (mediaSource, type) {
 		audioTracks:[], 
 		videoTracks:[], 
 		mediasource:mediaSource,
+		type:type,
+		
+		_addEventListener:function(type, listener){
+			if (!this.listeners[type]){
+				this.listeners[type] = [];
+			}
+			this.listeners[type].unshift(listener);
+		},
+	
+		_removeEventListener:function(type, listener){
+			var listeners = this.listeners[type],
+				i = listeners.length;
+			while (i--) {
+				if (listeners[i] === listener) {
+					return listeners.splice(i, 1);
+				}
+			}
+		},
+		
 		_arrayBufferToBase64:function(buffer){
 			var binary = '';
 			var bytes = new Uint8Array( buffer );
