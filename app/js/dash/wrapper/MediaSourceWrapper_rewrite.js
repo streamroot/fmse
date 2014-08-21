@@ -40,6 +40,7 @@ var MediaSourceWrapper = function () {
 			var sourceBuffer;
 			sourceBuffer = new SourceBuffer(this, type);
 			_sourceBuffers.push(sourceBuffer);
+			this.videoextension = new VideoExtension(this,sourceBuffer);
 			return sourceBuffer;
 		},
 		removeSourceBuffer:function(){},
@@ -51,7 +52,6 @@ var MediaSourceWrapper = function () {
 			},1500);
 		},
 		init:function(){
-			this.videoextension = new VideoExtension();
 			this.readyState = 'open'; 
 			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			console.log('pluginPlayer_path');
