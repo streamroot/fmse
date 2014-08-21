@@ -86,7 +86,7 @@ var SourceBuffer = function (mediaSource, type) {
 		init:function(){
 			this.addEventListener('updateend',function(){this.updating=false});
 			this.addEventListener('updatebuffered',
-				function(endtime){
+				function(event.endtime){
 					this.buffered = {
 						length:1,
 						0:{start:0,end:int(endtime)},
