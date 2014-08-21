@@ -52,7 +52,7 @@ var MediaSourceWrapper = function () {
 			this.readyState = 'open'; 
 			console.log('pluginPlayer_path');
 			console.log(pluginPlayer_path)
-			swfobject.embedSWF(pluginPlayer_path, "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
+			swfobject.embedSWF(pluginPlayer_path, "video", "100%", "100%", "10.0.0", false, false, false, false, this.initCallback);
 			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			//to trigger when the flash shim is loaded
 			//this.trigger({{type:'sourceopen'}})
