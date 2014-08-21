@@ -53,7 +53,6 @@ var MediaSourceWrapper = function () {
 		},
 		init:function(){
 			this.readyState = 'open'; 
-			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			console.log('pluginPlayer_path');
 			console.log(pluginPlayer_path)
 			swfobject.embedSWF(pluginPlayer_path, "video", "100%", "100%", "10.0.0", false, false, false, false, this.initCallback);
