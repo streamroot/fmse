@@ -25,7 +25,7 @@ var VideoExtension = function (video) {
 
 	var self=this,
 	_init = function(){
-		this.createSrc 	= createSrc;
+		self.createSrc 	= createSrc;
 	},
 	
 	_currentTime = 0.0,
@@ -44,12 +44,16 @@ var VideoExtension = function (video) {
 	},
 	
 	_canPlayType	= function(){},
-	_currenTime 	= function(time){
+	_currentTime 	= function(time){
 		_currentTime = time
 	};
+    
+    Object.defineProperty(this, "currentTime", {
+        get: function () { return _currentTime; },
+        set: function (time) { _currentTime = time; }
+    });
 	
-	init();
-	return self;
+	this.createSrc = _createSrc;
 }
 
 module.exports = VideoExtension;

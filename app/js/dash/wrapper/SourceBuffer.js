@@ -2,9 +2,7 @@
 
 var SourceBuffer = function (mediaSource, type, swfObj) {
 
-	var _init 		= function(){},
-
-	_listeners 		= {},
+	var _listeners 		= [],
 	_swfobj = swfObj,
 	_audioTracks 	= [], 
 	_videoTracks 	= [], 
@@ -18,14 +16,15 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},
 	
 	_addEventListener 	= function(type, listener){
-		if (!this.listeners[type]){
-			this.listeners[type] = [];
+		if (!_listeners[type]){
+			_listeners[type] = [];
 		}
-		this.listeners[type].unshift(listener);
+		_listeners[type].unshift(listener);
 	},
 	
 	_removeEventListener = function(type, listener){
-		var listeners = this.listeners[type],
+        //Same thing as MediaSourceFlash. Though splice should modify in place, and it should wok. But why return? Get out of the loop?
+		var listeners = _listeners[type],
 			i = listeners.length;
 		while (i--) {
 			if (listeners[i] === listener) {
@@ -36,7 +35,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	
 	_trigger 			= function(event){
 		//updateend, updatestart
-		var listeners = this.listeners[event.type] || [],
+		var listeners = _listeners[event.type] || [],
 			i = listeners.length;
 		while (i--) {
 			listeners[i](event);
@@ -44,10 +43,10 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},
 
 	_appendBuffer     		= function (arraybuffer_data){
-		data = _arrayBufferToBase64( arraybuffer_data );
+		var data = _arrayBufferToBase64( arraybuffer_data );
 		_swfobj.appendBufferPlayed(data);
 		_trigger({type:'updatestart'});
-		updating = true;
+		_updating = true;
 	},
 
 	_arrayBufferToBase64 	= function(buffer){
@@ -62,11 +61,42 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 
 	_remove     		  = function (start,end){
 		_swfobj.removeBuffer(start,end);
-	};
-	
-	init();
-
-	
-}
+	},
+        
+    _initialize = function() {
+        _addEventListener('updateend',function(){ _updating=false; });
+        _addEventListener('updatebuffered', function(event){
+            this.buffered = {
+                length:1,
+                0:{start:0,end: parseInt(event.endtime)},
+            };
+        });
+    };
+    
+    this.appendBuffer = function (arraybuffer_data) {
+        _appendBuffer(arraybuffer_data);
+    };
+    
+    this.remove = function (start, end) {
+        _remove(start, end);
+    };
+    
+    this.addEventListener = function (type, listener) {
+        _addEventListener(type, listener);
+    };
+    
+    Object.defineProperty(this, "updating", {
+        get: function () { return _updating; },
+        set: undefined
+    });
+    
+    Object.defineProperty(this, "buffered", {
+        get: function () { return _updating; },
+        set: undefined
+    });
+    
+    _initialize();
+    
+};
 
 module.exports = SourceBuffer;

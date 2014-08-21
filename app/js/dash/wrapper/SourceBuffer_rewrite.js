@@ -75,7 +75,7 @@ var SourceBuffer = function (mediaSource, type) {
 		},	
 
 		appendBuffer: function (arraybuffer_data){
-			data = this._arrayBufferToBase64( arraybuffer_data );
+			var data = this._arrayBufferToBase64( arraybuffer_data );
 			this.mediasource.swfobj.appendBufferPlayed(data);
 			_trigger({type:'updatestart'});
 			this.updating = true;
@@ -86,10 +86,10 @@ var SourceBuffer = function (mediaSource, type) {
 		init:function(){
 			this.addEventListener('updateend',function(){this.updating=false});
 			this.addEventListener('updatebuffered',
-				function(event.endtime){
+				function(event){
 					this.buffered = {
 						length:1,
-						0:{start:0,end:int(endtime)},
+						0:{start:0,end:int(event.endtime)},
 					}
 				});
 		}
