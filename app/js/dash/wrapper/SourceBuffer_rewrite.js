@@ -3,6 +3,7 @@
 /*
 
 used in SourceBufferWrapper
+		getBufferedTimeRanges: function(){
 			return [];
 		},
 		createSourceBuffer: function(init){
@@ -27,12 +28,22 @@ used in SourceBufferWrapper
 
 var SourceBuffer = function (mediaSource, type) {
 	var sourcebufferflash = {
-		getBufferedTimeRanges: function(){
-		listener:{},
+
 		audioTracks:[], 
 		videoTracks:[], 
+
 		mediasource:mediaSource,
 		type:type,
+		updating:false,
+		listener:{},
+
+		_buffered:function(i){
+			var length = 1;
+			var tr = {0:{start:0,end:0}}
+			if (i<length){
+				return tr[i]
+			}
+		},
 		
 		_addEventListener:function(type, listener){
 			if (!this.listeners[type]){
