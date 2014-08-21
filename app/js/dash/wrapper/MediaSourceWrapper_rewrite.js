@@ -1,5 +1,6 @@
 "use strict";
 var SourceBuffer 	= require('./SourceBuffer');
+var VideoExtension 	= require('./VideoExtension');
 
 
 var MediaSourceWrapper = function () {
@@ -9,6 +10,7 @@ var MediaSourceWrapper = function () {
 		readyState: 'close',
 		swfobject:{},
 		duration:0,
+		videoextension:{},
 		_listeners:[],
 		_sourceBuffers:[],
 		_addEventListener:function(type, listener){
@@ -45,15 +47,16 @@ var MediaSourceWrapper = function () {
 		initCallback:function (e){
 			swfobject = e.ref;
 			setTimeout(function(){
-				init();
+				//init();
 			},1500);
 		},
 		init:function(){
+			this.videoextension = new VideoExtension();
 			this.readyState = 'open'; 
+			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			console.log('pluginPlayer_path');
 			console.log(pluginPlayer_path)
 			swfobject.embedSWF(pluginPlayer_path, "video", "100%", "100%", "10.0.0", false, false, false, false, this.initCallback);
-			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			//to trigger when the flash shim is loaded
 			//this.trigger({{type:'sourceopen'}})
 			},

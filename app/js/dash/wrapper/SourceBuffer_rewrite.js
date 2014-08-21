@@ -28,31 +28,26 @@ used in SourceBufferWrapper
 
 var SourceBuffer = function (mediaSource, type) {
 	var sourcebufferflash = {
-
-		audioTracks:[], 
-		videoTracks:[], 
-
-		mediasource:mediaSource,
 		type:type,
-		updating:false,
-		listener:{},
-
-		_buffered:function(i){
-			var length = 1;
-			var tr = {0:{start:0,end:0}}
-			if (i<length){
-				return tr[i]
-			}
+		mediasource:mediaSource,
+		
+		
+		_buffered:{
+			length:1,
+			0:{start:0,end:0},
 		},
 		
-		_addEventListener:function(type, listener){
+		listener:{},
+		audioTracks:[], 
+		videoTracks:[], 
+		addEventListener:function(type, listener){
 			if (!this.listeners[type]){
 				this.listeners[type] = [];
 			}
 			this.listeners[type].unshift(listener);
 		},
 	
-		_removeEventListener:function(type, listener){
+		removeEventListener:function(type, listener){
 			var listeners = this.listeners[type],
 				i = listeners.length;
 			while (i--) {
@@ -61,7 +56,14 @@ var SourceBuffer = function (mediaSource, type) {
 				}
 			}
 		},
-		
+		trigger:function(event){
+			//updateend, updatestart
+			var listeners = this.listeners[event.type] || [],
+				i = listeners.length;
+			while (i--) {
+				listeners[i](event);
+			}
+		},
 		_arrayBufferToBase64:function(buffer){
 			var binary = '';
 			var bytes = new Uint8Array( buffer );
@@ -71,18 +73,29 @@ var SourceBuffer = function (mediaSource, type) {
 			}
 			return window.btoa(binary);
 		},	
+
 		appendBuffer: function (arraybuffer_data){
 			data = this._arrayBufferToBase64( arraybuffer_data );
 			this.mediasource.swfobj.appendBufferPlayed(data);
 			_trigger({type:'updatestart'});
 			this.updating = true;
 		},
-		
-		
+		_remove:function (start,end){
+			this.mediasource.swfobj.removeBuffer(start,end);
+		},
+		init:function(){
+			this.addEventListener('updateend',function(){this.updating=false});
+			this.addEventListener('updatebuffered',
+				function(endtime){
+					this.buffered = {
+						length:1,
+						0:{start:0,end:int(endtime)},
+					}
+				});
+		}
 
 	};
 	return sourcebufferflash
 }
-
 
 module.exports = SourceBuffer;
