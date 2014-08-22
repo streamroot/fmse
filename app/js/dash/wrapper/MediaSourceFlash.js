@@ -68,9 +68,20 @@ var MediaSourceFlash = function () {
         
 		_initCallback = function (e){
 			_swfobj = e.ref;
-            
+
+			var initialTimeout = setTimeout(function (){
+					if(typeof _swfobj.PercentLoaded !== "undefined" && _swfobj.PercentLoaded()){
+						var loadCheckInterval = setInterval(function (){
+							if(e.ref.PercentLoaded() === 100){
+								_readyState = _READY_STATE.OPEN;
+								_trigger({{type:'sourceopen'}})
+								clearInterval(loadCheckInterval);
+							}
+						}, 500);
+					}
+				}, 500);            
             //Hack to make sure mediaSource is initialized properly. I get a undeifed is not a function on _swfobj.appendBufferPlayed in SourceBuffer's appendBuffer
-            setTimeout(function () {_readyState = _READY_STATE.OPEN;}, 3000);
+            //setTimeout(function () {_readyState = _READY_STATE.OPEN;}, 3000);
             
 			console.log('\n\n\n\n\nSWFOBJECT DONE');
 		},
