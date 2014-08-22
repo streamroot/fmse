@@ -6,7 +6,9 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	_swfobj = swfObj,
 	_audioTracks 	= [], 
 	_videoTracks 	= [], 
+	_nb_call 		= 0,
 	_updating 		= false, //true , false
+	_type 			= type,
 	_buffered 		= function(i){
 		var length = 1;
 		tr = {0:{start:0,end:0}}
@@ -44,7 +46,8 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 
 	_appendBuffer     		= function (arraybuffer_data){
 		var data = _arrayBufferToBase64( arraybuffer_data );
-		_swfobj.appendBufferPlayed(data);
+		_nb_call +=1;
+		_swfobj.appendBufferPlayed(data,_type);
 		_trigger({type:'updatestart'});
 		_updating = true;
 	},

@@ -69,19 +69,25 @@ var MediaSourceFlash = function () {
 		_initCallback = function (e){
 			_swfobj = e.ref;
 
+			/*
 			var initialTimeout = setTimeout(function (){
+					
 					if(typeof _swfobj.PercentLoaded !== "undefined" && _swfobj.PercentLoaded()){
+						
 						var loadCheckInterval = setInterval(function (){
 							if(e.ref.PercentLoaded() === 100){
 								_readyState = _READY_STATE.OPEN;
-								_trigger({{type:'sourceopen'}})
+								_trigger({type:'sourceopen'})
 								clearInterval(loadCheckInterval);
 							}
 						}, 500);
 					}
-				}, 500);            
+				}, 500);
+			*/
+			
             //Hack to make sure mediaSource is initialized properly. I get a undeifed is not a function on _swfobj.appendBufferPlayed in SourceBuffer's appendBuffer
-            //setTimeout(function () {_readyState = _READY_STATE.OPEN;}, 3000);
+			// ??!!
+            setTimeout(function () {_readyState = _READY_STATE.OPEN;}, 10000);
             
 			console.log('\n\n\n\n\nSWFOBJECT DONE');
 		},
@@ -92,7 +98,8 @@ var MediaSourceFlash = function () {
 			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			console.log('\n\n\n\n\nPLUGIN PLAYER PATH');
 			console.log(pluginPlayer_path)
-			swfobject.embedSWF(pluginPlayer_path, "video_flash", "100%", "100%", "10.0.0", false, false, false, false, _initCallback);
+            //var pluginPlayer_path = 'pluginPlayer_100_jsdata.swf';
+			swfobject.embedSWF(pluginPlayer_path, "video_flash", "100%", "500", "10.0.0", false, false, false, false, _initCallback);
 			//to trigger when the flash shim is loaded
 			//this.trigger({{type:'sourceopen'}})
         };
