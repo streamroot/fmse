@@ -2,8 +2,8 @@
 
 var MediaSourceFlash = require('./MediaSourceFlash');
 
-var MediaSourceWrapper = function () {
-    return new MediaSourceFlash();
+var MediaSourceWrapper = function (video) {
+    return new MediaSourceFlash(video);
     
     //TODO: return real MSE if chrome, and flash instead. Implement conf parameter to use flash only.
     /*

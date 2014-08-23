@@ -1,5 +1,7 @@
 "use strict";
 
+var CustomTimeRange = require('../CustomTimeRange');
+
 var SourceBuffer = function (mediaSource, type, swfObj) {
 
 	var _listeners 		= [],
@@ -9,13 +11,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	_nb_call 		= 0,
 	_updating 		= false, //true , false
 	_type 			= type,
-	_buffered 		= function(i){
-		var length = 1;
-		tr = {0:{start:0,end:0}}
-		if (i<length){
-			return tr[i]
-		}
-	},
+	_bufferedArray = [],
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -49,6 +45,12 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		_nb_call +=1;
 		_swfobj.appendBufferPlayed(data,_type);
 		_trigger({type:'updatestart'});
+        
+        //HACK: can't get event updateend from flash
+        setTimeout(function () {
+            _trigger({type:'updateend'});
+        }, 500);
+        
 		_updating = true;
 	},
 
@@ -67,12 +69,12 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},
         
     _initialize = function() {
-        _addEventListener('updateend',function(){ _updating=false; });
+        _addEventListener('updateend',function(){ 
+            _updating=false; 
+        });
+        
         _addEventListener('updatebuffered', function(event){
-            this.buffered = {
-                length:1,
-                0:{start:0,end: parseInt(event.endtime)},
-            };
+            _bufferedArray = [{start: 0, end: event.endTime}];
         });
     };
     
@@ -88,13 +90,19 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         _addEventListener(type, listener);
     };
     
+    this.trigger = function (event) {
+        _trigger(event);
+    };
+    
     Object.defineProperty(this, "updating", {
         get: function () { return _updating; },
         set: undefined
     });
     
     Object.defineProperty(this, "buffered", {
-        get: function () { return _updating; },
+        get: function () {
+            return new CustomTimeRange(_bufferedArray);
+        },
         set: undefined
     });
     

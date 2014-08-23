@@ -1,10 +1,11 @@
 "use strict";
 
-var SourceBuffer = require('./SourceBuffer'),
-    VideoExtension = require('./VideoExtension');
+var SourceBuffer = require('./SourceBuffer');
 
-var MediaSourceFlash = function () {
+var MediaSourceFlash = function (videoExtension) {
 	var	self = this,
+        
+        _videoExtension = videoExtension,
         
         _swfobj,
         
@@ -15,9 +16,8 @@ var MediaSourceFlash = function () {
         
         _readyState = _READY_STATE.CLOSED,
             
+        //TODO: is duration realy an attribute of MSE, or of video?
 		_duration = 0,
-        
-		_videoextension = {},
         
 		_listeners = [],
         
@@ -54,7 +54,7 @@ var MediaSourceFlash = function () {
 			var sourceBuffer;
 			sourceBuffer = new SourceBuffer(self, type, _swfobj);
 			_sourceBuffers.push(sourceBuffer);
-			//_videoextension = new VideoExtension(this,sourceBuffer);
+			_videoExtension.registerSourceBuffer(sourceBuffer);
 			return sourceBuffer;
 		},
             
@@ -87,7 +87,10 @@ var MediaSourceFlash = function () {
 			
             //Hack to make sure mediaSource is initialized properly. I get a undeifed is not a function on _swfobj.appendBufferPlayed in SourceBuffer's appendBuffer
 			// ??!!
-            setTimeout(function () {_readyState = _READY_STATE.OPEN;}, 10000);
+            setTimeout(function () {
+                _readyState = _READY_STATE.OPEN;
+                _videoExtension.createSrc(_swfobj, self);
+            }, 10000);
             
 			console.log('\n\n\n\n\nSWFOBJECT DONE');
 		},
@@ -108,8 +111,14 @@ var MediaSourceFlash = function () {
         return _addSourceBuffer(type);
     };
     
-    //TODO: ne devrait pas etre public, mais on en a besoin pour video extension. A voir plus tard qui initialie quoi et comment on la rend privee.
-    this.swfobject = _swfobj;
+    this.addEventListener = function (type, listener) {
+        _addEventListener(type, listener);
+    };
+    
+    this.trigger = function (event) {
+        _trigger(event);
+    };
+    
     
     Object.defineProperty(this, "readyState", {
         get: function () { return _readyState; },
