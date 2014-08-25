@@ -65,7 +65,8 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},	
 
 	_remove     		  = function (start,end){
-		_swfobj.removeBuffer(start,end);
+        //TODO: implement remove method in sourceBuffer
+		//_swfobj.removeBuffer(start,end);
 	},
         
     _initialize = function() {
