@@ -113,6 +113,9 @@ var VideoExtension = function () {
                         for (var i=0; i<_sourceBuffers.length; i++) {
                             if(event_name=="updatebuffered"){
                                 _sourceBuffers[i].trigger({type:event_name,endtime:arguments[2]});
+                            }else if(event_name=="updateend"){
+								console.log('\n\n\n#######\nall sourcebuffer updateend')
+                                _sourceBuffers[i].trigger({type:event_name});
                             } else {
                                 _sourceBuffers[i].trigger({type:event_name});
                             }
@@ -122,6 +125,9 @@ var VideoExtension = function () {
                     case 'videoextension':
                         if(event_name=="updatebuffered"){
                             this.trigger({type:event_name,endtime:arguments[2]});
+                        }else if(event_name=="updatetime"){
+								console.log('#######\ncurrenttime updated')
+                                _currentTime = int(arguments[2]);
                         } else {
                             this.trigger({type:event_name});
                         }
