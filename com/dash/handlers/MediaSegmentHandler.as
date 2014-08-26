@@ -59,7 +59,7 @@ public class MediaSegmentHandler extends SegmentHandler {
         validateType("mdat", type);
         validateSize(size);
 
-        processTrackBox(ba);
+        processTrackBox(ba); // TODO alternatives
 
         _bytes = _muxer.mux(_messages);
         _bytes.position = 0; // reset
@@ -101,7 +101,7 @@ public class MediaSegmentHandler extends SegmentHandler {
             var compositionTimeOffset:int = loadCompositionTimeOffset(runBox, i);
             var sampleDependsOn:uint = loadSampleDependsOn(runBox, i);
             var sampleIsDependedOn:uint = loadSampleIsDependedOn(runBox, i);
-
+			var pieceOffset:uint = baseDataOffset;
             var message:FLVTag = buildMessage(sampleDuration, sampleSizes[i], sampleDependsOn, sampleIsDependedOn,
                     compositionTimeOffset, dataOffset, ba);
 

@@ -1,5 +1,4 @@
 
-
 package com.dash.utils {
 import flash.events.EventDispatcher;
 import flash.events.NetStatusEvent;

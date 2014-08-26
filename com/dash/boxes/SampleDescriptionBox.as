@@ -1,5 +1,4 @@
 
-
 package com.dash.boxes {
 
 import flash.utils.ByteArray;
