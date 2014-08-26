@@ -3,8 +3,9 @@
 var VideoExtension = function () {
 
     var self = this,
-
-        _currentTime = 0,
+        
+        //TODO: remove _currentTime property stuff
+        //_currentTime = 0,
 
         _swfObj,
 
@@ -81,13 +82,25 @@ var VideoExtension = function () {
                 new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
             }
         },
-
+        
+        _getCurrentTime = function () {
+            var currentTime = 0,
+                timeString;
+            if (_isInitialized()) {
+                timeString = _swfObj.currentTime();
+                currentTime = parseFloat(timeString);
+            }
+            return currentTime;
+        },
 
         _initialize = function () {
+            //TODO: remove _currentTime property stuff
+            /*
             window.update_currenttime = function(){
                 var time = parseInt(arguments[0]);
                 _currentTime = time;
             };
+            */
 
             window.cjs_callback_as_event = function(){
                 var directory = {
@@ -126,8 +139,9 @@ var VideoExtension = function () {
                         if(event_name=="updatebuffered"){
                             this.trigger({type:event_name,endtime:arguments[2]});
                         }else if(event_name=="updatetime"){
-								console.log('#######\ncurrenttime updated')
-                                _currentTime = parseInt(arguments[2])/1000;
+                            //TODO: remove _currentTime property stuff
+								//console.log('#######\ncurrenttime updated')
+                                //_currentTime = parseInt(arguments[2])/1000;
                         } else {
                             this.trigger({type:event_name});
                         }
@@ -165,7 +179,7 @@ var VideoExtension = function () {
     };
 
     Object.defineProperty(this, "currentTime", {
-        get: function () { return _currentTime; },
+        get: function () { return _getCurrentTime(); },
         set: function (time) { _seek(time); } //TODO: pas vu de method seek dans l'interface flash
     });
 
