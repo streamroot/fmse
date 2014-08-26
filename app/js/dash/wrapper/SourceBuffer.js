@@ -11,7 +11,10 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	_nb_call 		= 0,
 	_updating 		= false, //true , false
 	_type 			= type,
-	_bufferedArray = [],
+	
+    
+    _startTime = 0, //TODO: Remove startTime hack
+    _endTime = 0, //TODO: remove endTime hack
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -40,7 +43,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		}
 	},
 
-	_appendBuffer     		= function (arraybuffer_data){
+	_appendBuffer     		= function (arraybuffer_data, endTime){
 		var data = _arrayBufferToBase64( arraybuffer_data );
 		_nb_call +=1;
 		_swfobj.appendBufferPlayed(data,_type);
@@ -49,7 +52,8 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         //HACK: can't get event updateend from flash
         setTimeout(function () {
             _trigger({type:'updateend'});
-        }, 500);
+            _endTime = endTime;
+        }, 200);
         
 		_updating = true;
 	},
@@ -69,18 +73,34 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		//_swfobj.removeBuffer(start,end);
 	},
         
+    _buffered = function() {
+        //TODO: remove endTime hack
+        /*
+        var endTime = parseInt(_swfobj.buffered(_type)),
+            bufferedArray = [{start: 0, end: endTime}];
+        */
+        var bufferedArray = [];
+        if (_endTime > _startTime) {
+            bufferedArray.push({start:_startTime, end: _endTime});
+        }
+        return new CustomTimeRange(bufferedArray);
+    },
+        
     _initialize = function() {
         _addEventListener('updateend',function(){ 
             _updating=false; 
         });
         
+        /*
         _addEventListener('updatebuffered', function(event){
             _bufferedArray = [{start: 0, end: event.endTime}];
         });
+        */
     };
     
-    this.appendBuffer = function (arraybuffer_data) {
-        _appendBuffer(arraybuffer_data);
+    //TODO: remove endTime hack
+    this.appendBuffer = function (arraybuffer_data, endTime) {
+        _appendBuffer(arraybuffer_data, endTime);
     };
     
     this.remove = function (start, end) {
@@ -102,10 +122,16 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
     
     Object.defineProperty(this, "buffered", {
         get: function () {
-            return new CustomTimeRange(_bufferedArray);
+            return _buffered();
         },
         set: undefined
     });
+    
+    //TODO: remvove Hack. (see videoExtension seek). + remove endTime hack
+    this.seeked = function (time) {
+        _startTime =time;
+        _endTime = time;
+    };
     
     _initialize();
     

@@ -77,6 +77,10 @@ var VideoExtension = function () {
         _seek = function (time) {
             if (_isInitialized()) {
                 _swfObj.seek(time);
+                //TODO: replace that (configure inBufferSeek of netStream?)
+                for (var i=0; i<_sourceBuffers.length; i++) {
+                    _sourceBuffers[i].seeked(time);
+                }
             } else {
                 //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
                 new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
@@ -159,6 +163,9 @@ var VideoExtension = function () {
     this.createSrc = function (swfObj, mediaSourceFlash) {
         _swfObj = swfObj;
         _mediaSource = mediaSourceFlash;
+        
+        //TODO: remove global access when debugging is done
+        window.SWFOBJ = _swfObj;
     };
 
     this.getFlashVideoObject = function () {
