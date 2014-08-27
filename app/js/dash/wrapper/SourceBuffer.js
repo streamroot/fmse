@@ -79,9 +79,10 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         var endTime = parseInt(_swfobj.buffered(_type)),
             bufferedArray = [{start: 0, end: endTime}];
         */
+        var endTime = parseInt(_swfobj.buffered(_type)) / 1000000;
         var bufferedArray = [];
         if (_endTime > _startTime) {
-            bufferedArray.push({start:_startTime, end: _endTime});
+            bufferedArray.push({start:_startTime, end: endTime});
         }
         return new CustomTimeRange(bufferedArray);
     },
