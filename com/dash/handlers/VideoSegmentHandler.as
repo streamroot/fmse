@@ -1,4 +1,5 @@
 
+
 package com.dash.handlers {
 import com.dash.boxes.FLVTag;
 import com.dash.boxes.Muxer;
@@ -26,7 +27,7 @@ public class VideoSegmentHandler extends MediaSegmentHandler {
         message.timestamp = _timestamp;
         _timestamp = message.timestamp + sampleDuration * 1000 / _timescale;
 		
-		message.duration 	= sampleDuration / _timescale;// * 1000
+		message.duration 	= sampleDuration *1000*1000  / _timescale;
 
         message.length = sampleSize;
 
