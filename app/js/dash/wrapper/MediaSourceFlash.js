@@ -87,16 +87,23 @@ var MediaSourceFlash = function (videoExtension) {
 			
             //Hack to make sure mediaSource is initialized properly. I get a undeifed is not a function on _swfobj.appendBufferPlayed in SourceBuffer's appendBuffer
 			// ??!!
+            /*
             setTimeout(function () {
                 _readyState = _READY_STATE.OPEN;
                 _videoExtension.createSrc(_swfobj, self);
             }, 10000);
+            */
             
 			console.log('\n\n\n\n\nSWFOBJECT DONE');
 		},
         
 		_initialize = function(){
             var pluginPlayer_path = 'pluginPlayer_100_jsdata.swf';
+            
+            window.sr_flash_player_ready = function () {
+                _readyState = _READY_STATE.OPEN;
+                _videoExtension.createSrc(_swfobj, self);
+            };
 			 
 			//swfobject.embedSWF("pluginPlayer.swf", "video", "100%", "100%", "10.0.0", false, false, false, false, initCallback);
 			console.log('\n\n\n\n\nPLUGIN PLAYER PATH');
