@@ -44,15 +44,18 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},
 
 	_appendBuffer     		= function (arraybuffer_data, endTime){
-		var data = _arrayBufferToBase64( arraybuffer_data );
+		var isInit = (typeof endTime !== 'undefined'),
+            data = _arrayBufferToBase64( arraybuffer_data, _type, isInit );
 		_nb_call +=1;
 		_swfobj.appendBufferPlayed(data,_type);
 		_trigger({type:'updatestart'});
         
-        //HACK: can't get event updateend from flash
+        //HACK: can't get event updateend from flash. + Remove endTime hack
         setTimeout(function () {
             _trigger({type:'updateend'});
-            _endTime = endTime;
+            if (isInit) {
+                _endTime = endTime;
+            }
         }, 200);
         
 		_updating = true;
