@@ -14,7 +14,6 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	
     
     _startTime = 0, //TODO: Remove startTime hack
-    _endTime = 0, //TODO: remove endTime hack
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -44,21 +43,23 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	},
 
 	_appendBuffer     		= function (arraybuffer_data, endTime){
+        _updating = true; //Do this at the very first
+        
 		var isInit = (typeof endTime !== 'undefined'),
-            data = _arrayBufferToBase64( arraybuffer_data, _type, isInit );
+            data = _arrayBufferToBase64( arraybuffer_data );
 		_nb_call +=1;
-		_swfobj.appendBufferPlayed(data,_type);
+		_swfobj.appendBufferPlayed(data,_type, isInit);
 		_trigger({type:'updatestart'});
         
-        //HACK: can't get event updateend from flash. + Remove endTime hack
+        //HACK: can't get event updateend from flash
+        /*
         setTimeout(function () {
             _trigger({type:'updateend'});
             if (isInit) {
                 _endTime = endTime;
             }
         }, 200);
-        
-		_updating = true;
+        */
 	},
 
 	_arrayBufferToBase64 	= function(buffer){
@@ -82,23 +83,31 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         var endTime = parseInt(_swfobj.buffered(_type)),
             bufferedArray = [{start: 0, end: endTime}];
         */
+        var endTime = parseInt(_swfobj.buffered(_type)) / 1000000;
         var bufferedArray = [];
-        if (_endTime > _startTime) {
-            bufferedArray.push({start:_startTime, end: _endTime});
+        if (endTime > _startTime) {
+            bufferedArray.push({start:_startTime, end: endTime});
         }
         return new CustomTimeRange(bufferedArray);
     },
         
-    _initialize = function() {
-        _addEventListener('updateend',function(){ 
-            _updating=false; 
-        });
+    _triggerUpdateend = function () {
+        _updating=false;
+        _trigger({type: 'updateend'});
+    },
         
+    _initialize = function() {        
         /*
         _addEventListener('updatebuffered', function(event){
             _bufferedArray = [{start: 0, end: event.endTime}];
         });
         */
+        
+        if (_type.match(/video/)) {
+            window.sr_flash_updateend_video = _triggerUpdateend;
+        } else if (_type.match(/audio/)) {
+            window.sr_flash_updateend_audio = _triggerUpdateend;
+        }
     };
     
     //TODO: remove endTime hack
@@ -133,7 +142,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
     //TODO: remvove Hack. (see videoExtension seek). + remove endTime hack
     this.seeked = function (time) {
         _startTime =time;
-        _endTime = time;
+        //_endTime = time;
     };
     
     _initialize();

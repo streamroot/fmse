@@ -1,6 +1,6 @@
 "use strict";
 
-var VideoExtension = function () {
+var VideoExtension = function (mediaController) {
 
     var self = this,
         
@@ -18,6 +18,8 @@ var VideoExtension = function () {
         _isInitialized = function () {
             return (typeof _swfObj !== 'undefined');
         },
+
+        _seeking = false,
 
 
         _addEventListener 	= function(type, listener){
@@ -41,9 +43,15 @@ var VideoExtension = function () {
         _trigger 			= function(event){
             //updateend, updatestart
             var listeners = _listeners[event.type] || [],
-                i = listeners.length;
+                i = listeners.length,
+                onName = 'on' + event.type;
             while (i--) {
                 listeners[i](event);
+            }
+            //Experimental. for onseeked, etc...
+            //TODO: put in all classes / encapsulate eventBus
+            if (self[onName] && getClass.call(self[onName]) == '[object Function]') {
+                self[onName](event);
             }
         },
 
@@ -76,6 +84,13 @@ var VideoExtension = function () {
 
         _seek = function (time) {
             if (_isInitialized()) {
+                
+                time = _getPrecedingKeyFrame(time);
+                 //HACK for mediaSourceTrigger. +args?
+                _mediaSource.trigger({type: 'seeking'});
+                self.trigger({type: 'seeking'});
+                _seeking = true;
+                
                 _swfObj.seek(time);
                 //TODO: replace that (configure inBufferSeek of netStream?)
                 for (var i=0; i<_sourceBuffers.length; i++) {
@@ -95,6 +110,12 @@ var VideoExtension = function () {
                 currentTime = parseFloat(timeString);
             }
             return currentTime;
+        },
+        
+        _getPrecedingKeyFrame = function (time) {
+            var videoTrack =  mediaController.currentTracks["video"],
+                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep).segment;
+            return segment.time;
         },
 
         _initialize = function () {
@@ -152,6 +173,11 @@ var VideoExtension = function () {
                         break;
                 }
             };
+            
+            window.sr_flash_seeked = function () {
+                _seeking = false;
+                self.trigger({type: 'seeked'});
+            };
 
             window.updateend = function() {
                 for (var i=0; i<_sourceBuffers.length; i++) {
@@ -186,8 +212,13 @@ var VideoExtension = function () {
     };
 
     Object.defineProperty(this, "currentTime", {
-        get: function () { return _getCurrentTime(); },
-        set: function (time) { _seek(time); } //TODO: pas vu de method seek dans l'interface flash
+        get: _getCurrentTime,
+        set: function (time) { _seek(time); }
+    });
+    
+    Object.defineProperty(this, "seeking", {
+        get: function () { return _seeking; },
+        set: undefined
     });
 
     this.addEventListener = function (type, listener) {
