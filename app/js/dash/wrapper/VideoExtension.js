@@ -1,6 +1,6 @@
 "use strict";
 
-var VideoExtension = function () {
+var VideoExtension = function (mediaController) {
 
     var self = this,
         
@@ -84,6 +84,8 @@ var VideoExtension = function () {
 
         _seek = function (time) {
             if (_isInitialized()) {
+                
+                time = _getPrecedingKeyFrame(time);
                  //HACK for mediaSourceTrigger. +args?
                 _mediaSource.trigger({type: 'seeking'});
                 self.trigger({type: 'seeking'});
@@ -108,6 +110,12 @@ var VideoExtension = function () {
                 currentTime = parseFloat(timeString);
             }
             return currentTime;
+        },
+        
+        _getPrecedingKeyFrame = function (time) {
+            var videoTrack =  mediaController.currentTracks["video"],
+                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep).segment;
+            return segment.time;
         },
 
         _initialize = function () {
