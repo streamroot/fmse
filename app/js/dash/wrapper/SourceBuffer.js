@@ -45,7 +45,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	_appendBuffer     		= function (arraybuffer_data, endTime){
         _updating = true; //Do this at the very first
         
-		var isInit = (typeof endTime !== 'undefined'),
+		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
             data = _arrayBufferToBase64( arraybuffer_data );
 		_nb_call +=1;
 		_swfobj.appendBufferPlayed(data,_type, isInit);
