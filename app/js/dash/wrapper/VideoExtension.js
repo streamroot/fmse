@@ -83,18 +83,23 @@ var VideoExtension = function (mediaController) {
         },
 
         _seek = function (time) {
+            var keyFrameTime,
+                audioOffset;
             if (_isInitialized()) {
                 
-                time = _getPrecedingKeyFrame(time);
+                keyFrameTime = _getPrecedingKeyFrame(time);
+                audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
                  //HACK for mediaSourceTrigger. +args?
                 _mediaSource.trigger({type: 'seeking'});
+                console.info("seeking");
+                console.trace();
                 self.trigger({type: 'seeking'});
                 _seeking = true;
                 
-                _swfObj.seek(time);
+                _swfObj.seek(keyFrameTime, time);
                 //TODO: replace that (configure inBufferSeek of netStream?)
                 for (var i=0; i<_sourceBuffers.length; i++) {
-                    _sourceBuffers[i].seeked(time);
+                    _sourceBuffers[i].seeked(keyFrameTime);
                 }
             } else {
                 //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
@@ -115,6 +120,12 @@ var VideoExtension = function (mediaController) {
         _getPrecedingKeyFrame = function (time) {
             var videoTrack =  mediaController.currentTracks["video"],
                 segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep).segment;
+            return segment.time;
+        },
+        
+        _getSeekAudioOffset = function (time) {
+            var audioTrack =  mediaController.currentTracks["audio"],
+                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep).segment;
             return segment.time;
         },
 
