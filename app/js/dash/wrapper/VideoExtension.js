@@ -8,6 +8,7 @@ var VideoExtension = function (mediaController) {
         //_currentTime = 0,
 
         _swfObj,
+		vjs_bool=false,
 
         _mediaSource,
         _sourceBuffers = [],
@@ -198,14 +199,20 @@ var VideoExtension = function (mediaController) {
         };
 
     this.createSrc = function (swfObj, mediaSourceFlash) {
-        _swfObj = swfObj;
+		if (!vjs_bool){
+			_swfObj = swfObj;
+        }
         _mediaSource = mediaSourceFlash;
         
         //TODO: remove global access when debugging is done
         window.SWFOBJ = _swfObj;
     };
 
-    this.getFlashVideoObject = function () {
+    this.getFlashVideoObject = function (vjs_swfobj) {
+		if(vjs_swfobj){
+			_swfObj = vjs_swfObj;
+			vjs_bool = true;
+		}
         return self;
     };
 
