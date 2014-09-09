@@ -1,14 +1,13 @@
 "use strict";
 
-var VideoExtension = function (mediaController) {
+var VideoExtension = function (mediaController, swfObj) {
 
     var self = this,
         
         //TODO: remove _currentTime property stuff
         //_currentTime = 0,
 
-        _swfObj,
-		vjs_bool=false,
+        _swfObj = swfObj,
 
         _mediaSource,
         _sourceBuffers = [],
@@ -198,16 +197,19 @@ var VideoExtension = function (mediaController) {
             };
         };
 
-    this.createSrc = function (swfObj, mediaSourceFlash) {
+    this.createSrc = function (mediaSourceFlash) {
+        /*
 		if (!vjs_bool){
 			_swfObj = swfObj;
         }
+        */
         _mediaSource = mediaSourceFlash;
         
         //TODO: remove global access when debugging is done
         window.SWFOBJ = _swfObj;
     };
-
+    
+    /*
     this.getFlashVideoObject = function (vjs_swfobj) {
 		if(vjs_swfobj){
 			_swfObj = vjs_swfObj;
@@ -215,6 +217,7 @@ var VideoExtension = function (mediaController) {
 		}
         return self;
     };
+    */
 
     this.play = function () {
         _play();
@@ -251,6 +254,10 @@ var VideoExtension = function (mediaController) {
     this.registerSourceBuffer = function (sourceBuffer) {
         _sourceBuffers.push(sourceBuffer);
         //TODO: register source buffer in there for sourceBufferEvents
+    };
+    
+    this.getSwf = function () {
+        return _swfObj
     };
 
     //TODO:register mediaSource and video events

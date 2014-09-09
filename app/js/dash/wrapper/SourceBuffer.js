@@ -48,7 +48,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
             data = _arrayBufferToBase64( arraybuffer_data );
 		_nb_call +=1;
-		_swfobj.appendBufferPlayed(data, _type, isInit, startTimeMs, Math.floor(endTime*1000000));
+		_swfobj.appendBuffer(data, _type, isInit, startTimeMs, Math.floor(endTime*1000000));
 		_trigger({type:'updatestart'});
         
         //HACK: can't get event updateend from flash
