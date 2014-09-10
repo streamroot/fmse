@@ -117,6 +117,15 @@ var VideoExtension = function (mediaController, swfObj) {
             return currentTime;
         },
         
+        _getPaused = function () {
+            if (_isInitialized()) {
+                return _swfObj.paused();
+            } else {
+                //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
+                new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
+            }
+        },
+        
         _getPrecedingKeyFrame = function (time) {
             var videoTrack =  mediaController.currentTracks["video"],
                 segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep).segment;
@@ -239,6 +248,11 @@ var VideoExtension = function (mediaController, swfObj) {
     
     Object.defineProperty(this, "seeking", {
         get: function () { return _seeking; },
+        set: undefined
+    });
+    
+    Object.defineProperty(this, "paused", {
+        get: _getPaused,
         set: undefined
     });
 
