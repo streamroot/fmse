@@ -11,6 +11,8 @@ var VideoExtension = function (mediaController, swfObj) {
 
         _mediaSource,
         _sourceBuffers = [],
+        
+        _eventHandlers, //Event handlers for wrappers
 
 
         _listeners = [],
@@ -54,6 +56,24 @@ var VideoExtension = function (mediaController, swfObj) {
                 self[onName](event);
             }
         },
+        
+        _addMetaData = function () {
+            //Sends meta data to flash player
+            var duration = mediaController.manifestManager.getDuration(0);
+            
+            //TODO: could send width, height, too
+            _swfObj.onMetaData(duration);         
+        },
+        
+        _setEventHandlers = function (eventHandlers) {
+            var onMetaData = eventHandlers.onMetaData,
+                newOnMetaData = function (tracklist) {
+                    onMetaData(tracklist);
+                    _addMetaData();
+                };
+            eventHandlers.onMetaData = newOnMetaData;
+            _eventHandlers = eventHandlers;
+        },    
 
         _play = function () {
             if (_isInitialized()) {
@@ -254,6 +274,14 @@ var VideoExtension = function (mediaController, swfObj) {
     Object.defineProperty(this, "paused", {
         get: _getPaused,
         set: undefined
+    });
+    
+    //Did this weird structure because event_handlers is set in dash.js after VideoExtension is created. But we need both to send metaData to flash player (from inside this class), and to
+    //call the wrapper's event_handler. Then we need to combine both steps into the video.event_handlers.onMetaData method, and do everything from inside this class in order not to impact the rest
+    //of the code with the switch HTML5 / Flash
+    Object.defineProperty(this, "event_handlers", {
+        get: function () { return _eventHandlers; },
+        set: function (eventHandlers) { _setEventHandlers(eventHandlers); }
     });
 
     this.addEventListener = function (type, listener) {
