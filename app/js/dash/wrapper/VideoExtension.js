@@ -59,7 +59,9 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _addMetaData = function () {
             //Sends meta data to flash player
-            var duration = mediaController.manifestManager.getDuration(0);
+            
+            //TODO: here, durqtion for period[0]. Should maybe have method getDuration() (same method, without arg) returning the sum of all period's durations.
+            var duration = mediaController.manifestManager.getDuration(0); 
             
             //TODO: could send width, height, too
             _swfObj.onMetaData(duration);         
