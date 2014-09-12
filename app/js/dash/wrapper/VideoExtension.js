@@ -118,7 +118,7 @@ var VideoExtension = function (mediaController, swfObj) {
                 self.trigger({type: 'seeking'});
                 _seeking = true;
                 
-                _swfObj.seek(keyFrameTime, time);
+                _swfObj.seek(keyFrameTime/*, time*/);
                 //TODO: replace that (configure inBufferSeek of netStream?)
                 for (var i=0; i<_sourceBuffers.length; i++) {
                     _sourceBuffers[i].seeked(keyFrameTime);
