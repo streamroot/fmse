@@ -14,6 +14,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 	
     
     _startTime = 0, //TODO: Remove startTime hack
+    _endTime = 0,
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -51,6 +52,8 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		_swfobj.appendBuffer(data, _type, isInit, startTimeMs, Math.floor(endTime*1000000));
 		_trigger({type:'updatestart'});
         
+        _endTime = endTime;
+        
         //HACK: can't get event updateend from flash
         /*
         setTimeout(function () {
@@ -83,15 +86,15 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         var endTime = parseInt(_swfobj.buffered(_type)),
             bufferedArray = [{start: 0, end: endTime}];
         */
-        var endTime = parseInt(_swfobj.buffered(_type)) / 1000000;
+        //var endTime = _swfobj.buffered(_type) / 1000000;
         var bufferedArray = [];
-        if (endTime > _startTime) {
-            bufferedArray.push({start:_startTime, end: endTime});
+        if (_endTime > _startTime) {
+            bufferedArray.push({start:_startTime, end: _endTime});
         }
         return new CustomTimeRange(bufferedArray);
     },
         
-    _triggerUpdateend = function () {
+    _triggerUpdateend = function (endTime) {
         _updating=false;
         _trigger({type: 'updateend'});
     },
@@ -142,7 +145,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
     //TODO: remvove Hack. (see videoExtension seek). + remove endTime hack
     this.seeked = function (time) {
         _startTime =time;
-        //_endTime = time;
+        _endTime = time;
     };
     
     _initialize();
