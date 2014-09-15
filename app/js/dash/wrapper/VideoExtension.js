@@ -13,6 +13,11 @@ var VideoExtension = function (mediaController, swfObj) {
         _sourceBuffers = [],
         
         _eventHandlers, //Event handlers for wrappers
+        
+        _currentTime = 0,
+        _fixedCurrentTime = 0,  //In case of video paused, or seek
+        _lastCurrentTimeTimestamp,
+        _REFRESH_INTERVAL = 500,    //Max interval until we look up flash to get real value of currentTime
 
 
         _listeners = [],
@@ -79,6 +84,7 @@ var VideoExtension = function (mediaController, swfObj) {
 
         _play = function () {
             if (_isInitialized()) {
+                _fixedCurrentTime = undefined;                
                 _swfObj.play();
             } else {
                 //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
@@ -88,6 +94,9 @@ var VideoExtension = function (mediaController, swfObj) {
 
         _pause= function () {
             if (_isInitialized()) {
+                if (typeof _fixedCurrentTime === "undefined") { //Don't override _fixedCurrentTime if it already exists (case of a seek for example);
+                    _fixedCurrentTime = _getCurrentTimeFromFlash();
+                }
                 _swfObj.pause();
             } else {
                 //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
@@ -114,9 +123,10 @@ var VideoExtension = function (mediaController, swfObj) {
                  //HACK for mediaSourceTrigger. +args?
                 _mediaSource.trigger({type: 'seeking'});
                 console.info("seeking");
-                console.trace();
                 self.trigger({type: 'seeking'});
                 _seeking = true;
+                
+                _fixedCurrentTime = keyFrameTime;
                 
                 _swfObj.seek(keyFrameTime/*, time*/);
                 //TODO: replace that (configure inBufferSeek of netStream?)
@@ -129,14 +139,25 @@ var VideoExtension = function (mediaController, swfObj) {
             }
         },
         
+        _getCurrentTimeFromFlash = function () {
+            _currentTime = _swfObj.currentTime();
+            return _currentTime;
+        },
+        
         _getCurrentTime = function () {
-            var currentTime = 0,
-                timeString;
-            if (_isInitialized()) {
-                timeString = _swfObj.currentTime();
-                currentTime = parseFloat(timeString);
+            var now = new Date().getTime();
+                
+            if (typeof _fixedCurrentTime !== "undefined") {
+                return _fixedCurrentTime;
             }
-            return currentTime;
+            
+            if (_lastCurrentTimeTimestamp && now - _lastCurrentTimeTimestamp < _REFRESH_INTERVAL) {
+                return _currentTime + (now - _lastCurrentTimeTimestamp) / 1000;
+            } else if (_isInitialized()) {
+                _lastCurrentTimeTimestamp = now;
+                return _getCurrentTimeFromFlash();
+            }
+            return 0;
         },
         
         _getPaused = function () {
@@ -158,6 +179,18 @@ var VideoExtension = function (mediaController, swfObj) {
             var audioTrack =  mediaController.currentTracks["audio"],
                 segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep).segment;
             return segment.time;
+        },
+        
+        //EVENTS
+        
+        _onSeeked = function() {
+            _seeking = false;
+            self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
+        },        
+        
+        _onPlaying = function() {
+            _currentTime = _getCurrentTimeFromFlash(); //Force refresh _currentTime
+            _fixedCurrentTime = undefined;
         },
 
         _initialize = function () {
@@ -217,8 +250,11 @@ var VideoExtension = function (mediaController, swfObj) {
             };
             
             window.sr_flash_seeked = function () {
-                _seeking = false;
-                self.trigger({type: 'seeked'});
+                _onSeeked();
+            };
+            
+            window.sr_flash_playing = function () {
+                _onPlaying();
             };
 
             window.updateend = function() {
