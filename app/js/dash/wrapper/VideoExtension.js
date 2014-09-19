@@ -206,7 +206,9 @@ var VideoExtension = function (mediaController, swfObj) {
         },
         
         _bufferFull = function () {
-            _fixedCurrentTime = undefined;
+            if (!_getPaused()) {
+				_fixedCurrentTime = undefined;
+			}
             _swfObj.bufferFull();
         },
         
@@ -249,6 +251,8 @@ var VideoExtension = function (mediaController, swfObj) {
                 _currentTime = time;
             };
             */
+            
+            _watchBuffer();
 
             window.cjs_callback_as_event = function(){
                 var directory = {
