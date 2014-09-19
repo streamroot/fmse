@@ -1,5 +1,7 @@
 "use strict";
 
+var conf = require('../../../conf');
+
 var VideoExtension = function (mediaController, swfObj) {
 
     var self = this,
@@ -15,7 +17,7 @@ var VideoExtension = function (mediaController, swfObj) {
         _eventHandlers, //Event handlers for wrappers
         
         _currentTime = 0,
-        _fixedCurrentTime = 0,  //In case of video paused, or seek
+        _fixedCurrentTime = 0,  //In case of video paused, buffering or seek
         _lastCurrentTimeTimestamp,
         _REFRESH_INTERVAL = 500,    //Max interval until we look up flash to get real value of currentTime
 
@@ -74,11 +76,27 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _setEventHandlers = function (eventHandlers) {
             var onMetaData = eventHandlers.onMetaData,
+                onBuffering = eventHandlers.onBuffering,
+                //onPlaying = eventHandlers.onPlaying,
+                
                 newOnMetaData = function (tracklist) {
                     onMetaData(tracklist);
                     _addMetaData();
-                };
+                },
+                
+                newOnBuffering = function () {
+                    onBuffering();
+                    _bufferEmpty();
+                };/*,
+                
+                newOnPlaying = function (tracklist) {
+                    onPlaying();
+                    _bufferFull();
+
+                };*/
             eventHandlers.onMetaData = newOnMetaData;
+            eventHandlers.onBuffering = newOnBuffering;
+            //eventHandlers.onPlaying = newOnPlaying;
             _eventHandlers = eventHandlers;
         },    
 
@@ -179,6 +197,36 @@ var VideoExtension = function (mediaController, swfObj) {
             var audioTrack =  mediaController.currentTracks["audio"],
                 segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep).segment;
             return segment.time;
+        },
+        
+        _bufferEmpty = function () {
+            _fixedCurrentTime = _getCurrentTimeFromFlash();
+            _swfObj.bufferEmpty();
+            _watchBuffer();
+        },
+        
+        _bufferFull = function () {
+            _fixedCurrentTime = undefined;
+            _swfObj.bufferFull();
+        },
+        
+        _watchBuffer = function () {
+            var watchBufferInterval = setInterval(function(){
+                var currentTime = _getCurrentTime(),
+                    buffered,
+                    buffersReady = _sourceBuffers.length,
+                    i;
+                for (i=0; i<_sourceBuffers.length; i++) {
+                    buffered = _sourceBuffers[i].buffered;
+                    buffersReady = buffersReady && (buffered.end(0) - currentTime > conf.BUFFER.EMERGENCY_MARGIN + 0.5);
+                }
+                
+                if (buffersReady) {
+                    clearInterval(watchBufferInterval);
+                    _bufferFull();
+                }
+                
+            }, 100);
         },
         
         //EVENTS
