@@ -220,7 +220,9 @@ var VideoExtension = function (mediaController, swfObj) {
                     i;
                 for (i=0; i<_sourceBuffers.length; i++) {
                     buffered = _sourceBuffers[i].buffered;
-                    buffersReady = buffersReady && (buffered.end(0) - currentTime > conf.BUFFER.EMERGENCY_MARGIN + 0.5);
+                    if (buffered.length) {
+                        buffersReady = buffersReady && (buffered.end(0) - currentTime > conf.BUFFER.EMERGENCY_MARGIN + 0.5);
+                    }
                 }
                 
                 if (buffersReady) {
