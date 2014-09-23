@@ -68,10 +68,11 @@ var VideoExtension = function (mediaController, swfObj) {
             //Sends meta data to flash player
             
             //TODO: here, durqtion for period[0]. Should maybe have method getDuration() (same method, without arg) returning the sum of all period's durations.
-            var duration = mediaController.manifestManager.getDuration(0); 
+            var duration = mediaController.manifestManager.getDuration(0),
+                videoDimensions = mediaController.getVideoDimensions();
             
             //TODO: could send width, height, too
-            _swfObj.onMetaData(duration);         
+            _swfObj.onMetaData(duration, videoDimensions.width, videoDimensions.height);         
         },
         
         _setEventHandlers = function (eventHandlers) {
@@ -222,6 +223,8 @@ var VideoExtension = function (mediaController, swfObj) {
                     buffered = _sourceBuffers[i].buffered;
                     if (buffered.length) {
                         buffersReady = buffersReady && (buffered.end(0) - currentTime > conf.BUFFER.EMERGENCY_MARGIN + 0.5);
+                    } else {
+                        buffersReady = false;
                     }
                 }
                 
@@ -301,6 +304,10 @@ var VideoExtension = function (mediaController, swfObj) {
                         }
                         break;
                 }
+            };
+            
+            window.sr_request_seek = function(time) {
+                _seek(time);
             };
             
             window.sr_flash_seeked = function () {
