@@ -1,14 +1,17 @@
 "use strict";
 
 var CustomTimeRange = require('../CustomTimeRange');
+var SegmentAppender = require('./SegmentAppender');
 
-var SourceBuffer = function (mediaSource, type, swfObj) {
+var SourceBuffer = function (mediaSource, type, swfobj) {
 
-	var _listeners 		= [],
-	_swfobj = swfObj,
-	_audioTracks 	= [], 
-	_videoTracks 	= [], 
-	_nb_call 		= 0,
+	var self = this,
+    
+    _listeners 		= [],
+	_swfobj = swfobj,
+        
+    _segmentAppender = new SegmentAppender(self, _swfobj),
+
 	_updating 		= false, //true , false
 	_type 			= type,
 	
@@ -45,10 +48,16 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 
 	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime){
         _updating = true; //Do this at the very first
+        _trigger({type:'updatestart'});
         
+        _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
+        _endTime = endTime;
+        
+        /*
 		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
             data = _arrayBufferToBase64( arraybuffer_data );
-		_nb_call +=1;
+		
+        console.debug('IS INIT: ' + isInit);
         
         _trigger({type:'updatestart'});
         
@@ -56,6 +65,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
             _swfobj.appendBuffer(data, _type, isInit, startTimeMs, Math.floor(endTime*1000000));
             _endTime = endTime;
         }, 50);
+        */
         
         //HACK: can't get event updateend from flash
         /*
@@ -67,7 +77,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         }, 200);
         */
 	},
-
+        /*
 	_arrayBufferToBase64 	= function(buffer){
 		var binary = '';
 		var bytes = new Uint8Array( buffer );
@@ -77,10 +87,14 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
 		}
 		return window.btoa(binary);
 	},	
+    */
 
-	_remove     		  = function (start,end){
+	_remove = function (start,end){
         //TODO: implement remove method in sourceBuffer
 		//_swfobj.removeBuffer(start,end);
+        _updating = true;
+        setTimeout(_triggerUpdateend, 20);  //trigger updateend to launch next job. Needs the setTimeout to be called 
+                                            //asynchronously and avoid error with Max call stack size (infinite recursive loop)   
 	},
         
     _buffered = function() {
@@ -97,7 +111,7 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         return new CustomTimeRange(bufferedArray);
     },
         
-    _triggerUpdateend = function (endTime) {
+    _triggerUpdateend = function () {
         _updating=false;
         _trigger({type: 'updateend'});
     },
@@ -150,6 +164,8 @@ var SourceBuffer = function (mediaSource, type, swfObj) {
         _startTime =time;
         _endTime = time;
     };
+    
+    this.appendWindowStart = 0;
     
     _initialize();
     
