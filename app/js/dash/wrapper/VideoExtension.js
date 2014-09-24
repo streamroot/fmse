@@ -1,6 +1,7 @@
 "use strict";
 
 var conf = require('../../../conf');
+var FlashMBR = require('./FlashMBR');
 
 var VideoExtension = function (mediaController, swfObj) {
 
@@ -75,26 +76,40 @@ var VideoExtension = function (mediaController, swfObj) {
             _swfObj.onMetaData(duration, videoDimensions.width, videoDimensions.height);         
         },
         
+        /*
+        _addTrackList = function (tracklist) {
+            //TODO: get actual tracklist from map
+            var tracklist = "720p,540p,360p,auto";
+            _swfObj.onTrackList(tracklist);
+        },
+        
+        _onQualityChangeRequest = function (quality) {
+            debugger;
+        },
+        */
+        
         _setEventHandlers = function (eventHandlers) {
             var onMetaData = eventHandlers.onMetaData,
                 onBuffering = eventHandlers.onBuffering,
-                //onPlaying = eventHandlers.onPlaying,
+                newOnMetaData,
+                newOnBuffering;
+            
+            if (typeof onMetaData === "undefined") {
+                var flashMBR = new FlashMBR(mediaController, _swfObj);
+                onMetaData = flashMBR.addTrackList;
+            }
                 
-                newOnMetaData = function (tracklist) {
-                    onMetaData(tracklist);
-                    _addMetaData();
-                },
-                
-                newOnBuffering = function () {
-                    onBuffering();
-                    _bufferEmpty();
-                };/*,
-                
-                newOnPlaying = function (tracklist) {
-                    onPlaying();
-                    _bufferFull();
+            newOnMetaData = function (tracklist) {
+                onMetaData(tracklist);
+                _addMetaData();
+            };
 
-                };*/
+            newOnBuffering = function () {
+                onBuffering();
+                _bufferEmpty();
+            };
+            
+            
             eventHandlers.onMetaData = newOnMetaData;
             eventHandlers.onBuffering = newOnBuffering;
             //eventHandlers.onPlaying = newOnPlaying;
