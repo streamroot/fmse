@@ -18,6 +18,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
+    _pendingEndTime = 0,
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -51,7 +52,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _trigger({type:'updatestart'});
         
         _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
-        _endTime = endTime;
+        _pendingEndTime = endTime;
         
         /*
 		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
@@ -113,6 +114,12 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         
     _triggerUpdateend = function () {
         _updating=false;
+        //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
+        //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
+        //performance)
+        if (_pendingEndTime > _endTime) {
+            _endTime = _pendingEndTime;
+        }
         _trigger({type: 'updateend'});
     },
         
