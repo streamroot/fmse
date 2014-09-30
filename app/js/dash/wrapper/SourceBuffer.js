@@ -154,9 +154,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     });
     
     Object.defineProperty(this, "buffered", {
-        get: function () {
-            return _buffered();
-        },
+        get: _buffered,
         set: undefined
     });
     
@@ -170,6 +168,13 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _startTime =time;
         _endTime = time;
     };
+    
+    Object.defineProperty(this, "isFlash", {
+        get: function () {
+            return true;
+        },
+        set: undefined
+    });
     
     _initialize();
     
