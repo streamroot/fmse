@@ -124,12 +124,6 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     },
         
     _initialize = function() {        
-        /*
-        _addEventListener('updatebuffered', function(event){
-            _bufferedArray = [{start: 0, end: event.endTime}];
-        });
-        */
-        
         if (_type.match(/video/)) {
             window.sr_flash_updateend_video = _triggerUpdateend;
         } else if (_type.match(/audio/)) {
@@ -166,13 +160,16 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         set: undefined
     });
     
-    //TODO: remvove Hack. (see videoExtension seek). + remove endTime hack
+    this.appendWindowStart = 0;
+    
+    //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
+    //TODO: method not in sourceBuffer spec. is there an other way?
     this.seeked = function (time) {
+        //Sets both startTime and endTime to seek time.
+        //CAUTION: this is also use on ended
         _startTime =time;
         _endTime = time;
     };
-    
-    this.appendWindowStart = 0;
     
     _initialize();
     

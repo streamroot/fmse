@@ -24,12 +24,14 @@ var VideoExtension = function (mediaController, swfObj) {
 
 
         _listeners = [],
+        
+        _ended = false,
 
         _isInitialized = function () {
             return (typeof _swfObj !== 'undefined');
         },
 
-        _seeking = false,
+        _seeking = false, //TODO: still in use?
 
 
         _addEventListener 	= function(type, listener){
@@ -180,6 +182,10 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _getCurrentTime = function () {
             var now = new Date().getTime();
+            
+            if (_ended) {
+                return 0;
+            }
                 
             if (typeof _fixedCurrentTime !== "undefined") {
                 return _fixedCurrentTime;
@@ -256,11 +262,32 @@ var VideoExtension = function (mediaController, swfObj) {
         _onSeeked = function() {
             _seeking = false;
             self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
-        },        
+        },
+        
+        _onLoadStart = function() {
+            _ended = false;
+            self.trigger({type: 'loadstart'});
+        },
         
         _onPlaying = function() {
             _currentTime = _getCurrentTimeFromFlash(); //Force refresh _currentTime
             _fixedCurrentTime = undefined;
+            
+            _ended = false;
+            self.trigger({type: 'playing'});
+        },
+        
+        _onStopped = function() {
+            var i;
+            
+            _ended = true;
+            _currentTime = 0;
+            
+            self.trigger({type: 'ended'});
+            
+            for (i=0; i<_sourceBuffers.length; i++) {
+                _sourceBuffers[i].seeked(0); //Sets start and end to 0 in source buffer
+            }
         },
 
         _initialize = function () {
@@ -329,8 +356,16 @@ var VideoExtension = function (mediaController, swfObj) {
                 _onSeeked();
             };
             
+            window.sr_flash_loadstart = function () {
+                _onLoadStart();
+            };
+            
             window.sr_flash_playing = function () {
                 _onPlaying();
+            };
+            
+            window.sr_flash_stopped = function () {
+                _onStopped();
             };
 
             window.updateend = function() {
@@ -413,7 +448,7 @@ var VideoExtension = function (mediaController, swfObj) {
     };
     
     this.getSwf = function () {
-        return _swfObj
+        return _swfObj;
     };
 
     //TODO:register mediaSource and video events
