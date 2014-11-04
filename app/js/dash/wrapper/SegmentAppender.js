@@ -32,7 +32,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             //var uint8Data = new Uint8Array(data);
             //var abData = data.buffer;
             
-            _b64Worker.postMessage({data: data.buffer});
+            _b64Worker.postMessage({data: data.buffer}, [ data.buffer ]);
         },
         
         _initialize = function () {
