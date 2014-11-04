@@ -1,9 +1,11 @@
 "use strict";
 
-var b64Worker = './B64Worker.js'
+//var b64Worker = './B64Worker.js'
+var B64MainThread = require('./B64MainThread.js');
 
 var SegmentAppender = function (sourceBuffer, swfobj) {
-    var _b64Worker = new Worker(b64Worker),
+    var self = this,
+        _b64MT = new B64MainThread(self),
         
         _sourceBuffer = sourceBuffer,
         _swfobj = swfobj,
@@ -20,8 +22,8 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             //TODO: call updateend on sourceBuffer
         },
         
-        _onWorkerMessage = function (e) {
-            _doAppend(e.data.b64Data);
+        _onDecoded = function (decodedData) {
+            _doAppend(decodedData);
         },
         
         _appendBuffer = function (data, type, startTimeMs, endTime) {
@@ -32,17 +34,20 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             //var uint8Data = new Uint8Array(data);
             //var abData = data.buffer;
             
-            _b64Worker.postMessage({data: data.buffer}, [ data.buffer ]);
+            _b64MT.startDecoding(data);
         },
         
         _initialize = function () {
-            _b64Worker.onmessage = _onWorkerMessage;
+            //_b64MT.communication = _onWorkerMessage;
         };
     
-    this.appendBuffer = function (data, type, startTimeMs, endTime) {
+    self.appendBuffer = function (data, type, startTimeMs, endTime) {
         _appendBuffer(data, type, startTimeMs, endTime);
     };
     
+    self.onDecoded = function(e) {
+        _onDecoded(e);
+    };
     
     
     _initialize();
