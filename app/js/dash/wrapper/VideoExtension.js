@@ -18,7 +18,8 @@ var VideoExtension = function (mediaController, swfObj) {
         _eventHandlers, //Event handlers for wrappers
         
         _currentTime = 0,
-        _fixedCurrentTime = 0,  //In case of video paused, buffering or seek
+        _fixedCurrentTime = 0,  //In case of video paused or buffering
+        _seekTarget,    // Using another variable for seeking, because seekTarget can be set to undefined by "playing" event (TODO: triggered during seek, which is a separate issue) 
         _lastCurrentTimeTimestamp,
         _REFRESH_INTERVAL = 500,    //Max interval until we look up flash to get real value of currentTime
 
@@ -172,7 +173,7 @@ var VideoExtension = function (mediaController, swfObj) {
                     _sourceBuffers[i].seeking();
                 }
 
-                _fixedCurrentTime = keyFrameTime;
+                _seekTarget = _fixedCurrentTime = keyFrameTime;
 
                 //The flash is flushed somewhere in this seek function
                 _swfObj.seek(keyFrameTime/*, time*/);
@@ -196,6 +197,10 @@ var VideoExtension = function (mediaController, swfObj) {
             
             if (_ended) {
                 return 0;
+            }
+            
+            if (typeof _seekTarget !== "undefined") {
+                return _seekTarget;
             }
                 
             if (typeof _fixedCurrentTime !== "undefined") {
@@ -233,7 +238,7 @@ var VideoExtension = function (mediaController, swfObj) {
         },
         
         _bufferEmpty = function () {
-            _fixedCurrentTime = _getCurrentTimeFromFlash();
+            _fixedCurrentTime = _fixedCurrentTime || _getCurrentTimeFromFlash(); // Do not erase value if already set
             _swfObj.bufferEmpty();
             _watchBuffer();
         },
@@ -272,6 +277,7 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _onSeeked = function() {
             _seeking = false;
+            _seekTarget = undefined;
             self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
         },
         
