@@ -170,17 +170,13 @@ var VideoExtension = function (mediaController, swfObj) {
                     
                     //Rapid fix. Check if better way
                     for (var i=0; i<_sourceBuffers.length; i++) {
-                        _sourceBuffers[i].seeking();
+                        _sourceBuffers[i].seeking(keyFrameTime);
                     }
 
                     _fixedCurrentTime = keyFrameTime;
 
                     //The flash is flushed somewhere in this seek function
                     _swfObj.seek(keyFrameTime/*, time*/);
-                    //TODO: replace that (configure inBufferSeek of netStream?)
-                    for (var i=0; i<_sourceBuffers.length; i++) {
-                        _sourceBuffers[i].seeked(keyFrameTime);
-                    }
                 } else {
                     //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
                     new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
@@ -275,6 +271,9 @@ var VideoExtension = function (mediaController, swfObj) {
         _onSeeked = function() {
             _seeking = false;
             self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
+            for (var i = 0; i < _sourceBuffers.length; i++) {
+                        _sourceBuffers[i].seeked();
+            }
         },
         
         _onLoadStart = function() {
@@ -299,7 +298,7 @@ var VideoExtension = function (mediaController, swfObj) {
             self.trigger({type: 'ended'});
             
             for (i=0; i<_sourceBuffers.length; i++) {
-                _sourceBuffers[i].seeked(0); //Sets start and end to 0 in source buffer
+                _sourceBuffers[i].seekTime(0); //Sets start and end to 0 in source buffer
             }
         },
 

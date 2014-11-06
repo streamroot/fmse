@@ -122,6 +122,14 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         }
         _trigger({type: 'updateend'});
     },
+
+    //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
+    //TODO: method not in sourceBuffer spec. is there an other way?
+    _seekTime = function(time) {
+        //Sets both startTime and endTime to seek time.
+        _startTime = time;
+        _endTime = time;
+    },
         
     _initialize = function() {        
         if (_type.match(/video/)) {
@@ -160,7 +168,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     this.appendWindowStart = 0;
     
-    this.seeking = function () {
+    this.seeking = function (time) {
         //In case of seeking when a segment is being appended in flash, the append will be canceled. Thus we want to set updating to false, and trigger updateend so that
         // SourceBufferWrapper can move to next job.
         // CAUTION: we need to make sure that the BufferController is in mode STOP_BUFFERING, and that then appendQueue has been flush (we still want to trigger the 
@@ -169,16 +177,17 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
             _pendingEndTime = -1;
             _triggerUpdateend();   
         } 
+        _seekTime(time);
         _segmentAppender.seeking();
     };
     
-    //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
-    //TODO: method not in sourceBuffer spec. is there an other way?
-    this.seeked = function (time) {
-        //Sets both startTime and endTime to seek time.
+    this.seeked = function() {
+        _segmentAppender.seeked();
+    };
+
+    this.seekTime = function (time) {
         //CAUTION: this is also use on ended
-        _startTime =time;
-        _endTime = time;
+        _seekTime(time);
     };
     
     this.segmentFlushed = function () {
