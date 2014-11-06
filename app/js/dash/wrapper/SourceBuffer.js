@@ -128,6 +128,8 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
             window.sr_flash_updateend_video = _triggerUpdateend;
         } else if (_type.match(/audio/)) {
             window.sr_flash_updateend_audio = _triggerUpdateend;
+        } else if (_type.match(/vnd/)) {
+			window.sr_flash_updateend_video = _triggerUpdateend;
         }
     };
     
