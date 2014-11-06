@@ -13,17 +13,22 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         _type,
         _startTimeMs,
         _endTime,
+        _discard = false,
+        _isDecoding = false,
         
         _doAppend = function (data) {
             var isInit = (typeof _endTime !== 'undefined') ? 0 : 1;
             
             _swfobj.appendBuffer(data, _type, isInit, _startTimeMs, Math.floor(_endTime*1000000));
-            
-            //TODO: call updateend on sourceBuffer
         },
         
+        //Here we check first if we are seeking. If so, we don't append the decoded data.
         _onDecoded = function (decodedData) {
-            _doAppend(decodedData);
+            if(_discard == false) { 
+                _doAppend(decodedData);
+            } else {
+                _discard = false;
+            }
         },
         
         _appendBuffer = function (data, type, startTimeMs, endTime) {
@@ -48,7 +53,18 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
     self.onDecoded = function(e) {
         _onDecoded(e);
     };
+
+    self.setDiscard = function(value) {
+        _discard = value;
+    };
     
+    self.getIsDecoding = function() {
+        return _isDecoding;
+    };
+
+    self.setIsDecoding = function(value) {
+        _isDecoding = value;
+    };
     
     _initialize();
 };

@@ -147,6 +147,10 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     this.trigger = function (event) {
         _trigger(event);
     };
+
+    this.getSegmentAppender = function() {
+        return _segmentAppender;
+    };
     
     Object.defineProperty(this, "updating", {
         get: function () { return _updating; },
