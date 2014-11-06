@@ -19,7 +19,6 @@ var B64MainThread = function(segmentAppender) {
             }
             _b64Data += btoa(tempString);
             if (end === len) {
-                _segmentAppender.setIsDecoding(false);
                 _segmentAppender.onDecoded(_b64Data);
             } else {
                 _offset = end;
@@ -32,7 +31,6 @@ var B64MainThread = function(segmentAppender) {
             _b64Data = '';
             _offset = 0;
             
-            _segmentAppender.setIsDecoding(true);
             _arrayBufferToBase64();
         };
 
