@@ -24,6 +24,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         
         //Here we check first if we are seeking. If so, we don't append the decoded data.
         _onDecoded = function (decodedData) {
+            _isDecoding = false;
             if(_discard == false) { 
                 console.debug("SegmentApender: DO append " + _type + "   " +  Math.floor(_startTimeMs/1000));
                 _doAppend(decodedData);
@@ -42,6 +43,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             //var abData = data.buffer;
             
             console.debug("SegmentApender: start decoding " + _type);
+            _isDecoding = true;
             _b64MT.startDecoding(data);
         },
         
@@ -57,17 +59,11 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         _onDecoded(e);
     };
 
-    self.setDiscard = function(value) {
-        _discard = value;
-    };
-    
-    self.getIsDecoding = function() {
-        return _isDecoding;
-    };
-
-    self.setIsDecoding = function(value) {
-        _isDecoding = value;
-    };
+    self.seeking = function() {
+        if(_isDecoding) {
+            _discard = true;
+        }
+    }
     
     _initialize();
 };

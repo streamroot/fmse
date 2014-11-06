@@ -170,9 +170,6 @@ var VideoExtension = function (mediaController, swfObj) {
                 //Rapid fix. Check if better way
                 for (var i=0; i<_sourceBuffers.length; i++) {
                     _sourceBuffers[i].seeking();
-                    if(_sourceBuffers[i].getSegmentAppender().getIsDecoding()) {
-                        _sourceBuffers[i].getSegmentAppender().setDiscard(true);
-                    }
                 }
 
                 _fixedCurrentTime = keyFrameTime;

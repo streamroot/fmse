@@ -147,10 +147,6 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     this.trigger = function (event) {
         _trigger(event);
     };
-
-    this.getSegmentAppender = function() {
-        return _segmentAppender;
-    };
     
     Object.defineProperty(this, "updating", {
         get: function () { return _updating; },
@@ -173,6 +169,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
             _pendingEndTime = -1;
             _triggerUpdateend();   
         } 
+        _segmentAppender.seeking();
     };
     
     //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
