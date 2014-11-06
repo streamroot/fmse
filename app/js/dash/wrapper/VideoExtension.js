@@ -167,6 +167,11 @@ var VideoExtension = function (mediaController, swfObj) {
                 self.trigger({type: 'seeking'});
                 _seeking = true;
                 
+                //Rapid fix. Check if better way
+                for (var i=0; i<_sourceBuffers.length; i++) {
+                    _sourceBuffers[i].seeking();
+                }
+                
                 _fixedCurrentTime = keyFrameTime;
 
                 //The flash is flushed somewhere in this seek function
