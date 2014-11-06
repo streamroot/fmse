@@ -155,15 +155,21 @@ var VideoExtension = function (mediaController, swfObj) {
             if (_isInitialized()) {
                 
                 keyFrameTime = _getPrecedingKeyFrame(time);
-                audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
-                 //HACK for mediaSourceTrigger. +args?
-                _mediaSource.trigger({type: 'seeking'});
+
+                //useles in hls because video and audio are muxed
+                //audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
+                
+                //HACK for mediaSourceTrigger. +args?
+                //trigger flush of sourceBufferWrapper. It's a hack because shouldn't be triggered by mediaSource
+                //_mediaSource.trigger({type: 'seeking'});
+                
                 console.info("seeking");
                 self.trigger({type: 'seeking'});
                 _seeking = true;
                 
                 _fixedCurrentTime = keyFrameTime;
-                
+
+                //The flash is flushed somewhere in this seek function
                 _swfObj.seek(keyFrameTime/*, time*/);
                 //TODO: replace that (configure inBufferSeek of netStream?)
                 for (var i=0; i<_sourceBuffers.length; i++) {
