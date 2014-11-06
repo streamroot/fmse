@@ -31,6 +31,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             } else {
                 console.debug("SegmentApender: discard data " + _type);
                 _discard = false;
+                _sourceBuffer.segmentFlushed();
             }
         },
         
