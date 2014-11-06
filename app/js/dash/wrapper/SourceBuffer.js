@@ -181,6 +181,10 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _endTime = time;
     };
     
+    this.segmentFlushed = function () {
+        _triggerUpdateend(true);
+    };
+    
     Object.defineProperty(this, "isFlash", {
         get: function () {
             return true;
