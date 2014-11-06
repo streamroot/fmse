@@ -160,6 +160,17 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     this.appendWindowStart = 0;
     
+    this.seeking = function () {
+        //In case of seeking when a segment is being appended in flash, the append will be canceled. Thus we want to set updating to false, and trigger updateend so that
+        // SourceBufferWrapper can move to next job.
+        // CAUTION: we need to make sure that the BufferController is in mode STOP_BUFFERING, and that then appendQueue has been flush (we still want to trigger the 
+        //updateend events not to block the remove jobs queue, that we can't not queue without SBW testing if flash or HTML)
+        if (_updating) {
+            _pendingEndTime = -1;
+            _triggerUpdateend();   
+        } 
+    };
+    
     //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
     //TODO: method not in sourceBuffer spec. is there an other way?
     this.seeked = function (time) {
