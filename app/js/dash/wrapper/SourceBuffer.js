@@ -112,12 +112,12 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         return new CustomTimeRange(bufferedArray);
     },
         
-    _triggerUpdateend = function () {
+    _triggerUpdateend = function (error) {
         _updating=false;
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
-        if (_pendingEndTime > _endTime) {
+        if (!error && _pendingEndTime > _endTime) {
             _endTime = _pendingEndTime;
         }
         _trigger({type: 'updateend'});

@@ -26,8 +26,10 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         _onDecoded = function (decodedData) {
             _isDecoding = false;
             if(_discard == false) { 
+                console.debug("SegmentApender: DO append " + _type + "   " +  Math.floor(_startTimeMs/1000));
                 _doAppend(decodedData);
             } else {
+                console.debug("SegmentApender: discard data " + _type);
                 _discard = false;
             }
         },
@@ -40,6 +42,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             //var uint8Data = new Uint8Array(data);
             //var abData = data.buffer;
             
+            console.debug("SegmentApender: start decoding " + _type);
             _isDecoding = true;
             _b64MT.startDecoding(data);
         },
