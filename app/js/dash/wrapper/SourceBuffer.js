@@ -46,13 +46,24 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
 			listeners[i](event);
 		}
 	},
+        
+    _isTimestampConsistent = function (startTimeMs) {
+        return (Math.abs(startTimeMs/1000 - _endTime) < 1);
+    },
 
 	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime){
         _updating = true; //Do this at the very first
         _trigger({type:'updatestart'});
         
-        _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
-        _pendingEndTime = endTime;
+        if (_isTimestampConsistent(startTimeMs) || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
+            _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
+            _pendingEndTime = endTime;
+        } else {
+            //There's a discontinuity
+            var firstSegmentBool = (_startTime === _endTime);
+            console.debug('timestamp not consistent. First segment after seek: ' + firstSegmentBool);
+            _triggerUpdateend(true); //trigger updateend with error bool to true
+        }
         
         /*
 		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
