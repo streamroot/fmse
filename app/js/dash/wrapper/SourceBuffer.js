@@ -18,7 +18,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
-    _pendingEndTime = 0,
+    _pendingEndTime = -1,
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -117,7 +117,9 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
+        console.debug('updateend ' + _type);
         if (!error && _pendingEndTime > _endTime) {
+            console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
         }
         _trigger({type: 'updateend'});
@@ -127,6 +129,10 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         //Sets both startTime and endTime to seek time.
         _startTime = time;
         _endTime = time;
+        
+        //set _pendingEndTime to -1, because update end is triggered 20ms after end of append in NetStream, so if a seek happens in the meantime we would set _endTime to _pendingEndTime wrongly.
+        //This won't happen if we set _pendingEndTime to -1, since we need _pendingEndTime > _endTime.
+        _pendingEndTime = -1;
     },
         
     _initialize = function() {        
