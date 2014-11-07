@@ -13,7 +13,8 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         _type,
         _startTimeMs,
         _endTime,
-        _discard = false,
+        _discard = false, //prevent from appending decoded segment to swf obj during seeking (segment was already in B64 when we seeked)
+        _seeking = false, //prevent an appendBuffer during seeking (segment arrived after having seeked)
         _isDecoding = false,
         
         _doAppend = function (data) {
@@ -25,26 +26,31 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         //Here we check first if we are seeking. If so, we don't append the decoded data.
         _onDecoded = function (decodedData) {
             _isDecoding = false;
-            if(_discard == false) { 
+            if(!_discard) { 
                 console.debug("SegmentApender: DO append " + _type + "   " +  Math.floor(_startTimeMs/1000));
                 _doAppend(decodedData);
             } else {
                 console.debug("SegmentApender: discard data " + _type);
                 _discard = false;
+                _sourceBuffer.segmentFlushed();
             }
         },
         
         _appendBuffer = function (data, type, startTimeMs, endTime) {
-            _type = type;
-            _startTimeMs = startTimeMs;
-            _endTime = endTime;
-            
-            //var uint8Data = new Uint8Array(data);
-            //var abData = data.buffer;
-            
-            console.debug("SegmentApender: start decoding " + _type);
-            _isDecoding = true;
-            _b64MT.startDecoding(data);
+            if(!_seeking) {
+                _type = type;
+                _startTimeMs = startTimeMs;
+                _endTime = endTime;
+                
+                //var uint8Data = new Uint8Array(data);
+                //var abData = data.buffer;
+                
+                console.debug("SegmentApender: start decoding " + _type);
+                _isDecoding = true;
+                _b64MT.startDecoding(data);
+            } else {
+                _sourceBuffer.segmentFlushed();
+            }
         },
         
         _initialize = function () {
@@ -63,7 +69,12 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         if(_isDecoding) {
             _discard = true;
         }
-    }
+        _seeking = true;
+    };
+
+    self.seeked = function() {
+        _seeking = false;
+    };
     
     _initialize();
 };

@@ -18,7 +18,8 @@ var VideoExtension = function (mediaController, swfObj) {
         _eventHandlers, //Event handlers for wrappers
         
         _currentTime = 0,
-        _fixedCurrentTime = 0,  //In case of video paused, buffering or seek
+        _fixedCurrentTime = 0,  //In case of video paused or buffering
+        _seekTarget,    // Using another variable for seeking, because seekTarget can be set to undefined by "playing" event (TODO: triggered during seek, which is a separate issue) 
         _lastCurrentTimeTimestamp,
         _REFRESH_INTERVAL = 500,    //Max interval until we look up flash to get real value of currentTime
 
@@ -150,39 +151,37 @@ var VideoExtension = function (mediaController, swfObj) {
         },
 
         _seek = function (time) {
-            var keyFrameTime,
-                audioOffset;
-            if (_isInitialized()) {
-                
-                keyFrameTime = _getPrecedingKeyFrame(time);
+            if(!_seeking) {
+                var keyFrameTime,
+                    audioOffset;
+                if (_isInitialized()) {
+                    
+                    keyFrameTime = _getPrecedingKeyFrame(time);
 
-                //useles in hls because video and audio are muxed
-                //audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
-                
-                //HACK for mediaSourceTrigger. +args?
-                //trigger flush of sourceBufferWrapper. It's a hack because shouldn't be triggered by mediaSource
-                //_mediaSource.trigger({type: 'seeking'});
-                
-                console.info("seeking");
-                self.trigger({type: 'seeking'});
-                _seeking = true;
-                
-                //Rapid fix. Check if better way
-                for (var i=0; i<_sourceBuffers.length; i++) {
-                    _sourceBuffers[i].seeking();
+                    //useles in hls because video and audio are muxed
+                    //audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
+                    
+                    //HACK for mediaSourceTrigger. +args?
+                    //trigger flush of sourceBufferWrapper. It's a hack because shouldn't be triggered by mediaSource
+                    //_mediaSource.trigger({type: 'seeking'});
+                    
+                    console.info("seeking");
+                    self.trigger({type: 'seeking'});
+                    _seeking = true;
+                    
+                    //Rapid fix. Check if better way
+                    for (var i=0; i<_sourceBuffers.length; i++) {
+                        _sourceBuffers[i].seeking(keyFrameTime);
+                    }
+
+                    _seekTarget = _fixedCurrentTime = keyFrameTime;
+
+                    //The flash is flushed somewhere in this seek function
+                    _swfObj.seek(keyFrameTime/*, time*/);
+                } else {
+                    //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
+                    new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
                 }
-
-                _fixedCurrentTime = keyFrameTime;
-
-                //The flash is flushed somewhere in this seek function
-                _swfObj.seek(keyFrameTime/*, time*/);
-                //TODO: replace that (configure inBufferSeek of netStream?)
-                for (var i=0; i<_sourceBuffers.length; i++) {
-                    _sourceBuffers[i].seeked(keyFrameTime);
-                }
-            } else {
-                //TODO: implement exceptions similar to HTML5 one, and handle them correctly in the code
-                new Error('Flash video is not initialized'); //TODO: should be "throw new Error(...)" but that would stop the execution
             }
         },
         
@@ -196,6 +195,10 @@ var VideoExtension = function (mediaController, swfObj) {
             
             if (_ended) {
                 return 0;
+            }
+            
+            if (typeof _seekTarget !== "undefined") {
+                return _seekTarget;
             }
                 
             if (typeof _fixedCurrentTime !== "undefined") {
@@ -233,7 +236,7 @@ var VideoExtension = function (mediaController, swfObj) {
         },
         
         _bufferEmpty = function () {
-            _fixedCurrentTime = _getCurrentTimeFromFlash();
+            _fixedCurrentTime = _fixedCurrentTime || _getCurrentTimeFromFlash(); // Do not erase value if already set
             _swfObj.bufferEmpty();
             _watchBuffer();
         },
@@ -272,7 +275,11 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _onSeeked = function() {
             _seeking = false;
+            _seekTarget = undefined;
             self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
+            for (var i = 0; i < _sourceBuffers.length; i++) {
+                        _sourceBuffers[i].seeked();
+            }
         },
         
         _onLoadStart = function() {
@@ -297,7 +304,7 @@ var VideoExtension = function (mediaController, swfObj) {
             self.trigger({type: 'ended'});
             
             for (i=0; i<_sourceBuffers.length; i++) {
-                _sourceBuffers[i].seeked(0); //Sets start and end to 0 in source buffer
+                _sourceBuffers[i].seekTime(0); //Sets start and end to 0 in source buffer
             }
         },
 

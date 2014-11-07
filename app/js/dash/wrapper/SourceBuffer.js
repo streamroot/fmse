@@ -18,7 +18,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
-    _pendingEndTime = 0,
+    _pendingEndTime = -1,
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -46,13 +46,24 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
 			listeners[i](event);
 		}
 	},
+        
+    _isTimestampConsistent = function (startTimeMs) {
+        return (Math.abs(startTimeMs/1000 - _endTime) < 1);
+    },
 
 	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime){
         _updating = true; //Do this at the very first
         _trigger({type:'updatestart'});
         
-        _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
-        _pendingEndTime = endTime;
+        if (_isTimestampConsistent(startTimeMs) || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
+            _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
+            _pendingEndTime = endTime;
+        } else {
+            //There's a discontinuity
+            var firstSegmentBool = (_startTime === _endTime);
+            console.debug('timestamp not consistent. First segment after seek: ' + firstSegmentBool);
+            _triggerUpdateend(true); //trigger updateend with error bool to true
+        }
         
         /*
 		var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
@@ -117,10 +128,22 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
+        console.debug('updateend ' + _type);
         if (!error && _pendingEndTime > _endTime) {
+            console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
         }
         _trigger({type: 'updateend'});
+    },
+
+    _seekTime = function(time) {
+        //Sets both startTime and endTime to seek time.
+        _startTime = time;
+        _endTime = time;
+        
+        //set _pendingEndTime to -1, because update end is triggered 20ms after end of append in NetStream, so if a seek happens in the meantime we would set _endTime to _pendingEndTime wrongly.
+        //This won't happen if we set _pendingEndTime to -1, since we need _pendingEndTime > _endTime.
+        _pendingEndTime = -1;
     },
         
     _initialize = function() {        
@@ -162,25 +185,25 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     this.appendWindowStart = 0;
     
-    this.seeking = function () {
-        //In case of seeking when a segment is being appended in flash, the append will be canceled. Thus we want to set updating to false, and trigger updateend so that
-        // SourceBufferWrapper can move to next job.
-        // CAUTION: we need to make sure that the BufferController is in mode STOP_BUFFERING, and that then appendQueue has been flush (we still want to trigger the 
-        //updateend events not to block the remove jobs queue, that we can't not queue without SBW testing if flash or HTML)
-        if (_updating) {
-            _pendingEndTime = -1;
-            _triggerUpdateend();   
-        } 
+    //
+    //TODO: a lot of methods not in sourceBuffer spec. is there an other way?
+    //
+    
+    this.seeking = function (time) {
+        _seekTime(time);
         _segmentAppender.seeking();
     };
     
-    //TODO: OUTDATED remvove Hack. (see videoExtension seek). + remove endTime hack
-    //TODO: method not in sourceBuffer spec. is there an other way?
-    this.seeked = function (time) {
-        //Sets both startTime and endTime to seek time.
-        //CAUTION: this is also use on ended
-        _startTime =time;
-        _endTime = time;
+    this.seeked = function() {
+        _segmentAppender.seeked();
+    };
+
+    this.seekTime = function (time) {
+        _seekTime(time);
+    };
+    
+    this.segmentFlushed = function () {
+        _triggerUpdateend(true);
     };
     
     Object.defineProperty(this, "isFlash", {
