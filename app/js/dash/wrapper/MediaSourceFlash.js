@@ -55,6 +55,7 @@ var MediaSourceFlash = function (videoExtension) {
 			sourceBuffer = new SourceBuffer(self, type, _swfobj);
 			_sourceBuffers.push(sourceBuffer);
 			_videoExtension.registerSourceBuffer(sourceBuffer);
+            _swfobj.addSourceBuffer(type);
 			return sourceBuffer;
 		},
             
