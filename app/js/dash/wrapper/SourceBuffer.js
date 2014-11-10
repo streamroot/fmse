@@ -136,10 +136,14 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _trigger({type: 'updateend'});
     },
 
-    _seekTime = function(time) {
+    _seekTime = function(time, audioEndTime) {
         //Sets both startTime and endTime to seek time.
         _startTime = time;
         _endTime = time;
+        
+        if (_type.match(/audio/) && typeof audioEndTime !== "undefined") {
+            _endTime = audioEndTime;
+        }
         
         //set _pendingEndTime to -1, because update end is triggered 20ms after end of append in NetStream, so if a seek happens in the meantime we would set _endTime to _pendingEndTime wrongly.
         //This won't happen if we set _pendingEndTime to -1, since we need _pendingEndTime > _endTime.
@@ -189,8 +193,8 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     //TODO: a lot of methods not in sourceBuffer spec. is there an other way?
     //
     
-    this.seeking = function (time) {
-        _seekTime(time);
+    this.seeking = function (time, audioEndTime) {
+        _seekTime(time, audioEndTime);
         _segmentAppender.seeking();
     };
     

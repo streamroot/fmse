@@ -149,7 +149,7 @@ var VideoExtension = function (mediaController, swfObj) {
                     keyFrameTime = _getPrecedingKeyFrame(time);
 
                     //useles in hls because video and audio are muxed
-                    //audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
+                    audioOffset = _getSeekAudioOffset(keyFrameTime); //Needs to be keyFrameTime (actual seek time with flash) and not time
                     
                     //HACK for mediaSourceTrigger. +args?
                     //trigger flush of sourceBufferWrapper. It's a hack because shouldn't be triggered by mediaSource
@@ -161,7 +161,7 @@ var VideoExtension = function (mediaController, swfObj) {
                     
                     //Rapid fix. Check if better way
                     for (var i=0; i<_sourceBuffers.length; i++) {
-                        _sourceBuffers[i].seeking(keyFrameTime);
+                        _sourceBuffers[i].seeking(keyFrameTime, audioOffset);
                     }
 
                     _seekTarget = _fixedCurrentTime = keyFrameTime;
@@ -221,8 +221,12 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _getSeekAudioOffset = function (time) {
             var audioTrack =  mediaController.currentTracks["audio"],
-                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep).segment;
-            return segment.time;
+                segment;
+            if (audioTrack) {
+                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep);
+                segment = mediaController.manifestManager.getNextSegment(segment);
+                return segment.segment.time;
+            }
         },
         
         _bufferEmpty = function () {
