@@ -27,6 +27,7 @@ var VideoExtension = function (mediaController, swfObj) {
         _listeners = [],
         
         _ended = false,
+        _seekedTimeout,
 
         _isInitialized = function () {
             return (typeof _swfObj !== 'undefined');
@@ -142,6 +143,7 @@ var VideoExtension = function (mediaController, swfObj) {
             if(!_seeking) {
                 var keyFrameTime,
                     audioOffset;
+                _seekedTimeout = setTimeout(_onSeeked, 1000);
                 if (_isInitialized()) {
                     
                     keyFrameTime = _getPrecedingKeyFrame(time);
@@ -264,6 +266,7 @@ var VideoExtension = function (mediaController, swfObj) {
         _onSeeked = function() {
             _seeking = false;
             _seekTarget = undefined;
+            clearTimeout(_seekedTimeout);
             self.trigger({type: 'seeked'}); //trigger with value _fixedCurrentTime
             for (var i = 0; i < _sourceBuffers.length; i++) {
                         _sourceBuffers[i].seeked();
