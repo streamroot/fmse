@@ -1,6 +1,7 @@
 "use strict";
 
 var SourceBuffer = require('./SourceBuffer');
+var conf = require('../../../conf.js')
 
 var MediaSourceFlash = function (videoExtension) {
 	var	self = this,
@@ -72,6 +73,12 @@ var MediaSourceFlash = function (videoExtension) {
             
             //TODO: for VJS, flash is already ready, shouldn't need a timeout
             setTimeout(function() {_readyState = _READY_STATE.OPEN;}, 100);
+
+            window.sr_flash_transcodeError = function(message) {
+            	if(conf.REPORT_ERROR) {
+            		window.onPlayerError(message);
+            	}
+            }
         };
     
     this.addSourceBuffer = function (type) {
