@@ -393,6 +393,13 @@ var VideoExtension = function (mediaController, swfObj) {
     this.getSwf = function () {
         return _swfObj;
     };
+	
+	Object.defineProperty(this, "isFlash", {
+        get: function () {
+            return true;
+        },
+        set: undefined
+    });
 
     //TODO:register mediaSource and video events
 
