@@ -75,9 +75,11 @@ var MediaSourceFlash = function (videoExtension) {
             setTimeout(function() {_readyState = _READY_STATE.OPEN;}, 100);
 
             window.sr_flash_transcodeError = function(message) {
-            	if(conf.REPORT_ERROR) {
-            		window.onPlayerError(message);
-            	}
+                if(conf.REPORT_ERROR) {
+                    if (window.onPlayerError) {
+                        window.onPlayerError(message);
+                    }
+                }
             }
         };
     
