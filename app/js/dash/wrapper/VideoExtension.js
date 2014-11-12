@@ -221,11 +221,14 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _getSeekAudioOffset = function (time) {
             var audioTrack =  mediaController.currentTracks["audio"],
-                segment;
+                segment,
+				nextSegment;
             if (audioTrack) {
                 segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, audioTrack.id_aset, audioTrack.id_rep);
-                segment = mediaController.manifestManager.getNextSegment(segment);
-                return segment.segment.time;
+				if (segment.segment.time < time) {
+					nextSegment = mediaController.manifestManager.getNextSegment(segment);
+                	return nextSegment.segment.time;
+				}
             }
         },
         
