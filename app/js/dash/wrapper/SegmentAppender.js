@@ -54,7 +54,6 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         },
         
         _initialize = function () {
-            //_b64MT.communication = _onWorkerMessage;
         };
     
     self.appendBuffer = function (data, type, startTimeMs, endTime) {
@@ -64,17 +63,16 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
     self.onDecoded = function(e) {
         _onDecoded(e);
     };
-
     self.seeking = function() {
         if(_isDecoding) {
             _discard = true;
         }
         _seeking = true;
     };
-
     self.seeked = function() {
         _seeking = false;
     };
+    
     
     _initialize();
 };

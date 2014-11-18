@@ -1,3 +1,5 @@
+//Currently not in use, replaced by B64MainThread
+
 var _bytes,
     _b64Data,
     _offset,
