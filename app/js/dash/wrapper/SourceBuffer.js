@@ -61,7 +61,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         } else {
             //There's a discontinuity
             var firstSegmentBool = (_startTime === _endTime);
-            console.debug('timestamp not consistent. First segment after seek: ' + firstSegmentBool);
+            console.debug('timestamp not consistent. First segment after seek: ' + firstSegmentBool +".   " +  (startTimeMs/1000));
             _triggerUpdateend(true); //trigger updateend with error bool to true
         }
         
