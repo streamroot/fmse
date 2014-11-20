@@ -215,8 +215,17 @@ var VideoExtension = function (mediaController, swfObj) {
         
         _getPrecedingKeyFrame = function (time) {
             var videoTrack =  mediaController.currentTracks["video"],
-                segment = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep).segment;
-            return segment.time;
+                piece = mediaController.manifestManager.getPartForTime(mediaController.currentPeriod, time, videoTrack.id_aset, videoTrack.id_rep);
+			if (piece) {
+				return piece.segment.time;
+			} else {
+				//if we're in that case, that's most probably because we're trying to seek on an expired segment in live flash (skipped a few segment because of bad network conditions).
+				//Try to seek at the first segment in the playlist.
+				console.warn("Expired segment: trying to seek at first segment in playlist");
+				piece = mediaController.manifestManager.getFirstSegment(mediaController.currentPeriod, videoTrack.id_aset, videoTrack.id_rep);
+				return piece.segment.time;
+			}
+            
         },
         
         _getSeekAudioOffset = function (time) {
