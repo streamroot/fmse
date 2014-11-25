@@ -598,6 +598,13 @@ public class StreamrootMSE {
             _streamrootInterface.debug(message.message);
         } else if (message.command == "error") {
             _streamrootInterface.error(message.message);
+            if (message.type) {
+                //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger 
+                //a segment flushed message to notify the JS that append didn't work well, in order not to 
+                //block the append pipeline
+                _isWorkerBusy = false;
+                sendSegmentFlushedMessage(message.type);
+            }
         }
     }
 

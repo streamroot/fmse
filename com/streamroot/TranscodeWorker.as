@@ -56,7 +56,8 @@ public class TranscodeWorker extends Sprite {
             try {
                _transcoder.transcodeInit(data, type);
             } catch (e:Error) {
-                error(e.toString());
+                error(e.toString(), type);
+                return;
             }
             //Check better way to check type here as well
             /*
@@ -76,7 +77,8 @@ public class TranscodeWorker extends Sprite {
             try {
                 var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
             } catch (e:Error) {
-                error(e.toString());
+                error(e.toString(), type);
+                return;
             }
             
 
@@ -109,8 +111,8 @@ public class TranscodeWorker extends Sprite {
 		_debugChannel.send(object);
 	}
 
-	public function error(message:String):void {
-		var object:Object = {command:'error', message: message};
+	public function error(message:String, type:String):void {
+		var object:Object = {command:'error', message: message, type: type};
 		_debugChannel.send(object);
 	}
 
