@@ -143,7 +143,7 @@ var VideoExtension = function (mediaController, swfObj) {
             if(!_seeking) {
                 var keyFrameTime,
                     audioOffset;
-                _seekedTimeout = setTimeout(_onSeeked, 1000);
+                _seekedTimeout = setTimeout(_onSeeked, 5000);
                 if (_isInitialized()) {
                     
                     keyFrameTime = _getPrecedingKeyFrame(time);
