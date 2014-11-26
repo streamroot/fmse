@@ -5,7 +5,11 @@ if (os.path.exists("/opt/flex")):
 elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
     flex=("C:/flex_sdk_4.6")
 
-os.popen(os.path.normpath(flex +
+def popenPrint(result):
+    for line in result:
+        print(line)
+
+libResult = os.popen(os.path.normpath(flex +
                           "/bin/mxmlc" +
                           " -compiler.source-path=." +
                           " -target-player=11.4.0" +
@@ -13,6 +17,7 @@ os.popen(os.path.normpath(flex +
                           " -static-link-runtime-shared-libraries=true" +
                           " com/streamroot/TranscodeWorker.as " +
                           " -output com/streamroot/TranscodeWorker.swf"))
+popenPrint(libResult)
 if (os.path.exists("mse.swc")):
     shutil.rmtree("mse.swc")
 os.popen(os.path.normpath(flex + "/bin/compc -compiler.source-path=. -target-player=11.4.0 -swf-version=17 -directory=true -include-sources com/streamroot/StreamrootMSE.as -output mse.swc"))
@@ -23,7 +28,7 @@ if (os.path.exists(os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/
     shutil.rmtree(os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))
 shutil.copytree(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))
 os.chdir(os.path.normpath("../streamroot-jwplayer/jwplayer-master"))
-os.popen(os.path.normpath(flex +
+jwpResult = os.popen(os.path.normpath(flex +
                           "/bin/mxmlc" +
                           " src/flash/com/longtailvideo/jwplayer/player/Player.as" +
                           " -compiler.source-path=src/flash" +
@@ -42,9 +47,10 @@ os.popen(os.path.normpath(flex +
                           " -compiler.omit-trace-statements=true" +
                           " -warnings=false" +
                           " -define+=CONFIG::debugging,false"))
+popenPrint(jwpResult)
 shutil.copy2(os.path.normpath("bin-release/jwplayer.flash.swf"),os.path.normpath("../../sr-client-last/player_wrapper/jwplayer-wrapper/6.8/jwplayer.srflash.swf"))
 os.chdir(os.path.normpath("../../streamroot-videojs"))
-os.popen(os.path.normpath(flex +
+vjsResult = os.popen(os.path.normpath(flex +
                           "/bin/mxmlc" +
                           " src/com/videojs/VideoJS.as" +
                           " -compiler.source-path=src" +
@@ -61,5 +67,6 @@ os.popen(os.path.normpath(flex +
                           " -compiler.omit-trace-statements=true" +
                           " -warnings=false" +
                           " -define+=CONFIG::version,\"'4.2.2'\""))
+popenPrint(vjsResult)
 shutil.copy2(os.path.normpath("dist/video-js-sr.swf"),os.path.normpath("../sr-client-last/player_wrapper/video-js-wrapper/video-js-sr.swf"))
 print "Successfully built the flash engine swfs! Nice Job!"
