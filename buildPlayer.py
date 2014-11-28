@@ -73,7 +73,7 @@ jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc"),
                           "-define+=JWPLAYER::version,'6.11.20141118195350280'",
                           "-define+=CONFIG::debugging,"+debug+""], stdout=subprocess.PIPE)
 popenPrint(jwpResult)
-shutil.copy2(os.path.normpath("bin-release/jwplayer.flash.swf"),os.path.normpath("../../sr-client-last/player_wrapper/jwplayer-wrapper/6.8/jwplayer.srflash.swf"))
+shutil.copy2(os.path.normpath("bin-release/jwplayer.flash.swf"),os.path.normpath("../../sr-client-last/player_wrapper/jwplayer-wrapper/dist/6.8/jwplayer.srflash.swf"))
 
 #Moving to the videojs folder and compiling videojs
 os.chdir(os.path.normpath("../../streamroot-videojs"))
