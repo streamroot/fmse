@@ -75,38 +75,27 @@ public class TranscodeWorker extends Sprite {
         } else {
         	debug("transcoding media");
             try {
-                var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
-                
-                //transcoder.transcodeAsync
+                //var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
+                _transcoder.asyncTranscode(data, type, timestamp, offset, asyncTranscodeCB, isInit);
             } catch (e:Error) {
                 error(e.toString(), type);
                 return;
             }
-            
 
-            /*
-            _streamrootInterface.appendBuffer(segmentBytes)
-
-
-            //Check better way to check type here as well
-            if (type.indexOf("audio") >= 0) {
-                _hasAudio = true;
-                ExternalInterface.call("sr_flash_updateend_audio");
-            } else if (type.indexOf("video") >= 0) {
-                _hasVideo = true;
-                ExternalInterface.call("sr_flash_updateend_video");
-            } else {
-                _streamrootInterface.error("no type matching");
-            }
-            */
-
-            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes};
+            //answer = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
 
+        /*debug("sending back message");
+        _workerToMain.send(answer);
+        debug("message sent");*/
+	}
+
+    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray):void {
+        var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         debug("sending back message");
         _workerToMain.send(answer);
         debug("message sent");
-	}
+    }
 
 	public function debug(message:String):void {
 		var object:Object = {command:'debug', message: message};

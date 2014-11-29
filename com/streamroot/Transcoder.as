@@ -46,7 +46,7 @@ public class Transcoder {
         //TODO: switch for HLS + send error if no matching type
     }
 
-	public function transcode(data:String, type:String, timestamp:Number, offset:Number):ByteArray {
+	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, CB:function, isInit:Boolean):ByteArray {
 		var bytes_event:ByteArray = Base64.decode(data);
         _transcodeWorker.debug('PTS transcoder.transcode');
 
@@ -59,28 +59,30 @@ public class Transcoder {
 					bytes_event.position = 0;
 					bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
                     //TODO MANGUI:
-                    //bytes_append.writeBytes(_transcoderWrapper.)
+                    //_hlsTranscodeHandler.toTranscoding(bytes_event,offset,_transcodeWorker.asyncTranscodeCB)
                     
                     //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
-					//return bytes_append
 		  }else if(isAudio(type)){
             var bytes_append_audio:ByteArray = new ByteArray();
             var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             //ici pour le DASH on appelle le CB de transcodeWorker
-            return bytes_append_audio;
+            _transcodeWorker.asyncTranscodeCB(type, isInit, bytes_append_audio);
         } else /*if (isVideo(type))*/ {
             var bytes_append:ByteArray = new ByteArray();
             var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, timestamp - offset + 100, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
-            return bytes_append;
+            _transcodeWorker.asyncTranscodeCB(type, isInit, bytes_append);
         }
         //TODO: switch for HLS + send error if no matching type
 	}
 
-    //transcodeDone callback une fois qu'on a récupéré les bytes transcodés
+    //transcodeDone callback une fois qu'on a récupéré les bytes transcodés : en fait non on appelle directement depuis le HlsTranscodeHandler
+    public function hlsTranscodingDone(segmentBytes:ByteArray):void {
+
+    }
 
     public function seeking():void {
         _httpstreamingMP2TSFileHandler = undefined;

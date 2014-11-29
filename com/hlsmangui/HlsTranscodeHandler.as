@@ -11,6 +11,7 @@ package com.hls
     import com.streamroot.TranscodeWorker;
     import com.hlsmangui.TSDemuxer;
 
+
     //[Event(name="notifySegmentDuration", type="org.osmf.events.HTTPStreamingFileHandlerEvent")]
     //[Event(name="notifyTimeBias", type="org.osmf.events.HTTPStreamingFileHandlerEvent")]
 
@@ -24,20 +25,21 @@ package com.hls
         public function HlsTranscodehandler(transcodeWorker:TranscodeWorker)
         {   
             _transcodeWorker = transcodeWorker;
-            _demux = new TSDemuxer();
+            //TODO: see what we put in these arguments
+            _demux = new TSDemuxer(/*displayObject, audioselect, */_fragParsingProgressHandler, _fragParsingCompleteHandler/*, CBvideometadata*/);
         }
 
         /*
         **This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
         /**to avoid blocking is already managed by parseTimer in TSDemuxer
         */
-        public function toTranscoding(input:IDataInput):ByteArray
+        public function toTranscoding(input:IDataInput, doneCB:function):ByteArray
         {
             var output:ByteArray;
 
             output = new ByteArray();
             _demux.append(input);
-            //TODO: ici récupérer le segment FLV (ou direct dans le bon callback)
+            //TODO: ici récupérer le segment FLV (ou plutôt directement dans le bon callback)
 
         }
 
