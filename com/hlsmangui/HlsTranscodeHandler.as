@@ -45,6 +45,10 @@ package com.hls
 
         }
 
+        
+
+
+        //TODO: are those 2 functions still useful? Do we need tu put DemuxHelper back?
         /** triggered by demux, it should return the audio track to be parsed */
         private function _fragParsingAudioSelectionHandler(audioTrackList : Vector.<AudioTrack>) : AudioTrack {
             return _audioTrackController.audioTrackSelectionHandler(audioTrackList);
@@ -59,6 +63,9 @@ package com.hls
                 fragData.video_height = height;
             }
         }
+
+        
+
 
         /** triggered when demux has retrieved some tags from fragment **/
         private function _fragParsingProgressHandler(tags : Vector.<FLVTag>) : void {
@@ -106,27 +113,27 @@ package com.hls
              *      we first need to download one fragment to check the dl bw, in order to assess start level ...)
              *      in case startFromLevel is to -1 and there is only one level, then we can do progressive buffering
              */
-            if (( _fragment_first_loaded || (_manifest_just_loaded && (HLSSettings.startFromLevel !== -1 || HLSSettings.startFromBitrate !== -1 || _levels.length == 1) ) )) {
-                if (_demux.audio_expected() && !fragData.audio_found) {
-                    /* if no audio tags found, it means that only video tags have been retrieved here
-                     * we cannot do progressive buffering in that case.
-                     * we need to have some new audio tags to inject as well
-                     */
-                    return;
-                }
-
-                if (fragData.tag_pts_min != Number.POSITIVE_INFINITY && fragData.tag_pts_max != Number.NEGATIVE_INFINITY) {
-                    var min_offset : Number = _frag_current.start_time + fragData.tag_pts_start_offset / 1000;
-                    var max_offset : Number = _frag_current.start_time + fragData.tag_pts_end_offset / 1000;
-                    // in case of cold start/seek use case,
-                    if (!_fragment_first_loaded ) {
-                        /* ensure buffer max offset is greater than requested seek position. 
-                         * this will avoid issues with accurate seeking feature */
-                        if (_seek_pos > max_offset) {
-                            // cannot do progressive buffering until we have enough data to reach requested seek offset
-                            return;
-                        }
-                    }
+            //if (( _fragment_first_loaded || (_manifest_just_loaded && (HLSSettings.startFromLevel !== -1 || HLSSettings.startFromBitrate !== -1 || _levels.length == 1) ) )) {
+            //    if (_demux.audio_expected() && !fragData.audio_found) {
+            //        /* if no audio tags found, it means that only video tags have been retrieved here
+            //         * we cannot do progressive buffering in that case.
+            //         * we need to have some new audio tags to inject as well
+            //         */
+            //        return;
+            //    }
+            //    
+            //    if (fragData.tag_pts_min != Number.POSITIVE_INFINITY && fragData.tag_pts_max != Number.NEGATIVE_INFINITY) {
+            //        var min_offset : Number = _frag_current.start_time + fragData.tag_pts_start_offset / 1000;
+            //        var max_offset : Number = _frag_current.start_time + fragData.tag_pts_end_offset / 1000;
+            //        // in case of cold start/seek use case,
+            //        if (!_fragment_first_loaded ) {
+            //            /* ensure buffer max offset is greater than requested seek position. 
+            //             * this will avoid issues with accurate seeking feature */
+            //            if (_seek_pos > max_offset) {
+            //                // cannot do progressive buffering until we have enough data to reach requested seek offset
+            //                return;
+            //            }
+            //        }
 
                     //TODO: A PRIORI CA CE SERA PLUTOT DANS LA PARTIE JS AVEC LE MAP GENERATOR
                     /*if (_pts_analyzing == true) {
@@ -175,14 +182,14 @@ package com.hls
                         fragData.tags_pts_min_video = fragData.tags_pts_max_video;
                         fragData.tags_video_found = false;
                     }*/
-                }
-            }
+                //}
+            //}
         }
 
         /** triggered when demux has completed fragment parsing **/
         private function _fragParsingCompleteHandler() : void {
-            if (_loading_state == LOADING_IDLE)
-                return;
+            /*if (_loading_state == LOADING_IDLE)
+                return;*/
             //var hlsError : HLSError;
             var fragData : FragmentData = _frag_current.data;
             if (!fragData.audio_found && !fragData.video_found) {
@@ -231,14 +238,14 @@ package com.hls
             */
 
             try {
-                _switchlevel = false;
+                /*_switchlevel = false;
                 _transcodeWorker.debug("Loaded        " + _frag_current.seqnum + " of [" + (_levels[_level].start_seqnum) + "," + (_levels[_level].end_seqnum) + "],level " + _level + " m/M PTS:" + fragData.pts_min + "/" + fragData.pts_max);
                 var start_offset : Number = _levels[_level].updateFragment(_frag_current.seqnum, true, fragData.pts_min, fragData.pts_max);
                 // set pts_start here, it might not be updated directly in updateFragment() if this loaded fragment has been removed from a live playlist
                 fragData.pts_start = fragData.pts_min;
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.PLAYLIST_DURATION_UPDATED, _levels[_level].duration));
                 _transcodeWorker.debug("HLSEvent.PLAYLIST_DURATION_UPDATED");
-                _loading_state = LOADING_IDLE;
+                _loading_state = LOADING_IDLE;*/
 
                 //var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, fragMetrics.bandwidth, fragData.pts_max - fragData.pts_min, fragMetrics.processing_duration);
 
@@ -268,9 +275,9 @@ package com.hls
                 }
                 _pts_analyzing = false;
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.FRAGMENT_LOADED, tagsMetrics));
-                _transcodeWorker.debug("HLSEvent.FRAGMENT_LOADED");
-                _fragment_first_loaded = true;
-                _frag_previous = _frag_current;
+                //_transcodeWorker.debug("HLSEvent.FRAGMENT_LOADED");
+                //_fragment_first_loaded = true;
+                //_frag_previous = _frag_current;
             } catch (error : Error) {
                 //hlsError = new HLSError(HLSError.OTHER_ERROR, _frag_current.url, error.message);
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.ERROR, hlsError));
