@@ -4,7 +4,6 @@
 
 package com.hls
 {
-
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
 
@@ -12,18 +11,16 @@ package com.hls
     import com.hlsmangui.TSDemuxer;
     import com.hlsmangui.utils.PTS;
     import com.hlsmangui.FragmentData;
-
-
-    //[Event(name="notifySegmentDuration", type="org.osmf.events.HTTPStreamingFileHandlerEvent")]
-    //[Event(name="notifyTimeBias", type="org.osmf.events.HTTPStreamingFileHandlerEvent")]
-
+    import com.hlsmangui.FLVTag;
 
     public class HlsTranscodehandler
     {
         private var _transcodeWorker:TranscodeWorker;
         private var _demux:TSDemuxer;
 
-        private var _frag_current:FragmentData;
+        //TODO: do we want to recreate the whole fragment as in mangui's code to hand it to Netstream or do we just want to add
+        //      a couple things like PTS and just send it back to the js? In the first case, we need to import Fragment class.
+        private var _frag_current:Fragment;
 
         
         public function HlsTranscodehandler(transcodeWorker:TranscodeWorker)
@@ -34,14 +31,11 @@ package com.hls
         }
 
         /*
-        **This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
-        /**to avoid blocking is already managed by parseTimer in TSDemuxer
+        ** This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
+        ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
         public function toTranscoding(input:IDataInput, doneCB:function):ByteArray
         {
-            var output:ByteArray;
-
-            output = new ByteArray();
             _demux.append(input);
             //TODO: ici récupérer le segment FLV (ou plutôt directement dans le bon callback)
 
@@ -131,15 +125,14 @@ package com.hls
                     }
 
                     //TODO: A PRIORI CA CE SERA PLUTOT DANS LA PARTIE JS AVEC LE MAP GENERATOR
-                    if (_pts_analyzing == true) {
+                    /*if (_pts_analyzing == true) {
                         _pts_analyzing = false;
                         _levels[_level].updateFragment(_frag_current.seqnum, true, fragData.pts_min, fragData.pts_min + _frag_current.duration * 1000);
-                        /* in case we are probing PTS, retrieve PTS info and synchronize playlist PTS / sequence number */
+                        // in case we are probing PTS, retrieve PTS info and synchronize playlist PTS / sequence number
                         _transcodeWorker.debug("analyzed  PTS " + _frag_current.seqnum + " of [" + (_levels[_level].start_seqnum) + "," + (_levels[_level].end_seqnum) + "],level " + _level + " m PTS:" + fragData.pts_min);
-                        /* check if fragment loaded for PTS analysis is the next one
+                        // check if fragment loaded for PTS analysis is the next one
                         if this is the expected one, then continue
                         if not, then cancel current fragment loading, next call to loadnextfragment() will load the right seqnum
-                         */
                         var next_seqnum : Number = _levels[_level].getSeqNumNearestPTS(_frag_previous.data.pts_start, _frag_current.continuity) + 1;
                         _transcodeWorker.debug("analyzed PTS : getSeqNumNearestPTS(level,pts,cc:" + _level + "," + _frag_previous.data.pts_start + "," + _frag_current.continuity + ")=" + next_seqnum);
                         // CONFIG::LOGGING {
@@ -157,13 +150,15 @@ package com.hls
                             _loading_state = LOADING_IDLE;
                             return;
                         }
-                    }
-                    //TODO: A VOIR CE QU'ON FAIT ET SI ON CHANGE NOTRE NETSTREAM POUR FAIRE UN TRUC PLUS PROPORE A LA MANGUI
+                    }*/
+
+                    //TODO: A VOIR CE QU'ON FAIT ET SI ON CHANGE NOTRE NETSTREAM POUR FAIRE UN TRUC PLUS PROPRE A LA MANGUI.
+
                     // provide tags to HLSNetStream
-                    _tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, min_offset, _frag_current.program_date + fragData.tag_pts_start_offset);
-                    var processing_duration : Number = (new Date().valueOf() - _frag_current.metrics.loading_request_time);
-                    var bandwidth : Number = Math.round(fragData.bytesLoaded * 8000 / processing_duration);
-                    var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, bandwidth, fragData.tag_pts_end_offset, processing_duration);
+                    /*_tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, min_offset, _frag_current.program_date + fragData.tag_pts_start_offset);
+                    //var processing_duration : Number = (new Date().valueOf() - _frag_current.metrics.loading_request_time);
+                    //var bandwidth : Number = Math.round(fragData.bytesLoaded * 8000 / processing_duration);
+                    //var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, bandwidth, fragData.tag_pts_end_offset, processing_duration);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     _transcodeWorker.debug("HLSEvent.TAGS_LOADED");
                     _hasDiscontinuity = false;
@@ -175,7 +170,7 @@ package com.hls
                     if (fragData.tags_video_found) {
                         fragData.tags_pts_min_video = fragData.tags_pts_max_video;
                         fragData.tags_video_found = false;
-                    }
+                    }*/
                 }
             }
         }
@@ -208,10 +203,10 @@ package com.hls
             }
 
             // Calculate bandwidth
-            var fragMetrics : FragmentMetrics = _frag_current.metrics;
-            fragMetrics.parsing_end_time = new Date().valueOf();
-                _transcodeWorker.debug("Total Process duration/length/bw:" + fragMetrics.processing_duration + "/" + fragMetrics.size + "/" + (fragMetrics.bandwidth / 1024).toFixed(0) + " kb/s");
-
+            //var fragMetrics : FragmentMetrics = _frag_current.metrics;
+            //fragMetrics.parsing_end_time = new Date().valueOf();
+            //_transcodeWorker.debug("Total Process duration/length/bw:" + fragMetrics.processing_duration + "/" + fragMetrics.size + "/" + (fragMetrics.bandwidth / 1024).toFixed(0) + " kb/s");
+            /*
             if (_manifest_just_loaded) {
                 _manifest_just_loaded = false;
                 if (HLSSettings.startFromLevel === -1 && HLSSettings.startFromBitrate === -1 && _levels.length > 1) {
@@ -229,6 +224,7 @@ package com.hls
                     }
                 }
             }
+            */
 
             try {
                 _switchlevel = false;
@@ -240,12 +236,18 @@ package com.hls
                 _transcodeWorker.debug("HLSEvent.PLAYLIST_DURATION_UPDATED");
                 _loading_state = LOADING_IDLE;
 
-                var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, fragMetrics.bandwidth, fragData.pts_max - fragData.pts_min, fragMetrics.processing_duration);
+                //var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, fragMetrics.bandwidth, fragData.pts_max - fragData.pts_min, fragMetrics.processing_duration);
 
                 if (fragData.tags.length) {
                     //TODO: ici on passe tout ce qu'on a récolté pendant le transcodage async à _tags_callback = loaderCallback :
                     //en fait on passe tout ça à NetStream pour qu'il pousse les tags dans le FLV tag buffer
-                    _tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, start_offset + fragData.tag_pts_start_offset / 1000, _frag_current.program_date + fragData.tag_pts_start_offset);
+                    //_tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, start_offset + fragData.tag_pts_start_offset / 1000, _frag_current.program_date + fragData.tag_pts_start_offset);
+                    // Directly write tags in a byteArray to be sure to return a byteArray to TranscodeWorker
+                    var segmentBytes:ByteArray = new ByteArray();
+                    for each(tag in tags) {
+                        tag.write(segmentBytes);
+                    }
+                    _transcodeWorker.asyncTranscodeCB(TYPE, false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     _transcodeWorker.debug("HLSEvent.TAGS_LOADED");
                     //TODO: et ensuite on remet les compteurs à zéro

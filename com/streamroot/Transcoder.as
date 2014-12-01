@@ -57,9 +57,9 @@ public class Transcoder {
             }
 					var bytes_append:ByteArray = new ByteArray();
 					bytes_event.position = 0;
-					bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
+					//bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
                     //TODO MANGUI:
-                    //_hlsTranscodeHandler.toTranscoding(bytes_event,offset,_transcodeWorker.asyncTranscodeCB)
+                    _hlsTranscodeHandler.toTranscoding(bytes_event,offset,_transcodeWorker.asyncTranscodeCB)
                     
                     //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
 		  }else if(isAudio(type)){
@@ -79,11 +79,6 @@ public class Transcoder {
         //TODO: switch for HLS + send error if no matching type
 	}
 
-    //transcodeDone callback une fois qu'on a récupéré les bytes transcodés : en fait non on appelle directement depuis le HlsTranscodeHandler
-    public function hlsTranscodingDone(segmentBytes:ByteArray):void {
-
-    }
-
     public function seeking():void {
         _httpstreamingMP2TSFileHandler = undefined;
     }
@@ -96,9 +91,9 @@ public class Transcoder {
         return type.indexOf("video") >= 0;
     }
 
-		private function isHls(type:String):Boolean {
-				return type.indexOf("apple") >= 0;
-		}
+	private function isHls(type:String):Boolean {
+			return type.indexOf("apple") >= 0;
+	}
 
 
 

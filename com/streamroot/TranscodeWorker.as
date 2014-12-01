@@ -90,7 +90,7 @@ public class TranscodeWorker extends Sprite {
         debug("message sent");*/
 	}
 
-    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray):void {
+    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, seqnum:Number, min_pts:Number, max_pts:Number):void {
         var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         debug("sending back message");
         _workerToMain.send(answer);
