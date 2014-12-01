@@ -96,7 +96,7 @@
 
         /** Transmux the M2TS file into an FLV file. **/
         //DisplayObject c'est la référence au mediaController je crois --> on peut s'en passer
-        //
+
         public function TSDemuxer(displayObject : DisplayObject, callback_audioselect : Function, callback_progress : Function, callback_complete : Function, callback_videometadata : Function) {
             _curAudioPES = null;
             _curVideoPES = null;
@@ -123,10 +123,7 @@
                 _data_complete = false;
                 _read_position = 0;
                 _avcc = null;
-                //_displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);
-                _parseTimer;
-                //TODO: add an argument to parseTimer? Interval 20ms?
-            }
+                _displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);            }
             _data.position = _data.length;
             _data.writeBytes(data, data.position);
         }
@@ -185,7 +182,7 @@
                             Log.error("TS: no PMT found, report parsing complete");
                         }
                     }
-                    //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
+                    _displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
                     _flush();
                     _callback_complete();
                 }
