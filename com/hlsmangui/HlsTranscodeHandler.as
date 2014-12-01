@@ -10,8 +10,9 @@ package com.hls
     import com.streamroot.TranscodeWorker;
     import com.hlsmangui.TSDemuxer;
     import com.hlsmangui.utils.PTS;
-    import com.hlsmangui.FragmentData;
     import com.hlsmangui.FLVTag;
+    import com.hlsmangui.Fragment;
+    import com.hlsmangui.FragmentData;
 
     public class HlsTranscodehandler
     {
@@ -36,8 +37,11 @@ package com.hls
         */
         public function toTranscoding(input:IDataInput, doneCB:function):ByteArray
         {
-            _demux.append(input);
-            //TODO: ici récupérer le segment FLV (ou plutôt directement dans le bon callback)
+            /** Create current segment object to be able to send infos back to javascript after transcoding **/
+            _frag_current = new Fragment(input);
+
+            /** Send the data to TSDemuxer **/
+            _demux.append(_frag_current.data.bytes);
 
         }
 
@@ -247,7 +251,7 @@ package com.hls
                     for each(tag in tags) {
                         tag.write(segmentBytes);
                     }
-                    _transcodeWorker.asyncTranscodeCB(TYPE, false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
+                    _transcodeWorker.asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     _transcodeWorker.debug("HLSEvent.TAGS_LOADED");
                     //TODO: et ensuite on remet les compteurs à zéro
