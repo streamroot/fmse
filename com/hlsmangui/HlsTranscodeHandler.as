@@ -28,7 +28,7 @@ package com.hls
         {   
             _transcodeWorker = transcodeWorker;
             //TODO: see what we put in these arguments
-            _demux = new TSDemuxer(/*displayObject, audioselect, */_fragParsingProgressHandler, _fragParsingCompleteHandler/*, CBvideometadata*/);
+            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler/*, CBvideometadata*/);
         }
 
         /*
@@ -51,7 +51,9 @@ package com.hls
         //TODO: are those 2 functions still useful? Do we need tu put DemuxHelper back?
         /** triggered by demux, it should return the audio track to be parsed */
         private function _fragParsingAudioSelectionHandler(audioTrackList : Vector.<AudioTrack>) : AudioTrack {
-            return _audioTrackController.audioTrackSelectionHandler(audioTrackList);
+            /** We return the only available audio track since we don't support tracks coming from playlist for now **/
+            return audioTrackList[0];
+            //return _audioTrackController.audioTrackSelectionHandler(audioTrackList);
         }
 
         /** triggered by demux, it should return video width/height */
