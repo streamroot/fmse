@@ -2,7 +2,7 @@
 **The role of this class is to wrap mangui's transcoding stack and implement the callbacks that handle the tag and fragmentData info
 */
 
-package com.hls
+package com.hlsmangui
 {
     import flash.utils.ByteArray;
     import flash.utils.IDataInput;
@@ -11,8 +11,8 @@ package com.hls
     import com.hlsmangui.TSDemuxer;
     import com.hlsmangui.utils.PTS;
     import com.hlsmangui.FLVTag;
-    import com.hlsmangui.Fragment;
-    import com.hlsmangui.FragmentData;
+    import com.hlsmangui.model.Fragment;
+    import com.hlsmangui.model.FragmentData;
 
     public class HlsTranscodehandler
     {

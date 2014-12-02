@@ -1,4 +1,4 @@
-package com.hlsmangui {
+package com.hlsmangui.model {
 	import flash.utils.ByteArray;
 
 	/** Fragment model **/
