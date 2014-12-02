@@ -555,6 +555,7 @@ public class StreamrootMSE {
 
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
+                /** Return hls segment PTS to js for rep change (and later will be for seek too), once it has been appended (is this optimal?) **/
                 returnHlsSegmentInfo(seqnum, min_pts, max_pts);
                 setHasData(true, VIDEO);
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);

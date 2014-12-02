@@ -19,15 +19,12 @@ package com.hls
         private var _transcodeWorker:TranscodeWorker;
         private var _demux:TSDemuxer;
 
-        //TODO: do we want to recreate the whole fragment as in mangui's code to hand it to Netstream or do we just want to add
-        //      a couple things like PTS and just send it back to the js? In the first case, we need to import Fragment class.
         private var _frag_current:Fragment;
 
         
         public function HlsTranscodehandler(transcodeWorker:TranscodeWorker)
         {   
             _transcodeWorker = transcodeWorker;
-            //TODO: see what we put in these arguments
             _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler);
         }
 
@@ -44,9 +41,6 @@ package com.hls
             _demux.append(_frag_current.data.bytes);
 
         }
-
-        
-
 
         //TODO: are those 2 functions still useful? Do we need tu put DemuxHelper back?
         /** triggered by demux, it should return the audio track to be parsed */
@@ -67,9 +61,6 @@ package com.hls
                 fragData.video_height = height;
             }*/
         }
-
-        
-
 
         /** triggered when demux has retrieved some tags from fragment **/
         private function _fragParsingProgressHandler(tags : Vector.<FLVTag>) : void {

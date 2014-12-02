@@ -46,7 +46,7 @@ public class Transcoder {
         //TODO: switch for HLS + send error if no matching type
     }
 
-	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, CB:function, isInit:Boolean):ByteArray {
+	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, CB:function, isInit:Boolean):void {
 		var bytes_event:ByteArray = Base64.decode(data);
         _transcodeWorker.debug('PTS transcoder.transcode');
 
