@@ -532,6 +532,9 @@ public class StreamrootMSE {
 
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
+        var seqnum:int = message.seqnum;
+        var min_pts:Number = message.min_pts;
+        var max_pts:Number = message.max_pts;
 
         if (!_discardAppend) {
 
@@ -552,6 +555,7 @@ public class StreamrootMSE {
 
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
+                returnHlsSegmentInfo(seqnum, min_pts, max_pts);
                 setHasData(true, VIDEO);
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
             }else if (type.indexOf("audio") >= 0) {
@@ -591,6 +595,10 @@ public class StreamrootMSE {
 
     private function updateendVideo(error:Boolean = false):void {
         ExternalInterface.call("sr_flash_updateend_video", error);
+    }
+
+    private function returnHlsSegmentInfo(seqnum: int, min_pts: Number, max_pts: Number):void {
+        ExternalInterface.call("updateHlsPTS", seqnum, min_pts, max_pts);
     }
 
     private function onDebugChannel(event:Event):void {

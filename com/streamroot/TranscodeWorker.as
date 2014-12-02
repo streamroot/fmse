@@ -90,8 +90,13 @@ public class TranscodeWorker extends Sprite {
         debug("message sent");*/
 	}
 
-    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, seqnum:Number, min_pts:Number, max_pts:Number):void {
-        var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
+    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, seqnum:Number = 0, min_pts:Number = 0, max_pts:Number = 0):void {
+        /** If type is HLS we return sequence number and PTS as well as segment bytes **/
+        if(type.indexOf("apple") >= 0) {
+            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, seqnum: seqnum, min_pts: min_pts, max_pts: max_pts};
+        } else {
+            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
+        }
         debug("sending back message");
         _workerToMain.send(answer);
         debug("message sent");
