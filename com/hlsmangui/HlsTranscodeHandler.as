@@ -28,7 +28,7 @@ package com.hls
         {   
             _transcodeWorker = transcodeWorker;
             //TODO: see what we put in these arguments
-            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler/*, CBvideometadata*/);
+            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler);
         }
 
         /*
@@ -58,12 +58,14 @@ package com.hls
 
         /** triggered by demux, it should return video width/height */
         private function _fragParsingVideoMetadataHandler(width : uint, height : uint) : void {
-            var fragData : FragmentData = _frag_current.data;
+            /** We don't care about video width and height so we just empty this CB function to avoid changing TSDemuxer code **/
+
+            /*var fragData : FragmentData = _frag_current.data;
             if (fragData.video_width == 0) {
                 _transcodeWorker.debug("AVC: width/height:" + width + "/" + height);
                 fragData.video_width = width;
                 fragData.video_height = height;
-            }
+            }*/
         }
 
         
