@@ -13,6 +13,9 @@
     import flash.utils.ByteArray;
     import flash.net.ObjectEncoding;
 
+    import flash.utils.setInterval;
+    import flash.utils.clearInterval;
+
     CONFIG::LOGGING {
         import org.mangui.hls.utils.Log;
         import org.mangui.hls.HLSSettings;
@@ -48,7 +51,7 @@
         /** Vector of audio/video tags **/
         private var _tags : Vector.<FLVTag>;
         /** Display Object used to schedule parsing **/
-        private var _displayObject : DisplayObject;
+        //private var _displayObject : DisplayObject;
         /** Byte data to be read **/
         private var _data : ByteArray;
         /* callback functions for audio selection, and parsing progress/complete */
@@ -97,7 +100,7 @@
         /** Transmux the M2TS file into an FLV file. **/
         //DisplayObject c'est la référence au mediaController je crois --> on peut s'en passer
 
-        public function TSDemuxer(displayObject : DisplayObject, callback_audioselect : Function, callback_progress : Function, callback_complete : Function, callback_videometadata : Function) {
+        public function TSDemuxer(callback_audioselect : Function, callback_progress : Function, callback_complete : Function, callback_videometadata : Function) {
             _curAudioPES = null;
             _curVideoPES = null;
             _curId3PES = null;
@@ -113,7 +116,7 @@
             _pmtId = _avcId = _audioId = _id3Id = -1;
             _audioIsAAC = false;
             _tags = new Vector.<FLVTag>();
-            _displayObject = displayObject;
+            //_displayObject = displayObject;
         };
 
         /** append new TS data */
@@ -123,7 +126,10 @@
                 _data_complete = false;
                 _read_position = 0;
                 _avcc = null;
-                _displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);            }
+                //_displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);
+                /** TODO: We replace frame clock by a set interval since we are in worker. See if easy to access display stage from worker **/
+                var parseTimerInterval:uint = setInterval(_parseTimer, 20);
+            }
             _data.position = _data.length;
             _data.writeBytes(data, data.position);
         }
@@ -142,7 +148,8 @@
             _adtsFrameOverflow = null;
             _avcc = null;
             _tags = new Vector.<FLVTag>();
-            _displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
+            //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
+            clearInterval(parseTimerInterval);
         }
 
         public function notifycomplete() : void {
@@ -182,7 +189,8 @@
                             Log.error("TS: no PMT found, report parsing complete");
                         }
                     }
-                    _displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
+                    //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
+                    clearInterval(parseTimerInterval);
                     _flush();
                     _callback_complete();
                 }
