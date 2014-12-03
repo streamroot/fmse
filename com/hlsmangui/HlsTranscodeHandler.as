@@ -8,7 +8,7 @@ package com.hlsmangui
     import flash.utils.IDataInput;
 
     import com.streamroot.TranscodeWorker;
-    import com.hlsmangui.TSDemuxer;
+    import com.hlsmangui.demux.TSDemuxer;
     import com.hlsmangui.utils.PTS;
     import com.hlsmangui.FLVTag;
     import com.hlsmangui.model.Fragment;
@@ -33,7 +33,7 @@ package com.hlsmangui
         ** This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
-        public function toTranscoding(input:IDataInput, doneCB:Function):ByteArray
+        public function toTranscoding(input:IDataInput, doneCB:Function, offset:Number = 0):ByteArray
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(input);

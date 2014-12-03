@@ -20,7 +20,7 @@ public class Transcoder {
     private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
     private var _muxer:Muxer;
-	private var _httpstreamingMP2TSFileHandler:HTTPStreamingMP2TSFileHandler;
+	//private var _httpstreamingMP2TSFileHandler:HTTPStreamingMP2TSFileHandler;
 
     private var _transcodeWorker:TranscodeWorker;
     private var _hlsTranscodeHandler:HlsTranscodeHandler;
@@ -60,7 +60,7 @@ public class Transcoder {
 					bytes_event.position = 0;
 					//bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
                     //TODO MANGUI:
-                    _hlsTranscodeHandler.toTranscoding(bytes_event,offset,_transcodeWorker.asyncTranscodeCB)
+                    _hlsTranscodeHandler.toTranscoding(bytes_event,_transcodeWorker.asyncTranscodeCB,offset)
                     
                     //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
 		} else if(isAudio(type)) {
@@ -81,7 +81,8 @@ public class Transcoder {
 	}
 
     public function seeking():void {
-        _httpstreamingMP2TSFileHandler = undefined;
+        //_httpstreamingMP2TSFileHandler = undefined;
+        _hlsTranscodeHandler = undefined;
     }
 
     private function isAudio(type:String):Boolean {
