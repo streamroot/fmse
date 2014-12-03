@@ -8,7 +8,7 @@ import com.dash.handlers.InitializationVideoSegmentHandler;
 import com.dash.handlers.VideoSegmentHandler;
 import com.dash.handlers.AudioSegmentHandler;
 
-import com.hls.HTTPStreamingMP2TSFileHandler;
+//import com.hls.HTTPStreamingMP2TSFileHandler;
 import com.streamroot.TranscodeWorker;
 import com.hlsmangui.HlsTranscodeHandler;
 
@@ -27,7 +27,8 @@ public class Transcoder {
 
 	public function Transcoder(transcodeWorker:TranscodeWorker) {
         _muxer = new Muxer();
-		_httpstreamingMP2TSFileHandler = new HTTPStreamingMP2TSFileHandler(transcodeWorker);
+		//_httpstreamingMP2TSFileHandler = new HTTPStreamingMP2TSFileHandler(transcodeWorker);
+        _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker);
         _transcodeWorker = transcodeWorker;
 	}
 
@@ -46,23 +47,23 @@ public class Transcoder {
         //TODO: switch for HLS + send error if no matching type
     }
 
-	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, CB:function, isInit:Boolean):void {
+	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, CB:Function, isInit:Boolean):void {
 		var bytes_event:ByteArray = Base64.decode(data);
         _transcodeWorker.debug('PTS transcoder.transcode');
 
 
         if (isHls(type)) {
-            if (!_httpstreamingMP2TSFileHandler) {
-                _httpstreamingMP2TSFileHandler = new HTTPStreamingMP2TSFileHandler(_transcodeWorker);
+            if (!_hlsTranscodeHandler) {
+                _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker);
             }
-					var bytes_append:ByteArray = new ByteArray();
+					//var bytes_append:ByteArray = new ByteArray();
 					bytes_event.position = 0;
 					//bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
                     //TODO MANGUI:
                     _hlsTranscodeHandler.toTranscoding(bytes_event,offset,_transcodeWorker.asyncTranscodeCB)
                     
                     //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
-		  }else if(isAudio(type)){
+		} else if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
             var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);

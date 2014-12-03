@@ -13,8 +13,9 @@ package com.hlsmangui
     import com.hlsmangui.FLVTag;
     import com.hlsmangui.model.Fragment;
     import com.hlsmangui.model.FragmentData;
+    import com.hlsmangui.model.AudioTrack;
 
-    public class HlsTranscodehandler
+    public class HlsTranscodeHandler
     {
         private var _transcodeWorker:TranscodeWorker;
         private var _demux:TSDemuxer;
@@ -22,7 +23,7 @@ package com.hlsmangui
         private var _frag_current:Fragment;
 
         
-        public function HlsTranscodehandler(transcodeWorker:TranscodeWorker)
+        public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker)
         {   
             _transcodeWorker = transcodeWorker;
             _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler);
@@ -32,7 +33,7 @@ package com.hlsmangui
         ** This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
-        public function toTranscoding(input:IDataInput, doneCB:function):ByteArray
+        public function toTranscoding(input:IDataInput, doneCB:Function):ByteArray
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(input);

@@ -22,7 +22,7 @@
         import org.mangui.hls.utils.Hex;
     }
     /** Representation of an MPEG transport stream. **/
-    public class TSDemuxer extends EventDispatcher implements Demuxer {
+    public class TSDemuxer extends EventDispatcher /*implements Demuxer*/ {
         /** read position **/
         private var _read_position : uint;
         /** is bytearray full ? **/
