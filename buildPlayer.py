@@ -22,7 +22,7 @@ def popenPrint(result):
         print(line)
 
 #Compile worker
-workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc"),
+workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc.exe"),
                           "-compiler.source-path=.",
                           "-target-player=11.4.0",
                           "-swf-version=17",
@@ -35,11 +35,11 @@ popenPrint(workerResult)
 if (os.path.exists("mse.swc")):
     shutil.rmtree("mse.swc")
 #compile the library
-libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc"),
+libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc.exe"),
                           os.path.normpath("-compiler.source-path=."),
                           "-target-player=11.4.0",
                           "-swf-version=17",
-                          "-directory=true",
+                          "-directory=false",
                           "-include-sources",
                           os.path.normpath("com/streamroot/StreamrootMSE.as"),
                           "-output=mse.swc"], stdout=subprocess.PIPE)
@@ -48,14 +48,14 @@ popenPrint(libResult)
 #Moving the new library to the jwplayer and videojs folder
 if (os.path.exists(os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))):
     shutil.rmtree("../streamroot-videojs/src/com/streamroot/mse.swc")
-shutil.copytree(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))
+shutil.copyfile(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))
 if (os.path.exists(os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))):
     shutil.rmtree(os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))
-shutil.copytree(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))
+shutil.copyfile(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-jwplayer/jwplayer-master/src/flash/com/streamroot/mse.swc"))
 
 #Moving to the jwplayer folder and compiling jwplayer
 os.chdir(os.path.normpath("../streamroot-jwplayer/jwplayer-master"))
-jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc"),
+jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc.exe"),
                           os.path.normpath("src/flash/com/longtailvideo/jwplayer/player/Player.as"),
                           "-compiler.source-path=src/flash",
                           os.path.normpath("-compiler.library-path="+flex+"/frameworks/libs"),
@@ -77,7 +77,7 @@ shutil.copy2(os.path.normpath("bin-release/jwplayer.flash.swf"),os.path.normpath
 
 #Moving to the videojs folder and compiling videojs
 os.chdir(os.path.normpath("../../streamroot-videojs"))
-vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc"),
+vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc.exe"),
                           os.path.normpath("src/com/videojs/VideoJS.as"),
                           "-compiler.source-path=src",
                           "-compiler.library-path="+flex+"/frameworks/libs",
