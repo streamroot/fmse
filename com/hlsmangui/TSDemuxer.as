@@ -75,6 +75,8 @@
         private var _adifTagInserted : Boolean = false;
         /* last AVCC byte Array */
         private var _avcc : ByteArray;
+        /* parsing interval id */
+        private var _parseTimerInterval : uint;
 
         public static function probe(data : ByteArray) : Boolean {
             var pos : uint = data.position;
@@ -128,7 +130,7 @@
                 _avcc = null;
                 //_displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);
                 /** TODO: We replace frame clock by a set interval since we are in worker. See if easy to access display stage from worker **/
-                var parseTimerInterval:uint = setInterval(_parseTimer, 20);
+                _parseTimerInterval = setInterval(_parseTimer, 20);
             }
             _data.position = _data.length;
             _data.writeBytes(data, data.position);
@@ -149,7 +151,7 @@
             _avcc = null;
             _tags = new Vector.<FLVTag>();
             //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
-            clearInterval(parseTimerInterval);
+            clearInterval(_parseTimerInterval);
         }
 
         public function notifycomplete() : void {
@@ -190,7 +192,7 @@
                         }
                     }
                     //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
-                    clearInterval(parseTimerInterval);
+                    clearInterval(_parseTimerInterval);
                     _flush();
                     _callback_complete();
                 }
