@@ -23,17 +23,17 @@ package com.hlsmangui
         private var _frag_current:Fragment;
 
         
-        public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker)
+        public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function)
         {   
             _transcodeWorker = transcodeWorker;
-            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler);
+            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB);
         }
 
         /*
         ** This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
-        public function toTranscoding(input:IDataInput, doneCB:Function, offset:Number = 0):ByteArray
+        public function toTranscoding(input:IDataInput, offset:Number = 0):ByteArray
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(input);
@@ -183,7 +183,7 @@ package com.hlsmangui
         }
 
         /** triggered when demux has completed fragment parsing **/
-        private function _fragParsingCompleteHandler() : void {
+        private function _fragParsingCompleteHandler(asyncTranscodeCB:Function) : void {
             /*if (_loading_state == LOADING_IDLE)
                 return;*/
             //var hlsError : HLSError;
@@ -254,7 +254,7 @@ package com.hlsmangui
                     for each(tag in tags) {
                         tag.write(segmentBytes);
                     }
-                    _transcodeWorker.asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
+                    asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     _transcodeWorker.debug("HLSEvent.TAGS_LOADED");
                     //TODO: et ensuite on remet les compteurs à zéro

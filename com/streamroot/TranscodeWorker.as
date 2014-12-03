@@ -28,7 +28,7 @@ public class TranscodeWorker extends Sprite {
 
 		var object:Object = {command:'init'}
 		_debugChannel.send(object);
-		_transcoder = new Transcoder(this);
+		_transcoder = new Transcoder(this, asyncTranscodeCB);
 	}
 
 	private function onMainToWorker(event:Event):void {
@@ -76,7 +76,7 @@ public class TranscodeWorker extends Sprite {
         	debug("transcoding media");
             try {
                 //var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
-                _transcoder.asyncTranscode(data, type, timestamp, offset, asyncTranscodeCB, isInit);
+                _transcoder.asyncTranscode(data, type, timestamp, offset, isInit);
             } catch (e:Error) {
                 error(e.toString(), type);
                 return;

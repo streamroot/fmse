@@ -102,7 +102,7 @@
         /** Transmux the M2TS file into an FLV file. **/
         //DisplayObject c'est la référence au mediaController je crois --> on peut s'en passer
 
-        public function TSDemuxer(callback_audioselect : Function, callback_progress : Function, callback_complete : Function, callback_videometadata : Function) {
+        public function TSDemuxer(callback_audioselect : Function, callback_progress : Function, callback_complete : Function, callback_videometadata : Function, asyncTranscodeCB:Function) {
             _curAudioPES = null;
             _curVideoPES = null;
             _curId3PES = null;
@@ -113,6 +113,7 @@
             _callback_progress = callback_progress;
             _callback_complete = callback_complete;
             _callback_videometadata = callback_videometadata;
+            _asyncTranscodeCB = asyncTranscodeCB;
             _pmtParsed = false;
             _packetsBeforePMT = false;
             _pmtId = _avcId = _audioId = _id3Id = -1;
@@ -194,7 +195,7 @@
                     //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
                     clearInterval(_parseTimerInterval);
                     _flush();
-                    _callback_complete();
+                    _callback_complete(_asyncTranscodeCB);
                 }
             }
         }

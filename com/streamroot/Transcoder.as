@@ -25,11 +25,12 @@ public class Transcoder {
     private var _transcodeWorker:TranscodeWorker;
     private var _hlsTranscodeHandler:HlsTranscodeHandler;
 
-	public function Transcoder(transcodeWorker:TranscodeWorker) {
+	public function Transcoder(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function) {
         _muxer = new Muxer();
 		//_httpstreamingMP2TSFileHandler = new HTTPStreamingMP2TSFileHandler(transcodeWorker);
         _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker);
         _transcodeWorker = transcodeWorker;
+        _asyncTranscodeCB = asyncTranscodeCB;
 	}
 
 	//TODO: transcode init in separate method (problem with return type?), return bytes to worker, that will send message back to MSE.
@@ -54,13 +55,13 @@ public class Transcoder {
 
         if (isHls(type)) {
             if (!_hlsTranscodeHandler) {
-                _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker);
+                _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker, _asyncTranscodeCB);
             }
 					//var bytes_append:ByteArray = new ByteArray();
 					bytes_event.position = 0;
 					//bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
                     //TODO MANGUI:
-                    _hlsTranscodeHandler.toTranscoding(bytes_event,_transcodeWorker.asyncTranscodeCB,offset)
+                    _hlsTranscodeHandler.toTranscoding(bytes_event, offset)
                     
                     //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
 		} else if(isAudio(type)) {
@@ -69,13 +70,13 @@ public class Transcoder {
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             //ici pour le DASH on appelle le CB de transcodeWorker
-            _transcodeWorker.asyncTranscodeCB(type, isInit, bytes_append_audio);
+            _asyncTranscodeCB(type, isInit, bytes_append_audio);
         } else /*if (isVideo(type))*/ {
             var bytes_append:ByteArray = new ByteArray();
             var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, timestamp - offset + 100, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
-            _transcodeWorker.asyncTranscodeCB(type, isInit, bytes_append);
+            _asyncTranscodeCB(type, isInit, bytes_append);
         }
         //TODO: switch for HLS + send error if no matching type
 	}
