@@ -26,7 +26,7 @@ package com.hlsmangui
         public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function)
         {   
             _transcodeWorker = transcodeWorker;
-            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB);
+            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB, _transcodeWorker);
         }
 
         /*
@@ -36,12 +36,16 @@ package com.hlsmangui
 
         public function toTranscoding(input:IDataInput, seqnum:uint, offset:Number = 0):void
         {
+            _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding");
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(seqnum, input);
+            _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
 
+            /** Replace here what was done in DemuxHelper **/
+            _frag_current.data.position = 0;
+            var useless:Boolean = _demux.probe(_frag_current.data);
             /** Send the data to TSDemuxer **/
             _demux.append(_frag_current.data.bytes);
-
         }
 
         //TODO: are those 2 functions still useful? Do we need tu put DemuxHelper back?
