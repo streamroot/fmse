@@ -44,6 +44,7 @@ public class TranscodeWorker extends Sprite {
 		var isInit:Boolean = message.isInit;
 		var timestamp:Number = message.timestamp;
 		var offset:Number = message.offset;
+        var seqnum:uint = message.seqnum;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
 
@@ -76,7 +77,7 @@ public class TranscodeWorker extends Sprite {
         	debug("transcoding media");
             try {
                 //var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
-                _transcoder.asyncTranscode(data, type, timestamp, offset, isInit);
+                _transcoder.asyncTranscode(data, type, timestamp, offset, isInit, seqnum);
             } catch (e:Error) {
                 error(e.toString(), type);
                 return;

@@ -33,10 +33,11 @@ package com.hlsmangui
         ** This method replaces processFileSegment_bigger in old stack. Here we provide the full segment because spltting by packets
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
-        public function toTranscoding(input:IDataInput, offset:Number = 0):ByteArray
+
+        public function toTranscoding(input:IDataInput, seqnum:uint, offset:Number = 0):void
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
-            _frag_current = new Fragment(input);
+            _frag_current = new Fragment(seqnum, input);
 
             /** Send the data to TSDemuxer **/
             _demux.append(_frag_current.data.bytes);
@@ -191,7 +192,7 @@ package com.hlsmangui
             if (!fragData.audio_found && !fragData.video_found) {
                 //hlsError = new HLSError(HLSError.FRAGMENT_PARSING_ERROR, _frag_current.url, "error parsing fragment, no tag found");
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.ERROR, hlsError));
-                _transcodeWorker.error("error parsing fragment, no tag found",HLSError.FRAGMENT_PARSING_ERROR)
+                //_transcodeWorker.error("error parsing fragment, no tag found",FRAGMENT_PARSING_ERROR)
             }
             if (fragData.audio_found) {
                 null;
@@ -251,7 +252,7 @@ package com.hlsmangui
                     //_tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, start_offset + fragData.tag_pts_start_offset / 1000, _frag_current.program_date + fragData.tag_pts_start_offset);
                     // Directly write tags in a byteArray to be sure to return a byteArray to TranscodeWorker
                     var segmentBytes:ByteArray = new ByteArray();
-                    for each(tag in tags) {
+                    for each(var tag in fragData.tags) {
                         tag.write(segmentBytes);
                     }
                     asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
@@ -266,10 +267,10 @@ package com.hlsmangui
                         fragData.tags_pts_min_video = fragData.tags_pts_max_video;
                         fragData.tags_video_found = false;
                     }
-                    _hasDiscontinuity = false;
+                    //_hasDiscontinuity = false;
                     fragData.tags = new Vector.<FLVTag>();
                 }
-                _pts_analyzing = false;
+                //_pts_analyzing = false;
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.FRAGMENT_LOADED, tagsMetrics));
                 //_transcodeWorker.debug("HLSEvent.FRAGMENT_LOADED");
                 //_fragment_first_loaded = true;
@@ -278,7 +279,7 @@ package com.hlsmangui
                 //hlsError = new HLSError(HLSError.OTHER_ERROR, _frag_current.url, error.message);
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.ERROR, hlsError));
                 //TODO: figure out a type for these HlsTranscodeHandler errors
-                _transcodeWorker.error(error.toString(),HLSError.OTHER_ERROR)
+                //_transcodeWorker.error(error.toString(),OTHER_ERROR)
             }
         }
     }

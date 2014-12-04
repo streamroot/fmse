@@ -59,6 +59,7 @@
         private var _callback_progress : Function;
         private var _callback_complete : Function;
         private var _callback_videometadata : Function;
+        private var _asyncTranscodeCB : Function;
         /* current audio PES */
         private var _curAudioPES : ByteArray;
         /* current video PES */

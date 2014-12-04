@@ -1,6 +1,7 @@
 package com.hlsmangui.model {
 	import flash.utils.ByteArray;
     import com.hlsmangui.FLVTag;
+    import flash.utils.IDataInput;
 
 	/** Fragment Data **/
 	public class FragmentData {
@@ -15,6 +16,9 @@ package com.hlsmangui.model {
         public var pts_max_audio : Number;
         public var pts_min_video : Number;
         public var pts_max_video : Number;
+        /** audio/video found ? */
+        public var audio_found : Boolean;
+        public var video_found : Boolean;
         /** tag related stuff */
         public var tags_pts_min_audio : Number;
         public var tags_pts_max_audio : Number;
@@ -25,11 +29,59 @@ package com.hlsmangui.model {
         public var tags : Vector.<FLVTag>;
 
         /** Fragment Metrics **/
-        public function FragmentData(input:ByteArray) {
+        public function FragmentData(input:IDataInput) {
             this.pts_start = NaN;
             this.pts_start_computed = NaN;
-            this.bytes = input;
+            this.bytes = ByteArray(input);
         };
+
+        public function get pts_min() : Number {
+            if (audio_found) {
+                return pts_min_audio;
+            } else {
+                return pts_min_video;
+            }
+        }
+
+        public function get pts_max() : Number {
+            if (audio_found) {
+                return pts_max_audio;
+            } else {
+                return pts_max_video;
+            }
+        }
+
+        public function get tag_pts_min() : Number {
+            if (audio_found) {
+                return tags_pts_min_audio;
+            } else {
+                return tags_pts_min_video;
+            }
+        }
+
+        public function get tag_pts_max() : Number {
+            if (audio_found) {
+                return tags_pts_max_audio;
+            } else {
+                return tags_pts_max_video;
+            }
+        }
+
+        public function get tag_pts_start_offset() : Number {
+            if (tags_audio_found) {
+                return tags_pts_min_audio - pts_min_audio;
+            } else {
+                return tags_pts_min_video - pts_min_video;
+            }
+        }
+
+        public function get tag_pts_end_offset() : Number {
+            if (tags_audio_found) {
+                return tags_pts_max_audio - pts_min_audio;
+            } else {
+                return tags_pts_max_video - pts_min_video;
+            }
+        }
 	}
 	
 }

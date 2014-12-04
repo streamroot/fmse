@@ -1,5 +1,6 @@
 package com.hlsmangui.model {
 	import flash.utils.ByteArray;
+	import flash.utils.IDataInput;
 
 	/** Fragment model **/
 	public class Fragment {
@@ -13,7 +14,7 @@ package com.hlsmangui.model {
 		public var data:FragmentData;
 
 		/** Create the fragment **/
-		public function Fragment(seqnum:int, input:ByteArray) {
+		public function Fragment(seqnum:int, input:IDataInput) {
 			this.seqnum = seqnum;
 			this.data = new FragmentData(input);
 		}
