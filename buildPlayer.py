@@ -5,8 +5,10 @@ import subprocess
 
 if (os.path.exists("/opt/flex")):
     flex = "/opt/flex"
+    exe = ""
 elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
-    flex=("C:/flex_sdk_4.6")
+    flex = ("C:/flex_sdk_4.6")
+    exe = ".exe"
 
 debug = "false"
 
@@ -22,7 +24,7 @@ def popenPrint(result):
         print(line)
 
 #Compile worker
-workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc.exe"),
+workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-compiler.source-path=.",
                           "-target-player=11.4.0",
                           "-swf-version=17",
@@ -35,7 +37,7 @@ popenPrint(workerResult)
 if (os.path.exists("mse.swc")):
     shutil.rmtree("mse.swc")
 #compile the library
-libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc.exe"),
+libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc" + exe),
                           os.path.normpath("-compiler.source-path=."),
                           "-target-player=11.4.0",
                           "-swf-version=17",
@@ -55,7 +57,7 @@ shutil.copyfile(os.path.normpath("mse.swc"),os.path.normpath("../streamroot-jwpl
 
 #Moving to the jwplayer folder and compiling jwplayer
 os.chdir(os.path.normpath("../streamroot-jwplayer/jwplayer-master"))
-jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc.exe"),
+jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           os.path.normpath("src/flash/com/longtailvideo/jwplayer/player/Player.as"),
                           "-compiler.source-path=src/flash",
                           os.path.normpath("-compiler.library-path="+flex+"/frameworks/libs"),
@@ -77,7 +79,7 @@ shutil.copy2(os.path.normpath("bin-release/jwplayer.flash.swf"),os.path.normpath
 
 #Moving to the videojs folder and compiling videojs
 os.chdir(os.path.normpath("../../streamroot-videojs"))
-vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc.exe"),
+vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("src/com/videojs/VideoJS.as"),
                           "-compiler.source-path=src",
                           "-compiler.library-path="+flex+"/frameworks/libs",
