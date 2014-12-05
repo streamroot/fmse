@@ -9,8 +9,10 @@ import com.streamroot.StreamrootMSE;
 
 public class StreamrootInterfaceBase {
 
-    private var _provider;
+    private var _provider;//your provider
     private var _streamrootMSE:StreamrootMSE;
+
+    private var _loaded:Boolean = false;
 
     private var _needData:Boolean = true;
     //private var _wantToPlay:Boolean = false; //Always false as autoplay is handled in JS
@@ -61,7 +63,6 @@ public class StreamrootInterfaceBase {
         }
 
         //Reset NetStream to the beginning of the stream (mostly useful on replay)
-        requestSeek(0);
 
         triggerLoadStart();
     }
