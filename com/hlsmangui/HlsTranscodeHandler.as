@@ -39,11 +39,16 @@ package com.hlsmangui
             _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding");
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(seqnum, input);
+            var fragData:FragmentData = _frag_current.data;
+            fragData.tags = new Vector.<FLVTag>();
+            fragData.audio_found = fragData.video_found = false;
+            fragData.pts_min_audio = fragData.pts_min_video = fragData.tags_pts_min_audio = fragData.tags_pts_min_video = Number.POSITIVE_INFINITY;
+            fragData.pts_max_audio = fragData.pts_max_video = fragData.tags_pts_max_audio = fragData.tags_pts_max_video = Number.NEGATIVE_INFINITY;
             _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
 
+
             /** Replace here what was done in DemuxHelper **/
-            _frag_current.data.position = 0;
-            var useless:Boolean = _demux.probe(_frag_current.data);
+            fragData.bytes.position = 0;
             /** Send the data to TSDemuxer **/
             _demux.append(_frag_current.data.bytes);
         }
@@ -199,8 +204,6 @@ package com.hlsmangui
                 //_transcodeWorker.error("error parsing fragment, no tag found",FRAGMENT_PARSING_ERROR)
             }
             if (fragData.audio_found) {
-                null;
-                // just to stop the compiler warning
                 _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
             }
 
@@ -208,8 +211,6 @@ package com.hlsmangui
                 _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
                 if (!fragData.audio_found) {
                 } else {
-                    null;
-                    // just to avoid compilation warnings if CONFIG::LOGGING is false
                     _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
                 }
             }
