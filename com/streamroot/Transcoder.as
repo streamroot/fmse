@@ -8,7 +8,6 @@ import com.dash.handlers.InitializationVideoSegmentHandler;
 import com.dash.handlers.VideoSegmentHandler;
 import com.dash.handlers.AudioSegmentHandler;
 
-//import com.hls.HTTPStreamingMP2TSFileHandler;
 import com.streamroot.TranscodeWorker;
 import com.hlsmangui.HlsTranscodeHandler;
 
@@ -20,7 +19,6 @@ public class Transcoder {
     private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
     private var _muxer:Muxer;
-	//private var _httpstreamingMP2TSFileHandler:HTTPStreamingMP2TSFileHandler;
 
     private var _transcodeWorker:TranscodeWorker;
     private var _hlsTranscodeHandler:HlsTranscodeHandler;
@@ -28,7 +26,6 @@ public class Transcoder {
 
 	public function Transcoder(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function) {
         _muxer = new Muxer();
-		//_httpstreamingMP2TSFileHandler = new HTTPStreamingMP2TSFileHandler(transcodeWorker);
         _transcodeWorker = transcodeWorker;
         _asyncTranscodeCB = asyncTranscodeCB;
         _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker,_asyncTranscodeCB); 
@@ -51,26 +48,22 @@ public class Transcoder {
 
 	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, isInit:Boolean, seqnum:uint):void {
 		var bytes_event:ByteArray = Base64.decode(data);
-        _transcodeWorker.debug('PTS transcoder.transcode');
+        _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
 
 
         if (isHls(type)) {
             if (!_hlsTranscodeHandler) {
                 _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker, _asyncTranscodeCB);
             }
-					//var bytes_append:ByteArray = new ByteArray();
 					bytes_event.position = 0;
-					//bytes_append.writeBytes(_httpstreamingMP2TSFileHandler.processFileSegment_bigger(bytes_event,offset));
-                    //TODO MANGUI:
-                    _hlsTranscodeHandler.toTranscoding(bytes_event, seqnum, offset)
-                    
-                    //ici plus rien car on a déjà passé le CB de transcodeWorker à TranscoderWrapper qui va l'appeler directement
+                    _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
+                    _hlsTranscodeHandler.toTranscoding(bytes_event, seqnum, offset);
+
 		} else if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
             var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
-            //ici pour le DASH on appelle le CB de transcodeWorker
             _asyncTranscodeCB(type, isInit, bytes_append_audio);
         } else /*if (isVideo(type))*/ {
             var bytes_append:ByteArray = new ByteArray();

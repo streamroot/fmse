@@ -134,15 +134,13 @@
         /** append new TS data */
         public function append(data : ByteArray) : void {
             if (_data == null) {
-                _transcodeWorker.debug("PTS TSDemuxer.append case data = null");
                 _data = new ByteArray();
                 //_data_complete = false;
                 _read_position = 0;
                 _avcc = null;
                 //_displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);
-                /** TODO: We replace frame clock by a set interval since we are in worker. See if easy to access display stage from worker **/
-                _parseTimerInterval = setInterval(_parseTimer, 20);
-                _transcodeWorker.debug("PTS TSDemuxer.append case data = null interval set");
+                /** TODO: We replace frame clock by a set interval since we are in a worker. See if easy to access display stage from worker **/
+                _parseTimerInterval = setInterval(_parseTimer, 33);
             }
             _data.position = _data.length;
             _data.writeBytes(data, data.position);
@@ -181,20 +179,18 @@
 
         /** Parse a limited amount of packets each time to avoid blocking **/
         private function _parseTimer() : void {
-            //_transcodeWorker.debug("PTS TSDemuxer.parseTimer");
             var start_time : int = getTimer();
             _data.position = _read_position;
             // dont spend more than 20ms demuxing TS packets to avoid loosing frames
             while ((_data.bytesAvailable >= 188) && ((getTimer() - start_time) < 20)) {
-                //_transcodeWorker.debug("PTS TSDemuxer.parseTimer inside the while");
                 _parseTSPacket();
             }
             if (_tags.length) {
                 _callback_progress(_tags);
+                _transcodeWorker.debug("FLASH TSDemuxer.parseTimer callback_progress done");
                 _tags = new Vector.<FLVTag>();
             }
             if (_data) {
-                _transcodeWorker.debug("PTS TSDemuxer.parseTimer ");
                 _read_position = _data.position;
                 // finish reading TS fragment
                 if (/*_data_complete && */_data.bytesAvailable < 188) {
@@ -217,6 +213,7 @@
 
         /** flux demux **/
         private function _flush() : void {
+            _transcodeWorker.debug("FLASH TSDemuxer.flush");
             CONFIG::LOGGING {
                 Log.debug("TS: flushing demux");
             }
@@ -729,7 +726,7 @@
             }
             // Jump to the next packet.
             _data.position += todo;
-            //_transcodeWorker.debug("PTS TSDemuxer.parseTSPacket done");
+            _transcodeWorker.debug("FLASH TSDemuxer.parseTSPacket done");
         };
 
         /** Parse the Program Association Table. **/

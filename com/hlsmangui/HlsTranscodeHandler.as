@@ -38,7 +38,6 @@ package com.hlsmangui
 
         public function toTranscoding(input:IDataInput, seqnum:uint, offset:Number = 0):void
         {
-            _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding");
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(seqnum, input);
             var fragData:FragmentData = _frag_current.data;
@@ -46,7 +45,7 @@ package com.hlsmangui
             fragData.audio_found = fragData.video_found = false;
             fragData.pts_min_audio = fragData.pts_min_video = fragData.tags_pts_min_audio = fragData.tags_pts_min_video = Number.POSITIVE_INFINITY;
             fragData.pts_max_audio = fragData.pts_max_video = fragData.tags_pts_max_audio = fragData.tags_pts_max_video = Number.NEGATIVE_INFINITY;
-            _transcodeWorker.debug("PTS HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
+            _transcodeWorker.debug("FLASH HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
 
             /** Replace here what was done in DemuxHelper **/
             fragData.bytes.position = 0;
@@ -76,7 +75,6 @@ package com.hlsmangui
 
         /** triggered when demux has retrieved some tags from fragment **/
         private function _fragParsingProgressHandler(tags : Vector.<FLVTag>) : void {
-            _transcodeWorker.debug("_fragParsingProgressHandler");
             var tag : FLVTag;
             /* ref PTS / DTS value for PTS looping */
             var fragData : FragmentData = _frag_current.data;
@@ -86,12 +84,10 @@ package com.hlsmangui
             for each (tag in tags) {
                 tag.pts = PTS.normalize(ref_pts, tag.pts);
                 tag.dts = PTS.normalize(ref_pts, tag.dts);
-                _transcodeWorker.debug("_fragParsingProgressHandler one tag: " + tag.type);
                 switch( tag.type ) {
                     case FLVTag.AAC_HEADER:
                     case FLVTag.AAC_RAW:
                     case FLVTag.MP3_RAW:
-                        _transcodeWorker.debug("_fragParsingProgressHandler case audio");
                         fragData.audio_found = true;
                         fragData.tags_audio_found = true;
                         fragData.tags_pts_min_audio = Math.min(fragData.tags_pts_min_audio, tag.pts);
@@ -111,10 +107,8 @@ package com.hlsmangui
                         break;
                     case FLVTag.METADATA:
                     default:
-                        _transcodeWorker.debug("_fragParsingProgressHandler case default");
                         break;
                 }
-                _transcodeWorker.debug("_fragParsingProgressHandler fragData.video_found: " + fragData.video_found);
 
                 fragData.tags.push(tag);
                 _transcodeWorker.debug("_fragParsingProgressHandler finished");
@@ -205,7 +199,7 @@ package com.hlsmangui
             /*if (_loading_state == LOADING_IDLE)
                 return;*/
             //var hlsError : HLSError;
-            _transcodeWorker.debug("PTS HlsTranscodeHandler._fragParsingCompleteHandler");
+            _transcodeWorker.debug("FLASH HlsTranscodeHandler._fragParsingCompleteHandler");
             var fragData : FragmentData = _frag_current.data;
             if (!fragData.audio_found && !fragData.video_found) {
                 //hlsError = new HLSError(HLSError.FRAGMENT_PARSING_ERROR, _frag_current.url, "error parsing fragment, no tag found");
@@ -259,9 +253,7 @@ package com.hlsmangui
                 _loading_state = LOADING_IDLE;*/
 
                 //var tagsMetrics : HLSLoadMetrics = new HLSLoadMetrics(_level, fragMetrics.bandwidth, fragData.pts_max - fragData.pts_min, fragMetrics.processing_duration);
-                _transcodeWorker.debug("_fragParsingCompleteHandler fragData.tags.length: " + fragData.tags.length);
                 if (fragData.tags.length) {
-                    _transcodeWorker.debug("_fragParsingCompleteHandler case fragData.tags.length");
                     //TODO: ici on passe tout ce qu'on a récolté pendant le transcodage async à _tags_callback = loaderCallback :
                     //en fait on passe tout ça à NetStream pour qu'il pousse les tags dans le FLV tag buffer
                     //_tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, start_offset + fragData.tag_pts_start_offset / 1000, _frag_current.program_date + fragData.tag_pts_start_offset);
@@ -271,10 +263,9 @@ package com.hlsmangui
                     for each (tag in fragData.tags) {
                         segmentBytes.writeBytes(tag.data);
                     }
-                    _transcodeWorker.debug("_fragParsingCompleteHandler before asyncTranscodeCB");
                     _asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
-                    _transcodeWorker.debug("HLSEvent.TAGS_LOADED");
+                    _transcodeWorker.debug("FLASH HLSEvent.TAGS_LOADED");
                     //TODO: et ensuite on remet les compteurs à zéro
                     if (fragData.tags_audio_found) {
                         fragData.tags_pts_min_audio = fragData.tags_pts_max_audio;
