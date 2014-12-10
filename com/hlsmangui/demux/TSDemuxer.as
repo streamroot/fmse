@@ -179,6 +179,9 @@
 
         /** Parse a limited amount of packets each time to avoid blocking **/
         private function _parseTimer() : void {
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("FLASH TSDemuxer.parseTimer");
+            }
             var start_time : int = getTimer();
             _data.position = _read_position;
             // dont spend more than 20ms demuxing TS packets to avoid loosing frames
@@ -187,7 +190,9 @@
             }
             if (_tags.length) {
                 _callback_progress(_tags);
-                _transcodeWorker.debug("FLASH TSDemuxer.parseTimer callback_progress done");
+                CONFIG::LOGGING {
+                    _transcodeWorker.debug("FLASH TSDemuxer.parseTimer callback_progress done");
+                }
                 _tags = new Vector.<FLVTag>();
             }
             if (_data) {
@@ -213,7 +218,9 @@
 
         /** flux demux **/
         private function _flush() : void {
-            _transcodeWorker.debug("FLASH TSDemuxer.flush");
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("FLASH TSDemuxer.flush");
+            }
             CONFIG::LOGGING {
                 Log.debug("TS: flushing demux");
             }
@@ -726,7 +733,9 @@
             }
             // Jump to the next packet.
             _data.position += todo;
-            _transcodeWorker.debug("FLASH TSDemuxer.parseTSPacket done");
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("FLASH TSDemuxer.parseTSPacket done");
+            }
         };
 
         /** Parse the Program Association Table. **/

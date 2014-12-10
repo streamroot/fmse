@@ -48,15 +48,18 @@ public class Transcoder {
 
 	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, isInit:Boolean, seqnum:uint):void {
 		var bytes_event:ByteArray = Base64.decode(data);
-        _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
-
+        CONFIG::LOGGING {
+            _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
+        }
 
         if (isHls(type)) {
             if (!_hlsTranscodeHandler) {
                 _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker, _asyncTranscodeCB);
             }
 					bytes_event.position = 0;
-                    _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
+                    CONFIG::LOGGING {
+                        _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
+                    }
                     _hlsTranscodeHandler.toTranscoding(bytes_event, seqnum, offset);
 
 		} else if(isAudio(type)) {

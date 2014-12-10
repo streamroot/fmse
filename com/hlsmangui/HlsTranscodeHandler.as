@@ -45,7 +45,9 @@ package com.hlsmangui
             fragData.audio_found = fragData.video_found = false;
             fragData.pts_min_audio = fragData.pts_min_video = fragData.tags_pts_min_audio = fragData.tags_pts_min_video = Number.POSITIVE_INFINITY;
             fragData.pts_max_audio = fragData.pts_max_video = fragData.tags_pts_max_audio = fragData.tags_pts_max_video = Number.NEGATIVE_INFINITY;
-            _transcodeWorker.debug("FLASH HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("FLASH HlsTranscodeHandler.toTranscoding fragment created, going into _demux.append");
+            }
 
             /** Replace here what was done in DemuxHelper **/
             fragData.bytes.position = 0;
@@ -80,7 +82,9 @@ package com.hlsmangui
             var fragData : FragmentData = _frag_current.data;
             var ref_pts : Number = fragData.pts_start_computed;
             // Audio PTS/DTS normalization + min/max computation
-            _transcodeWorker.debug("_fragParsingProgressHandler number tags: " + tags.length);
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("_fragParsingProgressHandler number tags: " + tags.length);
+            }
             for each (tag in tags) {
                 tag.pts = PTS.normalize(ref_pts, tag.pts);
                 tag.dts = PTS.normalize(ref_pts, tag.dts);
@@ -111,7 +115,6 @@ package com.hlsmangui
                 }
 
                 fragData.tags.push(tag);
-                _transcodeWorker.debug("_fragParsingProgressHandler finished");
             }
 
             /* try to do progressive buffering here. 
@@ -199,7 +202,9 @@ package com.hlsmangui
             /*if (_loading_state == LOADING_IDLE)
                 return;*/
             //var hlsError : HLSError;
-            _transcodeWorker.debug("FLASH HlsTranscodeHandler._fragParsingCompleteHandler");
+            CONFIG::LOGGING {
+                _transcodeWorker.debug("FLASH HlsTranscodeHandler._fragParsingCompleteHandler");
+            }
             var fragData : FragmentData = _frag_current.data;
             if (!fragData.audio_found && !fragData.video_found) {
                 //hlsError = new HLSError(HLSError.FRAGMENT_PARSING_ERROR, _frag_current.url, "error parsing fragment, no tag found");
@@ -207,14 +212,19 @@ package com.hlsmangui
                 //_transcodeWorker.error("error parsing fragment, no tag found",FRAGMENT_PARSING_ERROR)
             }
             if (fragData.audio_found) {
-                _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
+                null;
+                CONFIG::LOGGING {
+                    _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
+                }
             }
 
             if (fragData.video_found) {
-                _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
-                if (!fragData.audio_found) {
-                } else {
-                    _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
+                CONFIG::LOGGING {
+                    _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
+                    if (!fragData.audio_found) {
+                    } else {
+                        _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
+                    }
                 }
             }
 
@@ -265,7 +275,9 @@ package com.hlsmangui
                     }
                     _asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
-                    _transcodeWorker.debug("FLASH HLSEvent.TAGS_LOADED");
+                    CONFIG::LOGGING {
+                        _transcodeWorker.debug("FLASH HLSEvent.TAGS_LOADED");
+                    }
                     //TODO: et ensuite on remet les compteurs à zéro
                     if (fragData.tags_audio_found) {
                         fragData.tags_pts_min_audio = fragData.tags_pts_max_audio;
