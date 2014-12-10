@@ -81,7 +81,7 @@
         /* last AVCC byte Array */
         private var _avcc : ByteArray;
         /* parsing interval id */
-        private var _parseTimerInterval : uint;
+        //private var _parseTimerInterval : uint;
 
         /* FOR DEBUG ONLY */
         private var _transcodeWorker:TranscodeWorker;
@@ -140,10 +140,11 @@
                 _avcc = null;
                 //_displayObject.addEventListener(Event.ENTER_FRAME, _parseTimer);
                 /** TODO: We replace frame clock by a set interval since we are in a worker. See if easy to access display stage from worker **/
-                _parseTimerInterval = setInterval(_parseTimer, 33);
+                //_parseTimerInterval = setInterval(_parseTimer, 33);
             }
             _data.position = _data.length;
             _data.writeBytes(data, data.position);
+            _parseTimer();
         }
 
         /** cancel demux operation */
@@ -161,7 +162,7 @@
             _avcc = null;
             _tags = new Vector.<FLVTag>();
             //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
-            clearInterval(_parseTimerInterval);
+            //clearInterval(_parseTimerInterval);
         }
 
         /** This method is used in the decryption CB. We don't use it right now **/
@@ -185,7 +186,7 @@
             var start_time : int = getTimer();
             _data.position = _read_position;
             // dont spend more than 20ms demuxing TS packets to avoid loosing frames
-            while ((_data.bytesAvailable >= 188) && ((getTimer() - start_time) < 20)) {
+            while ((_data.bytesAvailable >= 188) /*&& ((getTimer() - start_time) < 20)*/) {
                 _parseTSPacket();
             }
             if (_tags.length) {
@@ -209,7 +210,7 @@
                         }
                     }
                     //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
-                    clearInterval(_parseTimerInterval);
+                    //clearInterval(_parseTimerInterval);
                     _flush();
                     _callback_complete(_asyncTranscodeCB);
                 }
