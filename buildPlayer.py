@@ -11,12 +11,20 @@ elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
     exe = ".exe"
 
 debug = "false"
+swfversion = "17"
+targetPlayer = "11.4.0"
 
 if (len(sys.argv)>1 ):
-    if (sys.argv[1] == "debug"):
+    if (sys.argv[1] == "-debug"):
         debug = "true"
+        swfversion = "18"
+        targetPlayer = "11.5.0"
     else:
         print "incorrect argument"
+
+print debug
+print "-swf-version="+swfversion
+print "-target-player="+targetPlayer
 
 def popenPrint(result):
     result.wait()
@@ -28,8 +36,9 @@ if ('sr-flash' not in os.getcwd()):
 #Compile worker
 workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-compiler.source-path=.",
-                          "-target-player=11.4.0",
-                          "-swf-version=17",
+                          "-target-player="+targetPlayer+"",
+                          "-swf-version="+swfversion+"",
+                          "-debug="+debug+"",
                           "-static-link-runtime-shared-libraries=true",
                           os.path.normpath("com/streamroot/TranscodeWorker.as"),
                           os.path.normpath("-output=com/streamroot/TranscodeWorker.swf")], stdout=subprocess.PIPE)
@@ -41,8 +50,9 @@ if (os.path.exists("mse.swc")):
 #compile the library
 libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc" + exe),
                           os.path.normpath("-compiler.source-path=."),
-                          "-target-player=11.4.0",
-                          "-swf-version=17",
+                          "-target-player="+targetPlayer+"",
+                          "-swf-version="+swfversion+"",
+                          "-debug="+debug+"",
                           "-directory=false",
                           "-include-sources",
                           os.path.normpath("com/streamroot/StreamrootMSE.as"),
@@ -67,8 +77,9 @@ jwpResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           os.path.normpath("-library-path=src/flash/com/streamroot/mse.swc"),
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
-                          "-swf-version=17",
-                          "-target-player=11.4.0",
+                          "-target-player="+targetPlayer+"",
+                          "-swf-version="+swfversion+"",
+                          "-debug="+debug+"",
                           "-use-network=false",
                           os.path.normpath("-output=bin-release/jwplayer.flash.swf"),
                           "-compiler.optimize=true",
@@ -88,8 +99,9 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("-library-path=src/com/streamroot/mse.swc"),
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
-                          "-swf-version=17",
-                          "-target-player=11.4.0",
+                          "-target-player="+targetPlayer+"",
+                          "-swf-version="+swfversion+"",
+                          "-debug="+debug+"",
                           "-use-network=false",
                           "-static-link-runtime-shared-libraries=true",
                           os.path.normpath("-output=dist/video-js-sr.swf"),
