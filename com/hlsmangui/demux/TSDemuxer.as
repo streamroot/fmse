@@ -150,7 +150,7 @@
         /** cancel demux operation */
         public function cancel() : void {
             CONFIG::LOGGING {
-                Log.debug("TS: cancel demux");
+                _transcodeWorker.debug("TS: cancel demux");
             }
             _data = null;
             _curAudioPES = null;
@@ -206,7 +206,7 @@
                     if (_pmtParsed == false) {
                         null; // just to avoid compilaton warnings if CONFIG::LOGGING is false
                         CONFIG::LOGGING {
-                            Log.error("TS: no PMT found, report parsing complete");
+                            _transcodeWorker.debug("TS: no PMT found, report parsing complete");
                         }
                     }
                     //_displayObject.removeEventListener(Event.ENTER_FRAME, _parseTimer);
@@ -222,16 +222,13 @@
             CONFIG::LOGGING {
                 _transcodeWorker.debug("FLASH TSDemuxer.flush");
             }
-            CONFIG::LOGGING {
-                Log.debug("TS: flushing demux");
-            }
             // check whether last parsed audio PES is complete
             if (_curAudioPES && _curAudioPES.length > 14) {
                 var pes : PES = new PES(_curAudioPES, true);
                 // consider that PES with unknown size (length=0 found in header) is complete
                 if (pes.len == 0 || (pes.data.length - pes.payload - pes.payload_len) >= 0) {
                     CONFIG::LOGGING {
-                        Log.debug2("TS: complete Audio PES found at end of segment, parse it");
+                        _transcodeWorker.debug("TS: complete Audio PES found at end of segment, parse it");
                     }
                     // complete PES, parse and push into the queue
                     if (_audioIsAAC) {
@@ -242,7 +239,7 @@
                     _curAudioPES = null;
                 } else {
                     CONFIG::LOGGING {
-                        Log.debug("TS: partial audio PES at end of segment");
+                        _transcodeWorker.debug("TS: partial audio PES at end of segment");
                     }
                     _curAudioPES.position = _curAudioPES.length;
                 }
@@ -253,7 +250,7 @@
                 // consider that PES with unknown size (length=0 found in header) is complete
                 if (pes.len == 0 || (pes.data.length - pes.payload - pes.payload_len) >= 0) {
                     CONFIG::LOGGING {
-                        Log.debug2("TS: complete AVC PES found at end of segment, parse it");
+                        _transcodeWorker.debug("TS: complete AVC PES found at end of segment, parse it");
                     }
                     // complete PES, parse and push into the queue
                     _parseAVCPES(pes);
@@ -269,7 +266,7 @@
                     }
                 } else {
                     CONFIG::LOGGING {
-                        Log.debug("TS: partial AVC PES at end of segment expected/current len:" + pes.payload_len + "/" + ( pes.data.length - pes.payload));
+                        _transcodeWorker.debug("TS: partial AVC PES at end of segment expected/current len:" + pes.payload_len + "/" + ( pes.data.length - pes.payload));
                     }
                     _curVideoPES.position = _curVideoPES.length;
                 }
@@ -279,14 +276,14 @@
                 var pes3 : PES = new PES(_curId3PES, false);
                 if (pes3.len && (pes3.data.length - pes3.payload - pes3.payload_len) >= 0) {
                     CONFIG::LOGGING {
-                        Log.debug2("TS: complete ID3 PES found at end of segment, parse it");
+                        _transcodeWorker.debug("TS: complete ID3 PES found at end of segment, parse it");
                     }
                     // complete PES, parse and push into the queue
                     _parseID3PES(pes3);
                     _curId3PES = null;
                 } else {
                     CONFIG::LOGGING {
-                        Log.debug("TS: partial ID3 PES at end of segment");
+                        _transcodeWorker.debug("TS: partial ID3 PES at end of segment");
                     }
                     _curId3PES.position = _curId3PES.length;
                 }
@@ -294,13 +291,13 @@
             // push remaining tags and notify complete
             if (_tags.length) {
                 CONFIG::LOGGING {
-                    Log.debug2("TS: flush " + _tags.length + " tags");
+                    _transcodeWorker.debug("TS: flush " + _tags.length + " tags");
                 }
                 _callback_progress(_tags);
                 _tags = new Vector.<FLVTag>();
             }
             CONFIG::LOGGING {
-                Log.debug("TS: parsing complete");
+                _transcodeWorker.debug("TS: parsing complete");
             }
         }
 
@@ -311,7 +308,7 @@
             if (_adtsFrameOverflow && _adtsFrameOverflow.length) {
                 // if overflowing, append remaining data from previous frame at the beginning of PES packet
                 CONFIG::LOGGING {
-                    Log.debug("TS/AAC: append overflowing " + _adtsFrameOverflow.length + " bytes to beginning of new PES packet");
+                    _transcodeWorker.debug("TS/AAC: append overflowing " + _adtsFrameOverflow.length + " bytes to beginning of new PES packet");
                 }
                 var ba : ByteArray = new ByteArray();
                 ba.writeBytes(_adtsFrameOverflow);
@@ -322,7 +319,7 @@
             }
             if (isNaN(pes.pts)) {
                 CONFIG::LOGGING {
-                    Log.warn("TS/AAC: no PTS info in this PES packet,discarding it");
+                    _transcodeWorker.debug("TS/AAC: no PTS info in this PES packet,discarding it");
                 }
                 return;
             }
@@ -331,7 +328,7 @@
                 var adifTag : FLVTag = new FLVTag(FLVTag.AAC_HEADER, pes.pts, pes.dts, true);
                 var adif : ByteArray = AACDemuxer.getADIF(pes.data, pes.payload);
                 CONFIG::LOGGING {
-                    Log.debug("TS/AAC: insert ADIF TAG");
+                    _transcodeWorker.debug("TS/AAC: insert ADIF TAG");
                 }
                 adifTag.push(adif, 0, adif.length);
                 _tags.push(adifTag);
@@ -355,7 +352,7 @@
                     _adtsFrameOverflow = new ByteArray();
                     _adtsFrameOverflow.writeBytes(pes.data, frame.start + frame.length);
                     CONFIG::LOGGING {
-                        Log.debug("TS/AAC:ADTS frame overflow:" + adts_overflow);
+                        _transcodeWorker.debug("TS/AAC:ADTS frame overflow:" + adts_overflow);
                     }
                 }
             } else {
@@ -363,7 +360,7 @@
                 _adtsFrameOverflow = new ByteArray();
                 _adtsFrameOverflow.writeBytes(pes.data, pes.data.position);
                 CONFIG::LOGGING {
-                    Log.debug("TS/AAC:ADTS frame overflow:" + _adtsFrameOverflow.length);
+                    _transcodeWorker.debug("TS/AAC:ADTS frame overflow:" + _adtsFrameOverflow.length);
                 }
             }
         };
@@ -464,7 +461,7 @@
                     _avcc = avcc;
                     var avccTag : FLVTag = new FLVTag(FLVTag.AVC_HEADER, pes.pts, pes.dts, true);
                     avccTag.push(avcc, 0, avcc.length);
-                    // Log.debug("TS:AVC:push AVC HEADER");
+                    // _transcodeWorker.debug("TS:AVC:push AVC HEADER");
                     _tags.push(avccTag);
                 }
             }
@@ -498,7 +495,7 @@
                             var type : uint = eg.readUE();
                             if (type == 2 || type == 4 || type == 7 || type == 9) {
                                 CONFIG::LOGGING {
-                                    Log.debug("TS: frame_type:" + frame.type + ",keyframe slice_type:" + type);
+                                    _transcodeWorker.debug("TS: frame_type:" + frame.type + ",keyframe slice_type:" + type);
                                 }
                                 _curVideoTag.keyframe = true;
                             }
@@ -584,7 +581,7 @@
                             var ba : ByteArray = new ByteArray();
                             _data.position = pos_start;
                             _data.readBytes(ba, 0, pos_end - pos_start);
-                            Log.debug2("TS: lost sync dump:" + Hex.fromArray(ba));
+                            _transcodeWorker.debug2("TS: lost sync dump:" + Hex.fromArray(ba));
                         }
                     }
                     _data.position = pos_end + 1;
@@ -626,14 +623,14 @@
                     if (_pmtParsed == false) {
                         null; // just to avoid compilaton warnings if CONFIG::LOGGING is false
                         CONFIG::LOGGING {
-                            Log.debug("TS: PAT found.PMT PID:" + _pmtId);
+                            _transcodeWorker.debug("TS: PAT found.PMT PID:" + _pmtId);
                         }
                     }
                     break;
                 case _pmtId:
                     if (_pmtParsed == false) {
                         CONFIG::LOGGING {
-                            Log.debug("TS: PMT found");
+                            _transcodeWorker.debug("TS: PMT found");
                         }
                         todo -= _parsePMT(stt);
                         _pmtParsed = true;
@@ -688,14 +685,14 @@
                         var pes : PES = new PES(_curId3PES, false);
                         if (pes.len && (pes.data.length - pes.payload - pes.payload_len) >= 0) {
                             CONFIG::LOGGING {
-                                Log.debug2("TS: complete ID3 PES found, parse it");
+                                _transcodeWorker.debug2("TS: complete ID3 PES found, parse it");
                             }
                             // complete PES, parse and push into the queue
                             _parseID3PES(pes);
                             _curId3PES = null;
                         } else {
                             CONFIG::LOGGING {
-                                Log.debug("TS: partial ID3 PES");
+                                _transcodeWorker.debug("TS: partial ID3 PES");
                             }
                             _curId3PES.position = _curId3PES.length;
                         }
@@ -796,7 +793,7 @@
                     // ITU-T Rec. H.264 and ISO/IEC 14496-10 (lower bit-rate video)
                     _avcId = sid;
                     CONFIG::LOGGING {
-                        Log.debug("TS: Selected video PID: " + _avcId);
+                        _transcodeWorker.debug("TS: Selected video PID: " + _avcId);
                     }
                 } else if (typ == 0x03 || typ == 0x04) {
                     // ISO/IEC 11172-3 (MPEG-1 audio)
@@ -806,7 +803,7 @@
                     // ID3 pid
                     _id3Id = sid;
                     CONFIG::LOGGING {
-                        Log.debug("TS: Selected ID3 PID: " + _id3Id);
+                        _transcodeWorker.debug("TS: Selected ID3 PID: " + _id3Id);
                     }
                 }
                 // es_info_length
@@ -819,7 +816,7 @@
             if (audioList.length) {
                 null; // just to avoid compilaton warnings if CONFIG::LOGGING is false
                 CONFIG::LOGGING {
-                    Log.debug("TS: Found " + audioList.length + " audio tracks");
+                    _transcodeWorker.debug("TS: Found " + audioList.length + " audio tracks");
                 }
             }
             // provide audio track List to audio select callback. this callback will return the selected audio track
@@ -829,12 +826,12 @@
                 audioPID = audioTrack.id;
                 _audioIsAAC = audioTrack.isAAC;
                 CONFIG::LOGGING {
-                    Log.debug("TS: selected " + (_audioIsAAC ? "AAC" : "MP3") + " PID: " + audioPID);
+                    _transcodeWorker.debug("TS: selected " + (_audioIsAAC ? "AAC" : "MP3") + " PID: " + audioPID);
                 }
             } else {
                 audioPID = -1;
                 CONFIG::LOGGING {
-                    Log.debug("TS: no audio selected");
+                    _transcodeWorker.debug("TS: no audio selected");
                 }
             }
             // in case audio PID change, flush any partially parsed audio PES packet

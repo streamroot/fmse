@@ -71,7 +71,10 @@ public class TranscodeWorker extends Sprite {
             }
             */
 
-            answer = {type: type, isInit: isInit}
+            answer = {type: type, isInit: isInit};
+            debug("sending back message");
+            _workerToMain.send(answer);
+            debug("message sent");
 
         } else {
         	debug("transcoding media");
@@ -85,10 +88,6 @@ public class TranscodeWorker extends Sprite {
 
             //answer = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
-
-        /*debug("sending back message");
-        _workerToMain.send(answer);
-        debug("message sent");*/
 	}
 
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, seqnum:Number = 0, min_pts:Number = 0, max_pts:Number = 0):void {
