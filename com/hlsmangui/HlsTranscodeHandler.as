@@ -36,10 +36,10 @@ package com.hlsmangui
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
 
-        public function toTranscoding(input:IDataInput, seqnum:uint, offset:Number = 0):void
+        public function toTranscoding(input:IDataInput, offset:Number = 0):void
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
-            _frag_current = new Fragment(seqnum, input);
+            _frag_current = new Fragment(input);
             var fragData:FragmentData = _frag_current.data;
             fragData.tags = new Vector.<FLVTag>();
             fragData.audio_found = fragData.video_found = false;
@@ -273,7 +273,7 @@ package com.hlsmangui
                     for each (tag in fragData.tags) {
                         segmentBytes.writeBytes(tag.data);
                     }
-                    _asyncTranscodeCB("apple", false, segmentBytes, _frag_current.seqnum, fragData.tag_pts_min, fragData.tag_pts_max);
+                    _asyncTranscodeCB("apple", false, segmentBytes, fragData.tag_pts_min, fragData.tag_pts_max);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     CONFIG::LOGGING {
                         _transcodeWorker.debug("FLASH HLSEvent.TAGS_LOADED");

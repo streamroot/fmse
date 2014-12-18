@@ -8,14 +8,11 @@ package com.hlsmangui.model {
 		public var duration:Number;
 		/** Start time of the segment **/
 		public var start_time:Number;
-		/** Sequence number of this segment **/
-		public var seqnum:int;
 		/** data **/
 		public var data:FragmentData;
 
 		/** Create the fragment **/
-		public function Fragment(seqnum:int, input:IDataInput) {
-			this.seqnum = seqnum;
+		public function Fragment(input:IDataInput) {
 			this.data = new FragmentData(input);
 		}
 	}

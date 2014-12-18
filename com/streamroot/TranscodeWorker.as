@@ -44,7 +44,6 @@ public class TranscodeWorker extends Sprite {
 		var isInit:Boolean = message.isInit;
 		var timestamp:Number = message.timestamp;
 		var offset:Number = message.offset;
-        var seqnum:uint = message.seqnum;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
 
@@ -80,7 +79,7 @@ public class TranscodeWorker extends Sprite {
         	debug("transcoding media");
             try {
                 //var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
-                _transcoder.asyncTranscode(data, type, timestamp, offset, isInit, seqnum);
+                _transcoder.asyncTranscode(data, type, timestamp, offset, isInit);
             } catch (e:Error) {
                 error(e.toString(), type);
                 return;
@@ -90,11 +89,11 @@ public class TranscodeWorker extends Sprite {
         }
 	}
 
-    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, seqnum:Number = 0, min_pts:Number = 0, max_pts:Number = 0):void {
+    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
         /** If type is HLS we return sequence number and PTS as well as segment bytes **/
         debug("asyncTranscodeCB");
         if(type.indexOf("apple") >= 0) {
-            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, seqnum: seqnum, min_pts: min_pts, max_pts: max_pts};
+            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
         } else {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }

@@ -532,7 +532,6 @@ public class StreamrootMSE {
 
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
-        var seqnum:int = message.seqnum;
         var min_pts:Number = message.min_pts;
         var max_pts:Number = message.max_pts;
 
@@ -555,10 +554,10 @@ public class StreamrootMSE {
 
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
-                /** Return hls segment PTS to js for rep change (and later will be for seek too), once it has been appended (is this optimal?) **/
-                returnHlsSegmentInfo(seqnum, min_pts, max_pts);
                 setHasData(true, VIDEO);
-                setTimeout(updateendVideo, TIMEOUT_LENGTH);
+
+                setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
+
             }else if (type.indexOf("audio") >= 0) {
                 if (!isInit) {
                     setHasData(true, AUDIO);
@@ -590,16 +589,16 @@ public class StreamrootMSE {
         }
     }
 
+    private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
+        ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
+    }
+
     private function updateendAudio(error:Boolean = false):void {
         ExternalInterface.call("sr_flash_updateend_audio", error);
     }
 
     private function updateendVideo(error:Boolean = false):void {
         ExternalInterface.call("sr_flash_updateend_video", error);
-    }
-
-    private function returnHlsSegmentInfo(seqnum: int, min_pts: Number, max_pts: Number):void {
-        ExternalInterface.call("updateHlsPTS", seqnum, min_pts, max_pts);
     }
 
     private function onDebugChannel(event:Event):void {

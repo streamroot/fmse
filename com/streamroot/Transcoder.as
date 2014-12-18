@@ -46,7 +46,7 @@ public class Transcoder {
         //TODO: switch for HLS + send error if no matching type
     }
 
-	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, isInit:Boolean, seqnum:uint):void {
+	public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, isInit:Boolean):void {
 		var bytes_event:ByteArray = Base64.decode(data);
         CONFIG::LOGGING {
             _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
@@ -60,7 +60,7 @@ public class Transcoder {
                     CONFIG::LOGGING {
                         _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
                     }
-                    _hlsTranscodeHandler.toTranscoding(bytes_event, seqnum, offset);
+                    _hlsTranscodeHandler.toTranscoding(bytes_event, offset);
 
 		} else if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
