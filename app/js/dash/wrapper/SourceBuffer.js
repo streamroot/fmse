@@ -19,6 +19,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
     _pendingEndTime = -1,
+    _appendingSeqnum,
 	
 	_addEventListener 	= function(type, listener){
 		if (!_listeners[type]){
@@ -51,11 +52,13 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         return (Math.abs(startTimeMs/1000 - _endTime) < 1);
     },
 
-	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime){
+    //NOTE: starting from here in the chain seqnum will only be defined in the case of hls
+	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime, seqnum){
         _updating = true; //Do this at the very first
         _trigger({type:'updatestart'});
         
         if (_isTimestampConsistent(startTimeMs) || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
+            _appendingSeqnum = seqnum;
             _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
             _pendingEndTime = endTime;
         } else {
@@ -123,7 +126,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         return new CustomTimeRange(bufferedArray);
     },
         
-    _triggerUpdateend = function (error) {
+    _triggerUpdateend = function (error, min_pts, max_pts) {
         _updating=false;
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
@@ -132,6 +135,8 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         if (!error && _pendingEndTime > _endTime) {
             console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
+            //TODO: call a method to update start and end time of segment of id seqnum
+            //XXX.updateMapPTS(_appendingSeqnum, min_pts, max_pts);
         }
         _trigger({type: 'updateend'});
     },
@@ -167,22 +172,13 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     };
     
     //TODO: remove endTime hack
-    this.appendBuffer = function (arraybuffer_data, startTimeMs, endTime) {
-        _appendBuffer(arraybuffer_data, startTimeMs, endTime);
-    };
-    
-    this.remove = function (start, end) {
-        _remove(start, end);
-    };
-    
-    this.addEventListener = function (type, listener) {
-        _addEventListener(type, listener);
-    };
-    
-    this.trigger = function (event) {
-        _trigger(event);
-    };
-    
+    this.appendBuffer = _appendBuffer;
+    this.remove = _remove;
+    this.addEventListener = _addEventListener;
+    this.trigger = _trigger;
+
+    this.seekTime = _seekTime;
+        
     Object.defineProperty(this, "updating", {
         get: function () { return _updating; },
         set: undefined
@@ -206,10 +202,6 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     
     this.seeked = function() {
         _segmentAppender.seeked();
-    };
-
-    this.seekTime = function (time) {
-        _seekTime(time);
     };
     
     this.segmentFlushed = function () {

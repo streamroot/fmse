@@ -57,13 +57,9 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
         _initialize = function () {
         };
     
-    self.appendBuffer = function (data, type, startTimeMs, endTime) {
-        _appendBuffer(data, type, startTimeMs, endTime);
-    };
+    self.appendBuffer = _appendBuffer;
+    self.onDecoded = _onDecoded;
     
-    self.onDecoded = function(e) {
-        _onDecoded(e);
-    };
     self.seeking = function() {
         if(_isDecoding) {
             _discard = true;
