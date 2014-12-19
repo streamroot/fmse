@@ -22,8 +22,7 @@ var MediaSourceWrapper = function (video) {
             console.log("window.webkitMediaSource");
             mediaSource = new webkitMediaSource();
         } else {
-            console.log("Media Source Not available");
-            return {};
+            throw new Error("Media Source is not supported in this browser");
         }
         
         //mediaSource is defined here, we already called return if if doesn't exist
