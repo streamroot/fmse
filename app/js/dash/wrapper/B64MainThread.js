@@ -7,7 +7,7 @@ var B64MainThread = function(segmentAppender) {
         _b64Data,
         _offset,
         _segmentAppender = segmentAppender,
-        PIECE_SIZE = 65535, //TODO: check if PIECE_SIZE should be (2^n)-1, to ensure that tempString is the right length to go through btoa
+        PIECE_SIZE = 10000*3, //PIECE_SIZE needs to be a multiple of 3, since we call btoa on it
 
         _arrayBufferToBase64 = function(){
             var i,
@@ -19,7 +19,9 @@ var B64MainThread = function(segmentAppender) {
             }
             _b64Data += btoa(tempString);
             if (end === len) {
-                _segmentAppender.onDecoded(_b64Data);
+                setTimeout(function () {
+                    _segmentAppender.onDecoded(_b64Data);
+                }, 5);
             } else {
                 _offset = end;
                 setTimeout(_arrayBufferToBase64, 5);
