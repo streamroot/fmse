@@ -62,7 +62,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
             //There's a discontinuity
             var firstSegmentBool = (_startTime === _endTime);
             console.debug('timestamp not consistent. First segment after seek: ' + firstSegmentBool +".   " +  (startTimeMs/1000));
-            _triggerUpdateend(true); //trigger updateend with error bool to true
+            _onUpdateend(true); //trigger updateend with error bool to true
         }
         
         /*
@@ -105,7 +105,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         //TODO: implement remove method in sourceBuffer
 		//_swfobj.removeBuffer(start,end);
         _updating = true;
-        setTimeout(_triggerUpdateend, 20);  //trigger updateend to launch next job. Needs the setTimeout to be called 
+        _onUpdateend();  //trigger updateend to launch next job. Needs the setTimeout to be called 
                                             //asynchronously and avoid error with Max call stack size (infinite recursive loop)   
 	},
         
@@ -135,6 +135,12 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         }
         _trigger({type: 'updateend'});
     },
+        
+    _onUpdateend = function (error) {
+        setTimeout(function () {
+            _triggerUpdateend(error);
+        }, 5);
+    },
 
     _seekTime = function(time, audioEndTime) {
         //Sets both startTime and endTime to seek time.
@@ -152,11 +158,11 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         
     _initialize = function() {        
         if (_type.match(/video/)) {
-            window.sr_flash_updateend_video = _triggerUpdateend;
+            window.sr_flash_updateend_video = _onUpdateend;
         } else if (_type.match(/audio/)) {
-            window.sr_flash_updateend_audio = _triggerUpdateend;
+            window.sr_flash_updateend_audio = _onUpdateend;
         } else if (_type.match(/vnd/)) {
-			window.sr_flash_updateend_video = _triggerUpdateend;
+			window.sr_flash_updateend_video = _onUpdateend;
         }
     };
     
@@ -207,7 +213,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     };
     
     this.segmentFlushed = function () {
-        _triggerUpdateend(true);
+        _onUpdateend(true);
     };
     
     Object.defineProperty(this, "isFlash", {

@@ -21,7 +21,7 @@ var VideoExtension = function (mediaController, swfObj) {
         _fixedCurrentTime = 0,  //In case of video paused or buffering
         _seekTarget,    // Using another variable for seeking, because seekTarget can be set to undefined by "playing" event (TODO: triggered during seek, which is a separate issue)
         _lastCurrentTimeTimestamp,
-        _REFRESH_INTERVAL = 500,    //Max interval until we look up flash to get real value of currentTime
+        _REFRESH_INTERVAL = 2000,    //Max interval until we look up flash to get real value of currentTime
 
 
         _listeners = [],
@@ -104,7 +104,7 @@ var VideoExtension = function (mediaController, swfObj) {
 
             eventHandlers.onMetaData = newOnMetaData;
             eventHandlers.onBuffering = newOnBuffering;
-            //eventHandlers.onPlaying = newOnPlaying;
+
             _eventHandlers = eventHandlers;
         },
 
@@ -336,12 +336,6 @@ var VideoExtension = function (mediaController, swfObj) {
 
             window.sr_flash_stopped = function () {
                 _onStopped();
-            };
-
-            window.updateend = function() {
-                for (var i=0; i<_sourceBuffers.length; i++) {
-                    _sourceBuffers[i].trigger({type:'updateend'});
-                }
             };
         };
 
