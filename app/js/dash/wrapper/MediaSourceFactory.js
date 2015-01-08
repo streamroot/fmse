@@ -2,11 +2,11 @@
 
 var MediaSourceFlash = require('./MediaSourceFlash');
 
-var MediaSourceWrapper = function (video) {
-    if (typeof video.getSwf !== "undefined") {
+var MediaSourceWrapper = function (mediaController) {
+    if (typeof mediaController.video.getSwf !== "undefined") {
         
         //Flash shim
-        return new MediaSourceFlash(video);
+        return new MediaSourceFlash(mediaController.video, mediaController);
         
     } else {
         
@@ -28,9 +28,9 @@ var MediaSourceWrapper = function (video) {
         //mediaSource is defined here, we already called return if if doesn't exist
         //Set video.src BEFORE returning MSE
         if (window.URL !== null) {
-            video.src = window.URL.createObjectURL(mediaSource);
+            mediaController.video.src = window.URL.createObjectURL(mediaSource);
         } else if (window.webkitURL = window.webkitURL || window.WebKitURL) {
-            video.src = window.webkitURL.createObjectURL(mediaSource);
+            mediaController.video.src = window.webkitURL.createObjectURL(mediaSource);
         }
         
         return mediaSource;

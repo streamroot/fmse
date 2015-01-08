@@ -3,7 +3,7 @@
 var SourceBuffer = require('./SourceBuffer');
 var conf = require('../../../confMedia');
 
-var MediaSourceFlash = function (videoExtension) {
+var MediaSourceFlash = function (videoExtension, mediaController) {
     var    self = this,
 
         _videoExtension = videoExtension,
@@ -75,7 +75,7 @@ var MediaSourceFlash = function (videoExtension) {
             setTimeout(function() {_readyState = _READY_STATE.OPEN;}, 100);
 
             window.sr_flash_transcodeError = function(message) {
-				console.error(message);
+                console.error(message);
                 if(conf.REPORT_ERROR) {
                     if (window.onPlayerError) {
                         window.onPlayerError(message);
@@ -84,17 +84,11 @@ var MediaSourceFlash = function (videoExtension) {
             }
         };
 
-    this.addSourceBuffer = function (type) {
-        return _addSourceBuffer(type);
-    };
-
-    this.addEventListener = function (type, listener) {
-        _addEventListener(type, listener);
-    };
-
-    this.trigger = function (event) {
-        _trigger(event);
-    };
+    this.addSourceBuffer = _addSourceBuffer;
+    this.addEventListener = _addEventListener;
+    this.trigger = _trigger;
+    
+    this.updateMapPTS = mediaController.updateMapPTS.bind(mediaController);
 
 
     Object.defineProperty(this, "readyState", {

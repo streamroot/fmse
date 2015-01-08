@@ -7,21 +7,22 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
 
 	var self = this,
     
-    _listeners 		= [],
+    _listeners = [],
 	_swfobj = swfobj,
         
     _segmentAppender = new SegmentAppender(self, _swfobj),
 
-	_updating 		= false, //true , false
-	_type 			= type,
+    _updating = false, //true , false
+    _type = type,
 	
     
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
     _pendingEndTime = -1,
     _appendingSeqnum,
+    _lastPTS, // in ms, easy to compare to pax and min pts from flash and send to flash where everything is in ms
 	
-	_addEventListener 	= function(type, listener){
+	_addEventListener = function(type, listener){
 		if (!_listeners[type]){
 			_listeners[type] = [];
 		}
@@ -39,7 +40,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
 		}
 	},
 	
-	_trigger 			= function(event){
+	_trigger = function(event){
 		//updateend, updatestart
 		var listeners = _listeners[event.type] || [],
 			i = listeners.length;
@@ -53,13 +54,18 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     },
 
     //NOTE: starting from here in the chain seqnum will only be defined in the case of hls
-	_appendBuffer     		= function (arraybuffer_data, startTimeMs, endTime, seqnum){
+    _appendBuffer = function (arraybuffer_data, startTimeMs, endTime, seqnum){
         _updating = true; //Do this at the very first
         _trigger({type:'updatestart'});
         
         if (_isTimestampConsistent(startTimeMs) || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
             _appendingSeqnum = seqnum;
-            _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
+            // We also need to send the last pts of this rep to be able to check if it's the right segment before appending
+            if(_lastPTS) {
+                _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime, _lastPTS);
+            } else { //case when it's the first segment of the video
+                _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
+            }
             _pendingEndTime = endTime;
         } else {
             //There's a discontinuity
@@ -93,7 +99,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         */
 	},
         /*
-	_arrayBufferToBase64 	= function(buffer){
+	_arrayBufferToBase64 = function(buffer){
 		var binary = '';
 		var bytes = new Uint8Array( buffer );
 		var len = bytes.byteLength;
@@ -127,7 +133,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     },
         
     _triggerUpdateend = function (error, min_pts, max_pts) {
-        _updating=false;
+        _updating = false;
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
@@ -135,15 +141,19 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         if (!error && _pendingEndTime > _endTime) {
             console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
-            //TODO: call a method to update start and end time of segment of id seqnum
-            //XXX.updateMapPTS(_appendingSeqnum, min_pts, max_pts);
+            _lastPTS = max_pts;
+        } else if (error) {
+            console.debug("Wrong segment. Update map then bufferize OR discontinuity at sourceBuffer.appendBuffer");
+        }
+        if(min_pts && max_pts) {
+            mediaSource.updateMapPTS(_appendingSeqnum, min_pts, max_pts);
         }
         _trigger({type: 'updateend'});
     },
         
-    _onUpdateend = function (error) {
+    _onUpdateend = function (error, min_pts, max_pts) {
         setTimeout(function () {
-            _triggerUpdateend(error);
+            _triggerUpdateend(error, min_pts, max_pts);
         }, 5);
     },
 
@@ -161,7 +171,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _pendingEndTime = -1;
     },
         
-    _initialize = function() {        
+    _initialize = function() {
         if (_type.match(/video/)) {
             window.sr_flash_updateend_video = _onUpdateend;
         } else if (_type.match(/audio/)) {
