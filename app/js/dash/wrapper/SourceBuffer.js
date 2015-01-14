@@ -2,10 +2,11 @@
 
 var CustomTimeRange = require('../CustomTimeRange');
 var SegmentAppender = require('./SegmentAppender');
+var EventEmitter = require('eventemitter3');
 
-var SourceBuffer = function (mediaSource, type, swfobj) {
+var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
 
-	var self = this,
+    var self = this,
     
     _listeners = [],
 	_swfobj = swfobj,
@@ -21,8 +22,13 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
     _pendingEndTime = -1,
     _appendingSeqnum,
     _lastPTS, // in ms, easy to compare to pax and min pts from flash and send to flash where everything is in ms
-	
-	_addEventListener = function(type, listener){
+	_switchingTrack = false,
+
+	_onTrackSwitch = function() {
+        _switchingTrack = true;
+    },
+
+    _addEventListener = function(type, listener){
 		if (!_listeners[type]){
 			_listeners[type] = [];
 		}
@@ -50,6 +56,15 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
 	},
         
     _isTimestampConsistent = function (startTimeMs) {
+        console.debug("_isTimestampConsistent _switchingTrack: " + _switchingTrack);
+        if(Math.abs(startTimeMs/1000 - _endTime) >= 1 /*|| Math.abs(startTimeMs/1000 - _endTime) > 60*/) {
+            console.debug("_isTimestampConsistent FALSE");
+            console.debug("_isTimestampConsistent startTime: " + startTimeMs/1000);
+            console.debug("_isTimestampConsistent _endTime: " + _endTime);
+        }
+        if((_switchingTrack && Math.abs(startTimeMs/1000 - _endTime) < 1)) {
+            _switchingTrack = false;
+        }
         return (Math.abs(startTimeMs/1000 - _endTime) < 1);
     },
 
@@ -58,7 +73,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         _updating = true; //Do this at the very first
         _trigger({type:'updatestart'});
         
-        if (_isTimestampConsistent(startTimeMs) || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
+        if (_isTimestampConsistent(startTimeMs) || _switchingTrack || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
             _appendingSeqnum = seqnum;
             // We also need to send the last pts of this rep to be able to check if it's the right segment before appending
             if(_lastPTS) {
@@ -67,6 +82,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
                 _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
             }
             _pendingEndTime = endTime;
+            //_switchingTrack = false;
         } else {
             //There's a discontinuity
             var firstSegmentBool = (_startTime === _endTime);
@@ -134,6 +150,9 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         
     _triggerUpdateend = function (error, min_pts, max_pts) {
         _updating = false;
+        if(!error) {
+            console.debug("updateend, appended segment: " + _appendingSeqnum);
+        }
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
@@ -179,6 +198,7 @@ var SourceBuffer = function (mediaSource, type, swfobj) {
         } else if (_type.match(/vnd/)) {
 			window.sr_flash_updateend_video = _onUpdateend;
         }
+        mediaController.ee.on('rep switch', _onTrackSwitch);
     };
     
     //TODO: remove endTime hack
