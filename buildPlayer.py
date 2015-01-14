@@ -41,9 +41,12 @@ workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-debug="+debug+"",
                           "-static-link-runtime-shared-libraries=true",
                           os.path.normpath("com/streamroot/TranscodeWorker.as"),
-                          os.path.normpath("-output=com/streamroot/TranscodeWorker.swf")], stdout=subprocess.PIPE)
-popenPrint(workerResult)
+                          os.path.normpath("-output=com/streamroot/TranscodeWorker.swf"),
+                          "-define+=CONFIG::LOGGING,false"],
 
+                          stdout=subprocess.PIPE)
+
+popenPrint(workerResult)
 #Remove the old library before compiling the new as mxmlc doesn't support compling into non empty folder
 if (os.path.exists("mse.swc")):
     os.remove("mse.swc")
