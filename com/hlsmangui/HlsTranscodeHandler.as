@@ -86,8 +86,13 @@ package com.hlsmangui
                 _transcodeWorker.debug("_fragParsingProgressHandler number tags: " + tags.length);
             }
             for each (tag in tags) {
-                tag.pts = PTS.normalize(ref_pts, tag.pts);
-                tag.dts = PTS.normalize(ref_pts, tag.dts);
+                // Hardcode a normalization reference to make sure PTS are > 0. Reference = 2^32/90
+                var tempPTS = tag.pts;
+                //tag.pts = PTS.normalize(47721859, tag.pts);
+                tag.pts = PTS.normalize(tag.pts);
+                _transcodeWorker.debug("FLASH normalization active: " + (tempPTS !== tag.pts));
+                _transcodeWorker.debug("FLASH pts before / after  normalization: " + tempPTS + " / " + tag.pts);
+                //tag.dts = PTS.normalize(ref_pts, tag.dts);
                 switch( tag.type ) {
                     case FLVTag.AAC_HEADER:
                     case FLVTag.AAC_RAW:

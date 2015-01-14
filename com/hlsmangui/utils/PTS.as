@@ -14,18 +14,29 @@
          * i.e it could output values bigger than the (+/-) 2^32/90.
          * this will avoid PTS looping issues.  
          */
-        public static function normalize(reference : Number, value : Number) : Number {
+
+        // Tweaked original function just to make sure pts never turns < 0.
+        /*public static function normalize(reference : Number, value : Number) : Number {
             var offset : Number;
+            // This case cannot happen, value is < (2^32)/90 and reference = (2^32)/90
             if (reference < value) {
-                // - 2^33/90
-                offset = -95443717;
+                // - 2^32/90
+                offset = -47721859;
             } else {
-                // + 2^33/90
-                offset = 95443717;
+                // + 2^32/90
+                offset = 47721859;
             }
             // 2^32 / 90
-            while (!isNaN(reference) && (Math.abs(value - reference) > 47721858)) {
+            while (!isNaN(reference) && (Math.abs(value - reference) > 47721859)) {
                 value += offset;
+            }
+            return value;
+        }*/
+
+        public static function normalize(value : Number) : Number {
+            if(value < 0) {
+                // 2^32/90
+                value += 47721859;
             }
             return value;
         }
