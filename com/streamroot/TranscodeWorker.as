@@ -16,6 +16,12 @@ public class TranscodeWorker extends Sprite {
 	private var _workerToMain:MessageChannel;
 	private var _debugChannel:MessageChannel;
 
+    private var _lastPTS:Number;
+    private var _previousPTS:Number;    // Remember pts has been converted to ms from the start in pes parsing
+    private var _timestamp:Number;
+    private var _TIMESTAMP_MARGIN:Number = 1 * 1000; // 1s margin because we compare manifest timestamp and pts.
+    private var _FRAME_TIME:Number = (1/30) * 1000;  // average duration of 1 frame
+
 	private var _transcoder:Transcoder;
 
 	public function TranscodeWorker() {
@@ -38,17 +44,16 @@ public class TranscodeWorker extends Sprite {
             _transcoder.seeking();
             return;
         }
-
-		var data:String = message.data;
-		var type:String = message.type;
+		
+        var data:String = message.data;
+        var type:String = message.type;
 		var isInit:Boolean = message.isInit;
 		var timestamp:Number = message.timestamp;
 		var offset:Number = message.offset;
+        _timestamp = timestamp;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
-
-
-
+        _lastPTS = message.lastPTS;
 
 		if (isInit) {
 			debug("transcoding init");
@@ -89,17 +94,34 @@ public class TranscodeWorker extends Sprite {
         }
 	}
 
+
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
         /** If type is HLS we return sequence number and PTS as well as segment bytes **/
         debug("asyncTranscodeCB");
-        if(type.indexOf("apple") >= 0) {
+
+        //debug("TranscodeWorker _lastPTS: " + _lastPTS);
+        debug("TranscodeWorker timestamp: " + _timestamp);
+        debug("TranscodeWorker min_pts: " + min_pts);
+        debug("TranscodeWorker max_pts: " + max_pts);
+        debug("TranscodeWorker _previousPTS: " + _previousPTS);
+        if(type.indexOf("apple") >= 0 && (Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) || (_previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN)) {
+            // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
+            // the right segment
+            debug("ON EST BIEN PASSE DANS L ERREUR DU FLASH");
+            error("Timestamps don't match", "apple_error", min_pts, max_pts);
+        } else if(type.indexOf("apple") >= 0) {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
+            _previousPTS = max_pts;
         } else {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
-        debug("sending back message");
-        _workerToMain.send(answer);
-        debug("message sent");
+        
+        if(answer) {
+            debug("sending back message");
+            _workerToMain.send(answer);
+            debug("message sent");
+        }
+        
     }
 
 	public function debug(message:String):void {
@@ -107,8 +129,10 @@ public class TranscodeWorker extends Sprite {
 		_debugChannel.send(object);
 	}
 
-	public function error(message:String, type:String):void {
-		var object:Object = {command:'error', message: message, type: type};
+	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
+		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts, max_pts:max_pts};
+        debug("Transcodeworker.error min_pts: " + min_pts);
+        debug("TranscodeWorker.error max_pts: " + max_pts);
 		_debugChannel.send(object);
 	}
 
