@@ -21,8 +21,10 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
     _endTime = 0,
     _pendingEndTime = -1,
     _appendingSeqnum,
-    _lastPTS, // in ms, easy to compare to pax and min pts from flash and send to flash where everything is in ms
-	_switchingTrack = false,
+    /** _lastPTS in ms, easy to compare to max and min pts from flash and send to flash where everything is in ms **/
+    _lastPTS,
+	/** _switchingTrack is set to true when we change rep and until the first segment of the new rep is appended in the Flash. It avoids fatal blocking at _isTimestampConsistent **/
+    _switchingTrack = false,
 
 	_onTrackSwitch = function() {
         _switchingTrack = true;
@@ -61,9 +63,6 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
             console.debug("_isTimestampConsistent FALSE");
             console.debug("_isTimestampConsistent startTime: " + startTimeMs/1000);
             console.debug("_isTimestampConsistent _endTime: " + _endTime);
-        }
-        if((_switchingTrack && Math.abs(startTimeMs/1000 - _endTime) < 1)) {
-            _switchingTrack = false;
         }
         return (Math.abs(startTimeMs/1000 - _endTime) < 1);
     },
@@ -161,6 +160,8 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
             console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
             _lastPTS = max_pts;
+            // Wait until we're sure the right segment was appended to netStream before setting _switchingTrack to false to avoid perpetual blocking at _isTimestampConsistent
+            _switchingTrack = false;
         } else if (error) {
             console.debug("Wrong segment. Update map then bufferize OR discontinuity at sourceBuffer.appendBuffer");
         }
