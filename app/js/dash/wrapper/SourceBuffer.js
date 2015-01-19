@@ -165,13 +165,14 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
         } else if (error) {
             console.debug("Wrong segment. Update map then bufferize OR discontinuity at sourceBuffer.appendBuffer");
         }
-        if(min_pts && max_pts) {
+        if(min_pts > 0 && max_pts > 0) {    // Check that we are not in an apple_error_previousPTS (in which case 0 and 0 are returned but map mustn't be updated)
             mediaSource.updateMapPTS(_appendingSeqnum, min_pts, max_pts);
         }
         _trigger({type: 'updateend'});
     },
         
     _onUpdateend = function (error, min_pts, max_pts) {
+        console.debug("_onUpdateend js: " + min_pts + " / " + max_pts);
         setTimeout(function () {
             _triggerUpdateend(error, min_pts, max_pts);
         }, 5);
