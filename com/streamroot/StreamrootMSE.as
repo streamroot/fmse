@@ -578,11 +578,12 @@ public class StreamrootMSE {
 
     private function sendSegmentFlushedMessage(type:String, min_pts:Number = 0, max_pts:Number = 0):void {
         _streamrootInterface.debug("FLASH: discarding segment    " + type);
-        if(type.indexOf("apple_error") >= 0) {
-            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts);
-            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts);
+        if(type.indexOf("apple_error_timestamp") >= 0) {
+            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts/1000);
+            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts/1000);
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
-        } else if (type.indexOf("apple") >= 0) {
+        } else if (type.indexOf("apple") >= 0) {    // This case includes apple_error_previousPTS case
+            _streamrootInterface.debug("FLASH inside case discarding but no min/max pts returned to js");
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         } else if (type.indexOf("audio") >= 0) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
@@ -592,8 +593,8 @@ public class StreamrootMSE {
     }
 
     private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
-        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts);
-        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts);
+        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts/1000);
+        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts/1000);
         ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
     }
 
@@ -618,9 +619,9 @@ public class StreamrootMSE {
                 //a segment flushed message to notify the JS that append didn't work well, in order not to
                 //block the append pipeline
                 _isWorkerBusy = false;
-                _streamrootInterface.debug("StreamrootMSE.onDebugChannel min_pts: " + message.min_pts);
-                _streamrootInterface.debug("StreamrootMSE.onDebugChannel max_pts: " + message.max_pts);
-                _streamrootInterface.debug("StreamrootMSE.onDebugChannel error type: " + message.type);
+                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel min_pts: " + message.min_pts/1000);
+                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel max_pts: " + message.max_pts/1000);
+                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel error type: " + message.type);
                 sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
             }
         }

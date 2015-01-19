@@ -100,15 +100,19 @@ public class TranscodeWorker extends Sprite {
         debug("asyncTranscodeCB");
 
         //debug("TranscodeWorker _lastPTS: " + _lastPTS);
-        debug("TranscodeWorker timestamp: " + _timestamp);
-        debug("TranscodeWorker min_pts: " + min_pts);
-        debug("TranscodeWorker max_pts: " + max_pts);
-        debug("TranscodeWorker _previousPTS: " + _previousPTS);
-        if(type.indexOf("apple") >= 0 && (Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) || (_previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN)) {
+        debug("TranscodeWorker timestamp: " + _timestamp/1000);
+        debug("TranscodeWorker min_pts: " + min_pts/1000);
+        debug("TranscodeWorker max_pts: " + max_pts/1000);
+        debug("TranscodeWorker _previousPTS: " + _previousPTS/1000);
+        if(type.indexOf("apple") >= 0 && (Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN)) {
             // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
             // the right segment
-            debug("ON EST BIEN PASSE DANS L ERREUR DU FLASH");
-            error("Timestamps don't match", "apple_error", min_pts, max_pts);
+            debug("TRANSCODEWORKER apple_error_timestamp: " + min_pts + " / " + timestamp);
+            error("Timestamp and min_pts don't match", "apple_error_timestamp", min_pts, max_pts);
+        } else if(type.indexOf("apple") >= 0 && _previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
+            // No need to send back min and max pts in this case since media map doesn't need to be updated
+            debug("TRANSCODEWORKER apple_error_previousPTS: " + min_pts + " / " + timestamp);
+            error("previousPTS and min_pts don't match", "apple_error_previousPTS");
         } else if(type.indexOf("apple") >= 0) {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
             _previousPTS = max_pts;
@@ -131,8 +135,8 @@ public class TranscodeWorker extends Sprite {
 
 	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
 		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts, max_pts:max_pts};
-        debug("Transcodeworker.error min_pts: " + min_pts);
-        debug("TranscodeWorker.error max_pts: " + max_pts);
+        //debug("Transcodeworker.error min_pts: " + min_pts/1000);
+        //debug("TranscodeWorker.error max_pts: " + max_pts/1000);
 		_debugChannel.send(object);
 	}
 
