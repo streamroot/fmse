@@ -68,6 +68,8 @@ var MediaSourceFlash = function (videoExtension, mediaController) {
 
         },
 
+        _updateMapPTS = mediaController.updateMapPTS.bind(mediaController),
+
         _initialize = function(){
             _videoExtension.createSrc(self);
 
@@ -87,8 +89,7 @@ var MediaSourceFlash = function (videoExtension, mediaController) {
     this.addSourceBuffer = _addSourceBuffer;
     this.addEventListener = _addEventListener;
     this.trigger = _trigger;
-    
-    this.updateMapPTS = mediaController.updateMapPTS.bind(mediaController);
+    this.updateMapPTS = _updateMapPTS;
 
 
     Object.defineProperty(this, "readyState", {
