@@ -82,6 +82,8 @@ public class StreamrootMSE {
     private static const DECODE_CHUNK_SIZE : uint = 64 * 1024;
     private static const DECODE_INTERVAL : uint = 0;
 
+    private static const TIMEOUT_LENGTH:uint = 5;
+
 
     [Embed(source="TranscodeWorker.swf", mimeType="application/octet-stream")]
     private static var WORKER_SWF:Class;
@@ -252,7 +254,7 @@ public class StreamrootMSE {
     private function appendOrQueue(message:Object):void {
         if (!_isWorkerBusy) {
             _isWorkerBusy = true;
-            setTimeout(sendWorkerMessage, 100, message);
+            setTimeout(sendWorkerMessage, TIMEOUT_LENGTH, message);
             //_mainToWorker.send(message);
         } else if (!_pendingAppend) {
             _pendingAppend = message; //TODO: clear this job when we seek
@@ -550,17 +552,17 @@ public class StreamrootMSE {
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
                 setHasData(true, VIDEO);
-                setTimeout(updateendVideo, 20);
+                setTimeout(updateendVideo, TIMEOUT_LENGTH);
             }else if (type.indexOf("audio") >= 0) {
                 if (!isInit) {
                     setHasData(true, AUDIO);
                 }
-                setTimeout(updateendAudio, 20);
+                setTimeout(updateendAudio, TIMEOUT_LENGTH);
             } else if (type.indexOf("video") >= 0) {
                 if (!isInit) {
                     setHasData(true, VIDEO);
                 }
-                setTimeout(updateendVideo, 20);
+                setTimeout(updateendVideo, TIMEOUT_LENGTH);
             } else {
                 _streamrootInterface.error("no type matching");
             }
@@ -574,11 +576,11 @@ public class StreamrootMSE {
     private function sendSegmentFlushedMessage(type:String):void {
         _streamrootInterface.debug("FLASH: discarding segment    " + type);
         if (type.indexOf("apple") >= 0) {
-            updateendVideo(true);
+            setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         } else if (type.indexOf("audio") >= 0) {
-            updateendAudio(true);
+            setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
         } else if (type.indexOf("video") >= 0) {
-            updateendVideo(true);
+            setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         }
     }
 
