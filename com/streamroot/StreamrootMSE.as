@@ -146,6 +146,8 @@ public class StreamrootMSE {
         _buffered_audio = timeSeek*1000000;
 
         setHasData(false);
+        // Set isSeeking to skip _previousPTS check in TranscodeWorker.as
+        _worker.setSharedProperty("isSeeking", true);
 
         if (_pendingAppend) {
             //remove pending append job to avoid appending it after seek
@@ -555,6 +557,7 @@ public class StreamrootMSE {
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
                 setHasData(true, VIDEO);
+                _worker.setSharedProperty("isSeeking", false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
             } else if (type.indexOf("audio") >= 0) {
                 if (!isInit) {
