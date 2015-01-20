@@ -37,7 +37,7 @@ var SegmentAppender = function (sourceBuffer, swfobj) {
             }
         },
         
-        _appendBuffer = function (data, type, startTimeMs, endTime) {
+        _appendBuffer = function (data, type, startTimeMs, endTime, lastPTS) {
             if(!_seeking) {
                 _type = type;
                 _startTimeMs = startTimeMs;

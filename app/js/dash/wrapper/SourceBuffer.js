@@ -20,9 +20,8 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
     _pendingEndTime = -1,
+    /** Keep in memory the id of the segment we're currently appending into the flash **/
     _appendingSeqnum,
-    /** _lastPTS in ms, easy to compare to max and min pts from flash and send to flash where everything is in ms **/
-    _lastPTS,
 	/** _switchingTrack is set to true when we change rep and until the first segment of the new rep is appended in the Flash. It avoids fatal blocking at _isTimestampConsistent **/
     _switchingTrack = false,
 
@@ -74,14 +73,8 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
         
         if (_isTimestampConsistent(startTimeMs) || _switchingTrack || typeof startTimeMs === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTimeMs unefined)
             _appendingSeqnum = seqnum;
-            // We also need to send the last pts of this rep to be able to check if it's the right segment before appending
-            if(_lastPTS) {
-                _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime, _lastPTS);
-            } else { //case when it's the first segment of the video
-                _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
-            }
+            _segmentAppender.appendBuffer(arraybuffer_data, _type, startTimeMs, endTime);
             _pendingEndTime = endTime;
-            //_switchingTrack = false;
         } else {
             //There's a discontinuity
             var firstSegmentBool = (_startTime === _endTime);
@@ -159,7 +152,6 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
         if (!error && _pendingEndTime > _endTime) {
             console.debug('setting end time to ' + _pendingEndTime);
             _endTime = _pendingEndTime;
-            _lastPTS = max_pts;
             // Wait until we're sure the right segment was appended to netStream before setting _switchingTrack to false to avoid perpetual blocking at _isTimestampConsistent
             _switchingTrack = false;
         } else if (error) {
