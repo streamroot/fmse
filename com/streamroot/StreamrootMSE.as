@@ -202,10 +202,10 @@ public class StreamrootMSE {
         }
     }
 
-    private function appendBuffer(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0, lastPTS:Number = 0 ):void {
+    private function appendBuffer(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         _streamrootInterface.debug("FLASH: appendBuffer");
         var offset :Number = _seek_offset * 1000;
-        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestamp, offset: offset, lastPTS: lastPTS};// - offset + 100};
+        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestamp, offset: offset};/* - offset + 100}*/;
 
         appendOrQueue(message);
 

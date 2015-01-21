@@ -16,7 +16,6 @@ public class TranscodeWorker extends Sprite {
 	private var _workerToMain:MessageChannel;
 	private var _debugChannel:MessageChannel;
 
-    private var _lastPTS:Number;
     private var _previousPTS:Number;    // Remember pts has been converted to ms from the start in pes parsing
     private var _timestamp:Number;
     private var _TIMESTAMP_MARGIN:Number = 1 * 1000; // 1s margin because we compare manifest timestamp and pts.
@@ -54,7 +53,6 @@ public class TranscodeWorker extends Sprite {
         _timestamp = timestamp;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
-        _lastPTS = message.lastPTS;
 
 		if (isInit) {
 			debug("transcoding init");
@@ -100,7 +98,6 @@ public class TranscodeWorker extends Sprite {
         /** If type is HLS we return sequence number and PTS as well as segment bytes **/
         debug("asyncTranscodeCB");
 
-        //debug("TranscodeWorker _lastPTS: " + _lastPTS);
         debug("TranscodeWorker timestamp: " + _timestamp/1000);
         debug("TranscodeWorker min_pts: " + min_pts/1000);
         debug("TranscodeWorker max_pts: " + max_pts/1000);
