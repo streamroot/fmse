@@ -122,6 +122,8 @@ var SourceBuffer = function (mediaSource, type, swfobj, mediaController) {
         //TODO: implement remove method in sourceBuffer
 		//_swfobj.removeBuffer(start,end);
         _updating = true;
+        //CLIEN-111: in case of Flash we should set the end time to make sure the rest of the buffer is flushed when we change rep in force mode
+        //_pendingEndTime = start;
         _onUpdateend();  //trigger updateend to launch next job. Needs the setTimeout to be called 
                                             //asynchronously and avoid error with Max call stack size (infinite recursive loop)   
 	},
