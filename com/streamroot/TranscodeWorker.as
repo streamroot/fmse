@@ -106,18 +106,20 @@ public class TranscodeWorker extends Sprite {
         _isSeeking = Worker.current.getSharedProperty("isSeeking");
         debug("TranscodeWorker shared property isSeeking: " + _isSeeking);
 
-        if(type.indexOf("apple") >= 0 && (Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN)) {
-            // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
-            // the right segment
-            debug("TRANSCODEWORKER apple_error_timestamp: " + min_pts + " / " + _timestamp);
-            error("Timestamp and min_pts don't match", "apple_error_timestamp", min_pts, max_pts);
-        } else if(type.indexOf("apple") >= 0 && !_isSeeking && _previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
-            // No need to send back min and max pts in this case since media map doesn't need to be updated
-            debug("TRANSCODEWORKER apple_error_previousPTS: " + min_pts + " / " + _timestamp);
-            error("previousPTS and min_pts don't match", "apple_error_previousPTS");
-        } else if(type.indexOf("apple") >= 0) {
-            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
-            _previousPTS = max_pts;
+        if(type.indexOf("apple") >= 0) {
+            if(Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
+                // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
+                // the right segment
+                debug("TRANSCODEWORKER apple_error_timestamp: " + min_pts + " / " + _timestamp);
+                error("Timestamp and min_pts don't match", "apple_error_timestamp", min_pts, max_pts);
+            } else if(!_isSeeking && _previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
+                // No need to send back min and max pts in this case since media map doesn't need to be updated
+                debug("TRANSCODEWORKER apple_error_previousPTS: " + min_pts + " / " + _timestamp);
+                error("previousPTS and min_pts don't match", "apple_error_previousPTS");
+            } else {
+                var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
+                _previousPTS = max_pts;
+            }
         } else {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
