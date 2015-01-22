@@ -29,6 +29,7 @@ import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
 
 import com.streamroot.Transcoder;
+import com.streamroot.HlsSegmentValidator;
 
 public class StreamrootMSE {
 
@@ -101,6 +102,7 @@ public class StreamrootMSE {
     private var _pendingAppend:Object;
     private var _discardAppend:Boolean = false; //Used to discard data from worker in case we were seeking during transcoding
 
+    private var _hlsSegmentValidator:HlsSegmentValidator;
 
 
 
@@ -109,6 +111,7 @@ public class StreamrootMSE {
         _streamrootInterface = streamrootInterface;
 
         _muxer = new Muxer();
+        _hlsSegmentValidator = new HlsSegmentValidator(_streamrootInterface);
 
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
@@ -146,8 +149,8 @@ public class StreamrootMSE {
         _buffered_audio = timeSeek*1000000;
 
         setHasData(false);
-        // Set isSeeking to skip _previousPTS check in TranscodeWorker.as
-        _worker.setSharedProperty("isSeeking", true);
+        // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
+        _hlsSegmentValidator.setIsSeeking(true);
 
         if (_pendingAppend) {
             //remove pending append job to avoid appending it after seek
@@ -536,13 +539,32 @@ public class StreamrootMSE {
         var isInit:Boolean = message.isInit;
         var min_pts:Number = message.min_pts;
         var max_pts:Number = message.max_pts;
+        var timestamp:Number = message.timestamp;
 
         if (!_discardAppend) {
 
             if (!isInit) {
-                _streamrootInterface.debug("FLASH: appending segment");
-                var segmentBytes:ByteArray = message.segmentBytes;
-                _streamrootInterface.appendBuffer(segmentBytes);
+                // CLIEN-19: check if it's the right hls segment before appending it. 
+                
+                if (type.indexOf("apple") >= 0) {
+                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, timestamp);
+                }
+
+                if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
+                    // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
+                    // the right segment
+                    debug({command: "error", message:"Timestamp and min_pts don't match", type:"apple_error_timestamp", min_pts:min_pts, max_pts:max_pts});
+                    return;
+                } else if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
+                    // No need to send back min and max pts in this case since media map doesn't need to be updated
+                    debug({command: "error", message:"previousPTS and min_pts don't match", type:"apple_error_previousPTS"});
+                    return;
+                } else {
+                    // Append DASH || Smooth || Validated HLS segment
+                    _streamrootInterface.debug("FLASH: appending segment");
+                    var segmentBytes:ByteArray = message.segmentBytes;
+                    _streamrootInterface.appendBuffer(segmentBytes);
+                }  
             }
 
             _isWorkerBusy = false;
@@ -557,7 +579,7 @@ public class StreamrootMSE {
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
                 setHasData(true, VIDEO);
-                _worker.setSharedProperty("isSeeking", false);
+                _hlsSegmentValidator.setIsSeeking(false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
             } else if (type.indexOf("audio") >= 0) {
                 if (!isInit) {
@@ -611,6 +633,10 @@ public class StreamrootMSE {
 
     private function onDebugChannel(event:Event):void {
         var message:* = _debugChannel.receive();
+        debug(message);
+    }
+
+    private function debug(message:Object):void {
         _isWorkerReady = true;
 
         if (message.command == "debug") {
@@ -622,9 +648,9 @@ public class StreamrootMSE {
                 //a segment flushed message to notify the JS that append didn't work well, in order not to
                 //block the append pipeline
                 _isWorkerBusy = false;
-                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel min_pts: " + message.min_pts/1000);
-                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel max_pts: " + message.max_pts/1000);
-                //_streamrootInterface.debug("StreamrootMSE.onDebugChannel error type: " + message.type);
+                //_streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts/1000);
+                //_streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts/1000);
+                //_streamrootInterface.debug("StreamrootMSE.debug error type: " + message.type);
                 sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
             }
         }

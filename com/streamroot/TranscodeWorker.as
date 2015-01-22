@@ -16,11 +16,7 @@ public class TranscodeWorker extends Sprite {
 	private var _workerToMain:MessageChannel;
 	private var _debugChannel:MessageChannel;
 
-    private var _previousPTS:Number;    // Remember pts has been converted to ms from the start in pes parsing
     private var _timestamp:Number;
-    private var _TIMESTAMP_MARGIN:Number = 1 * 1000; // 1s margin because we compare manifest timestamp and pts.
-    private var _FRAME_TIME:Number = (1/30) * 1000;  // average duration of 1 frame
-    private var _isSeeking:Boolean = false;
 
 	private var _transcoder:Transcoder;
 
@@ -95,41 +91,18 @@ public class TranscodeWorker extends Sprite {
 
 
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
-        /** If type is HLS we return sequence number and PTS as well as segment bytes **/
+        /** If type is HLS we return timestamp and PTS as well as segment bytes to be able to check if it's the right segment in HlsSegmentValidator **/
         debug("asyncTranscodeCB");
 
-        debug("TranscodeWorker timestamp: " + _timestamp/1000);
-        debug("TranscodeWorker min_pts: " + min_pts/1000);
-        debug("TranscodeWorker max_pts: " + max_pts/1000);
-        debug("TranscodeWorker _previousPTS: " + _previousPTS/1000);
-
-        _isSeeking = Worker.current.getSharedProperty("isSeeking");
-        debug("TranscodeWorker shared property isSeeking: " + _isSeeking);
-
         if(type.indexOf("apple") >= 0) {
-            if(Math.abs(min_pts - (_timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
-                // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
-                // the right segment
-                debug("TRANSCODEWORKER apple_error_timestamp: " + min_pts + " / " + _timestamp);
-                error("Timestamp and min_pts don't match", "apple_error_timestamp", min_pts, max_pts);
-            } else if(!_isSeeking && _previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
-                // No need to send back min and max pts in this case since media map doesn't need to be updated
-                debug("TRANSCODEWORKER apple_error_previousPTS: " + min_pts + " / " + _timestamp);
-                error("previousPTS and min_pts don't match", "apple_error_previousPTS");
-            } else {
-                var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, min_pts: min_pts, max_pts: max_pts};
-                _previousPTS = max_pts;
-            }
+            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp:_timestamp, min_pts: min_pts, max_pts: max_pts};
         } else {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
-        
-        if(answer) {
-            debug("sending back message");
-            _workerToMain.send(answer);
-            debug("message sent");
-        }
-        
+
+        debug("sending back message");
+        _workerToMain.send(answer);
+        debug("message sent");
     }
 
 	public function debug(message:String):void {
