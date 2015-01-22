@@ -60,7 +60,7 @@ public class Transcoder {
                     CONFIG::LOGGING {
                         _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
                     }
-                    _hlsTranscodeHandler.toTranscoding(bytes_event, offset);
+                    _hlsTranscodeHandler.toTranscoding(bytes_event);
 
 		} else if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();

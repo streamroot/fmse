@@ -27,7 +27,7 @@ package com.hlsmangui
         public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function)
         {   
             _transcodeWorker = transcodeWorker;
-            _demux = new TSDemuxer(/*displayObject, */_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB, _transcodeWorker);
+            _demux = new TSDemuxer(_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB, _transcodeWorker);
             _asyncTranscodeCB = asyncTranscodeCB;
         }
 
@@ -36,7 +36,7 @@ package com.hlsmangui
         ** to avoid blocking is already managed by parseTimer in TSDemuxer
         */
 
-        public function toTranscoding(input:IDataInput, offset:Number = 0):void
+        public function toTranscoding(input:IDataInput):void
         {
             /** Create current segment object to be able to send infos back to javascript after transcoding **/
             _frag_current = new Fragment(input);
@@ -147,7 +147,7 @@ package com.hlsmangui
             //            }
             //        }
 
-                    //TODO: A PRIORI CA CE SERA PLUTOT DANS LA PARTIE JS AVEC LE MAP GENERATOR
+                    //NOTE: That block is already treated in the mapGenerator
                     /*if (_pts_analyzing == true) {
                         _pts_analyzing = false;
                         _levels[_level].updateFragment(_frag_current.seqnum, true, fragData.pts_min, fragData.pts_min + _frag_current.duration * 1000);
@@ -175,7 +175,7 @@ package com.hlsmangui
                         }
                     }*/
 
-                    //TODO: A VOIR CE QU'ON FAIT ET SI ON CHANGE NOTRE NETSTREAM POUR FAIRE UN TRUC PLUS PROPRE A LA MANGUI.
+                    //NOTE: keep this in mind in case we want to do something similar
 
                     // provide tags to HLSNetStream
                     /*_tags_callback(_level, _frag_current.continuity, _frag_current.seqnum, !fragData.video_found, fragData.video_width, fragData.video_height, _frag_current.tag_list, fragData.tags, fragData.tag_pts_min, fragData.tag_pts_max, _hasDiscontinuity, min_offset, _frag_current.program_date + fragData.tag_pts_start_offset);
