@@ -14,8 +14,8 @@ debug = "false"
 swfversion = "17"
 targetPlayer = "11.4.0"
 
-if (len(sys.argv)>1 ):
-    if (sys.argv[1] == "-debug"):
+if (len(sys.argv)>0 ):
+    if (sys.argv[0] == "-debug"):
         debug = "true"
         swfversion = "18"
         targetPlayer = "11.5.0"
