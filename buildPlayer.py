@@ -42,7 +42,8 @@ workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-static-link-runtime-shared-libraries=true",
                           os.path.normpath("com/streamroot/TranscodeWorker.as"),
                           os.path.normpath("-output=com/streamroot/TranscodeWorker.swf"),
-                          "-define+=CONFIG::LOGGING,false"],
+                          "-define+=CONFIG::LOGGING,false",
+                          "-define+=CONFIG::LOGGING_PTS,true"],
 
                           stdout=subprocess.PIPE)
 

@@ -92,8 +92,9 @@ public class TranscodeWorker extends Sprite {
 
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
         /** If type is HLS we return timestamp and PTS as well as segment bytes to be able to check if it's the right segment in HlsSegmentValidator **/
-        debug("asyncTranscodeCB");
-
+        CONFIG::LOGGING_PTS {
+            debug("asyncTranscodeCB");
+        }
         if(type.indexOf("apple") >= 0) {
             var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp:_timestamp, min_pts: min_pts, max_pts: max_pts};
         } else {
@@ -112,8 +113,10 @@ public class TranscodeWorker extends Sprite {
 
 	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
 		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts, max_pts:max_pts};
-        //debug("Transcodeworker.error min_pts: " + min_pts/1000);
-        //debug("TranscodeWorker.error max_pts: " + max_pts/1000);
+        CONFIG::LOGGING_PTS {
+            debug("Transcodeworker.error min_pts: " + min_pts/1000);
+            debug("TranscodeWorker.error max_pts: " + max_pts/1000);
+        }
 		_debugChannel.send(object);
 	}
 

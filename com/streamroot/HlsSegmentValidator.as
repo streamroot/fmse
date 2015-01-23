@@ -17,25 +17,30 @@ public class HlsSegmentValidator {
     private var _isSeeking:Boolean = false;
 
     /** Debugging only **/
-    private var _streamrootInterface:StreamrootInterfaceBase;
+    CONFIG::LOGGING_PTS {
+        private var _streamrootInterface:StreamrootInterfaceBase;
+    }
 
     public function HlsSegmentValidator(streamrootInterface:StreamrootInterfaceBase) {
         _streamrootInterface = streamrootInterface;
     }
 
-
     /** Set by StreamrootMSE whenever we seek **/
     public function setIsSeeking(value:Boolean):void {
-        _streamrootInterface.debug("VALIDATOR _isSeeking set to: " + value);
+        CONFIG::LOGGING_PTS {
+            _streamrootInterface.debug("VALIDATOR _isSeeking set to: " + value);
+        }
         _isSeeking = value;
     }
 
     /** Check if this segment is the right one and if its pts is consistent with its map timestamp **/
     public function checkSegmentPTS(min_pts:Number, max_pts:Number, timestamp:Number):String {
-        _streamrootInterface.debug("VALIDATOR timestamp: " + timestamp/1000);
-        _streamrootInterface.debug("VALIDATOR _previousPTS: " + _previousPTS/1000);
-        _streamrootInterface.debug("VALIDATOR min_pts: " + min_pts/1000);
-        _streamrootInterface.debug("VALIDATOR max_pts: " + max_pts/1000);
+        CONFIG::LOGGING_PTS { 
+            _streamrootInterface.debug("VALIDATOR timestamp: " + timestamp/1000);
+            _streamrootInterface.debug("VALIDATOR _previousPTS: " + _previousPTS/1000);
+            _streamrootInterface.debug("VALIDATOR min_pts: " + min_pts/1000);
+            _streamrootInterface.debug("VALIDATOR max_pts: " + max_pts/1000);
+        }
 
         if(Math.abs(min_pts - (timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
             return "apple_error_timestamp";

@@ -553,15 +553,21 @@ public class StreamrootMSE {
                 if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
                     // the right segment
-                    debug({command: "error", message:"Timestamp and min_pts don't match", type:"apple_error_timestamp", min_pts:min_pts, max_pts:max_pts});
+                    CONFIG::LOGGING_PTS {
+                        debug({command: "error", message:"Timestamp and min_pts don't match", type:"apple_error_timestamp", min_pts:min_pts, max_pts:max_pts});
+                    }
                     return;
                 } else if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
-                    debug({command: "error", message:"previousPTS and min_pts don't match", type:"apple_error_previousPTS"});
+                    CONFIG::LOGGING_PTS {
+                        debug({command: "error", message:"previousPTS and min_pts don't match", type:"apple_error_previousPTS"});
+                    }
                     return;
                 } else {
                     // Append DASH || Smooth || Validated HLS segment
-                    _streamrootInterface.debug("FLASH: appending segment");
+                    CONFIG::LOGGING_PTS {
+                        _streamrootInterface.debug("FLASH: appending segment");
+                    }
                     var segmentBytes:ByteArray = message.segmentBytes;
                     _streamrootInterface.appendBuffer(segmentBytes);
                 }  
@@ -602,13 +608,19 @@ public class StreamrootMSE {
     }
 
     private function sendSegmentFlushedMessage(type:String, min_pts:Number = 0, max_pts:Number = 0):void {
-        _streamrootInterface.debug("FLASH: discarding segment    " + type);
+        CONFIG::LOGGING {
+            _streamrootInterface.debug("FLASH: discarding segment    " + type);
+        }
         if(type.indexOf("apple_error_timestamp") >= 0) {
-            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts/1000);
-            _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts/1000);
+            CONFIG::LOGGING_PTS {
+                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts/1000);
+                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts/1000);
+            }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
         } else if (type.indexOf("apple") >= 0) {    // This case includes apple_error_previousPTS case
-            _streamrootInterface.debug("FLASH inside case discarding but no min/max pts returned to js");
+            CONFIG::LOGGING_PTS {
+                _streamrootInterface.debug("FLASH inside case discarding but no min/max pts returned to js");
+            }
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         } else if (type.indexOf("audio") >= 0) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
@@ -618,8 +630,10 @@ public class StreamrootMSE {
     }
 
     private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
-        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts/1000);
-        _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts/1000);
+        CONFIG::LOGGING_PTS {
+            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts/1000);
+            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts/1000);
+        }
         ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
     }
 
@@ -640,7 +654,9 @@ public class StreamrootMSE {
         _isWorkerReady = true;
 
         if (message.command == "debug") {
-            _streamrootInterface.debug(message.message);
+            CONFIG::LOGGING_PTS {
+                _streamrootInterface.debug(message.message);
+            }
         } else if (message.command == "error") {
             _streamrootInterface.error(message.message);
             if (message.type) {
@@ -648,9 +664,11 @@ public class StreamrootMSE {
                 //a segment flushed message to notify the JS that append didn't work well, in order not to
                 //block the append pipeline
                 _isWorkerBusy = false;
-                //_streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts/1000);
-                //_streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts/1000);
-                //_streamrootInterface.debug("StreamrootMSE.debug error type: " + message.type);
+                CONFIG::LOGGING_PTS {
+                    _streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts/1000);
+                    _streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts/1000);
+                    _streamrootInterface.debug("StreamrootMSE.debug error type: " + message.type);
+                }
                 sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
             }
         }
