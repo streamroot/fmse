@@ -63,9 +63,6 @@ public class StreamrootInterfaceBase {
             _loaded = true;
         }
 
-        //Reset NetStream to the beginning of the stream (mostly useful on replay)
-        requestSeek(0);
-
         //Tell our Javascript library to start loading video segments
         triggerLoadStart();
     }
