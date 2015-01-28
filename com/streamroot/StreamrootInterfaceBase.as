@@ -22,7 +22,7 @@ public class StreamrootInterfaceBase implements StreamrootInterface{
     protected var _LOG_ERROR:Boolean = true;
 
 
-    public function StreamrootInterface(provider):void {
+    public function StreamrootInterfaceBase(provider):void {
         //Your provider. You'll need to change the type in variable and argument definition
         _provider = provider;
 
