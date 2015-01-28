@@ -9,15 +9,15 @@ import com.streamroot.StreamrootMSE;
 
 public class StreamrootInterfaceBase {
 
-    private var _provider;//your provider
-    private var _streamrootMSE:StreamrootMSE;
+    protected var _provider;//your provider
+    protected var _streamrootMSE:StreamrootMSE;
 
-    private var _loaded:Boolean = false;
+    protected var _loaded:Boolean = false;
 
-    private var _needData:Boolean = true;
+    protected var _needData:Boolean = true;
 
-    private var _LOG_DEBUG:Boolean = false;
-    private var _LOG_ERROR:Boolean = true;
+    protected var _LOG_DEBUG:Boolean = false;
+    protected var _LOG_ERROR:Boolean = true;
 
 
     public function StreamrootInterface(provider):void {
@@ -68,7 +68,7 @@ public class StreamrootInterfaceBase {
         triggerLoadStart();
     }
 
-    private function appendBytesAction(action:String):void {
+    protected function appendBytesAction(action:String):void {
       //Should call method in provider that calls NetStream.appendBytesAction
       throw new Error("Method appendBytesAction isn't implemented");
     }
@@ -82,7 +82,7 @@ public class StreamrootInterfaceBase {
         }
     }
 
-    private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
+    protected function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
         //Call method in provider that uses the metaData
         throw new Error("Method onMetaData isn't implemented");
     }
@@ -92,7 +92,7 @@ public class StreamrootInterfaceBase {
         return (_streamrootMSE.areBuffersReady());
     }
 
-    private function bufferEmpty():void {
+    protected function bufferEmpty():void {
       //Calls methods in provider that deals with empty buffer. It should be what you call in "NetStream.Buffer.Empty" NetStream status event,
       //or in the case the buffer is low if you check buffer level at a regular interval
       throw new Error("Method bufferEmpty isn't implemented");
