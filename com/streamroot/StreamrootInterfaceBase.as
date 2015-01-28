@@ -6,8 +6,10 @@ import flash.net.NetStreamAppendBytesAction;
 import flash.utils.ByteArray;
 
 import com.streamroot.StreamrootMSE;
+import com.streamroot.StreamrootInterface;
 
-public class StreamrootInterfaceBase {
+
+public class StreamrootInterfaceBase implements StreamrootInterface{
 
     protected var _provider;//your provider
     protected var _streamrootMSE:StreamrootMSE;
@@ -58,7 +60,7 @@ public class StreamrootInterfaceBase {
 
         if (!_loaded) {
             //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
-            //Do not call on replay, as it would initialize a second instance of our JS library (that's why the 
+            //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
             //_loaded Boolean is for here)
             ExternalInterface.call('sr_flash_ready');
             _loaded = true;
@@ -99,13 +101,13 @@ public class StreamrootInterfaceBase {
     }
 
     protected function bufferFull():void {
-        //Calls the provider method to be executed in case of full buffer. It should be what you used to 
-        //call in "NetStream.Buffer.Full" NetStream status event, or your equivalent if you check buffer 
+        //Calls the provider method to be executed in case of full buffer. It should be what you used to
+        //call in "NetStream.Buffer.Full" NetStream status event, or your equivalent if you check buffer
         //level using a timer.
-        //This provider method should not be executed in any other situation, and "NetStream.Buffer.Full" 
-        //should call netStream.pause(), because in case of separate audio / video tracks it will fire 
+        //This provider method should not be executed in any other situation, and "NetStream.Buffer.Full"
+        //should call netStream.pause(), because in case of separate audio / video tracks it will fire
         //when only one of the two tracks will have be bufferized enough.
-        
+
         //Set needData to false, as we don't want to check bufferReady at each append
         _needData = false;
 
@@ -146,12 +148,12 @@ public class StreamrootInterfaceBase {
         //Received track list from JS, to use for MBR button.
         //For now, we only implemented MBR for video track.
         //
-        //@tracklist: String of the form "auto,720p,*540p,360p" (here *540p means track with label 540p 
+        //@tracklist: String of the form "auto,720p,*540p,360p" (here *540p means track with label 540p
         //is currently selected).
-        
+
         //Parse trackList into an Array
         var trackListArray:Array = trackList.split(',');
-        
+
         //You should call your provider's method to pass the trackList after super
     }
 
