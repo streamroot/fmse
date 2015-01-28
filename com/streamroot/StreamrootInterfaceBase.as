@@ -53,6 +53,7 @@ public class StreamrootInterfaceBase {
         //Method to call when provider is initialized and ready
 
         //you need to append the FLV Header to your provider, using appendBytesAction
+        appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)
         appendBuffer(_streamrootMSE.getFileHeader());
 
         if (!_loaded) {
