@@ -150,11 +150,8 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         //
         //@tracklist: String of the form "auto,720p,*540p,360p" (here *540p means track with label 540p
         //is currently selected).
-
-        //Parse trackList into an Array
-        var trackListArray:Array = trackList.split(',');
-
-        //You should call your provider's method to pass the trackList after super
+        
+        throw new Error("Method onTrackList isn't implemented");
     }
 
 
@@ -201,7 +198,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     public function error(message):void {
         if (_LOG_ERROR) {
-            ExternalInterface.call("sr_flash_transcodeError");
+            ExternalInterface.call("sr_flash_transcodeError", String(message));
         }
     }
 
