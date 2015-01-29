@@ -25,6 +25,7 @@ import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Dictionary;
 
+import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
 
 import com.streamroot.Transcoder;
@@ -104,7 +105,7 @@ public class StreamrootMSE {
 
 
 
-    public function StreamrootMSE(streamrootInterface:StreamrootInterfaceBase) {
+    public function StreamrootMSE(streamrootInterface:IStreamrootInterface) {
         _streamrootInterface = streamrootInterface;
 
         _muxer = new Muxer();
@@ -601,8 +602,8 @@ public class StreamrootMSE {
         } else if (message.command == "error") {
             _streamrootInterface.error(message.message);
             if (message.type) {
-                //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger 
-                //a segment flushed message to notify the JS that append didn't work well, in order not to 
+                //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger
+                //a segment flushed message to notify the JS that append didn't work well, in order not to
                 //block the append pipeline
                 _isWorkerBusy = false;
                 sendSegmentFlushedMessage(message.type);

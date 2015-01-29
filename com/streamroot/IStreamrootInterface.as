@@ -7,9 +7,7 @@ import flash.utils.ByteArray;
 
 import com.streamroot.StreamrootMSE;
 
-public interface StreamrootInterface {
-
-    function StreamrootInterface(provider):void;
+public interface IStreamrootInterface {
 
     function loaded():void;
 

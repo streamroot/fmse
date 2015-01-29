@@ -6,10 +6,10 @@ import flash.net.NetStreamAppendBytesAction;
 import flash.utils.ByteArray;
 
 import com.streamroot.StreamrootMSE;
-import com.streamroot.StreamrootInterface;
+import com.streamroot.IStreamrootInterface;
 
 
-public class StreamrootInterfaceBase implements StreamrootInterface{
+public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     protected var _provider;//your provider
     protected var _streamrootMSE:StreamrootMSE;
@@ -150,8 +150,11 @@ public class StreamrootInterfaceBase implements StreamrootInterface{
         //
         //@tracklist: String of the form "auto,720p,*540p,360p" (here *540p means track with label 540p
         //is currently selected).
-        
-        throw new Error("Method onTrackList isn't implemented");
+
+        //Parse trackList into an Array
+        var trackListArray:Array = trackList.split(',');
+
+        //You should call your provider's method to pass the trackList after super
     }
 
 
@@ -198,7 +201,7 @@ public class StreamrootInterfaceBase implements StreamrootInterface{
 
     public function error(message):void {
         if (_LOG_ERROR) {
-            ExternalInterface.call("sr_flash_transcodeError", String(message));
+            ExternalInterface.call("sr_flash_transcodeError");
         }
     }
 
