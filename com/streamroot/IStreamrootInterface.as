@@ -36,10 +36,13 @@ public interface IStreamrootInterface {
     function triggerPlaying():void;
 
     function triggerStopped():void;
+    
+    function getBufferLength():uint;
 
     //LOGGING
-    function debug(message):void;
-    function error(message):void;
+    function debug(message:Object):void;
+    
+	function error(message:Object):void;
 
 }
 }

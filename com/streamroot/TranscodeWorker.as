@@ -43,6 +43,7 @@ public class TranscodeWorker extends Sprite {
 		var type:String = message.type;
 		var isInit:Boolean = message.isInit;
 		var timestamp:Number = message.timestamp;
+		var endTime = message.endTime;
 		var offset:Number = message.offset;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
@@ -98,7 +99,7 @@ public class TranscodeWorker extends Sprite {
             }
             */
 
-            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp: timestamp, endTime: endTime};
         }
 
         debug("sending back message");

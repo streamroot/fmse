@@ -21,18 +21,23 @@ import com.dash.handlers.AudioSegmentHandler;
 import com.dash.boxes.Muxer;
 
 import com.dash.utils.Base64;
+
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Dictionary;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
+import com.streamroot.StreamBuffer;
+import com.streamroot.Segment;
 
 import com.streamroot.Transcoder;
 
 public class StreamrootMSE {
 
     private var _streamrootInterface;
+    
+    private var _streamBuffer:StreamBuffer;
 
     private var _muxer:Muxer;
 
@@ -113,6 +118,10 @@ public class StreamrootMSE {
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         ExternalInterface.addCallback("buffered", buffered);
+        ExternalInterface.addCallback("remove", remove);
+        ExternalInterface.addCallback("flushSourceBuffer", flushSourceBuffer);
+        
+        _streamBuffer = new StreamBuffer(streamrootInterface);
 
         setupWorker();
     }
@@ -137,6 +146,14 @@ public class StreamrootMSE {
 
         _worker.start();
     }
+    
+    public function remove(start:uint, end:uint, key:String):uint {
+        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
+    }
+    
+    public function flushSourceBuffer(key:String):void{
+        _streamBuffer.flushSourceBuffer(key);
+    }
 
     public function setSeekOffset(timeSeek:Number):void {
         _streamrootInterface.debug("FLASH: set seek offset");
@@ -160,6 +177,7 @@ public class StreamrootMSE {
             _discardAppend = true
         }
 
+        _streamBuffer.flushAllSourceBuffer();
         _mainToWorker.send('seeking');
     }
 
@@ -179,7 +197,7 @@ public class StreamrootMSE {
 
         if (key) {
             if (!_hasData.hasOwnProperty(key)) {
-                _streamrootInterface.debug("FLASH: daaing sourceBuffer " + type);
+                _streamrootInterface.debug("FLASH: adding sourceBuffer " + type);
                 _hasData[key] = false;
             } else {
                 _streamrootInterface.error("Error: source buffer with this type already exists: " + type);
@@ -199,12 +217,12 @@ public class StreamrootMSE {
             }
         }
     }
-
-    private function appendBuffer(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0 ):void {
+    
+    //timestampStart and timestampEnd in millisecond
+    private function appendBuffer(data:String, type:String, isInit:Boolean, timestampStart:Number = 0, timestampEnd:uint = 0 ):void {
         _streamrootInterface.debug("FLASH: appendBuffer");
         var offset :Number = _seek_offset * 1000;
-        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestamp, offset: offset};// - offset + 100};
-
+        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestampStart, offset: offset, endTime:timestampEnd};// - offset + 100};
         appendOrQueue(message);
 
 
@@ -516,7 +534,7 @@ public class StreamrootMSE {
     }
 
     public function areBuffersReady():Boolean {
-        var flag:Boolean = true;
+        /*var flag:Boolean = true;
         var sourceBufferNumber:Number = 0;
 
         for (var k in _hasData) {
@@ -524,21 +542,25 @@ public class StreamrootMSE {
             sourceBufferNumber++;
         }
 
-        return (flag && (sourceBufferNumber > 0));
+        return (flag && (sourceBufferNumber > 0));*/
+        return _streamBuffer.areBuffersReady();
     }
-
+    
+    
+    
     private function onWorkerToMain(event:Event):void {
         var message:* = _workerToMain.receive();
 
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
-
+        
+        var segment = new Segment(message.segmentBytes, message.type, message.timestamp, message.endTime);
+        
         if (!_discardAppend) {
 
             if (!isInit) {
-                _streamrootInterface.debug("FLASH: appending segment");
-                var segmentBytes:ByteArray = message.segmentBytes;
-                _streamrootInterface.appendBuffer(segmentBytes);
+                _streamrootInterface.debug("FLASH: appending segment in StreamBuffer");
+                _streamBuffer.appendSegment(segment);
             }
 
             _isWorkerBusy = false;

@@ -4,6 +4,7 @@ import flash.external.ExternalInterface;
 import flash.net.NetStreamAppendBytesAction;
 
 import flash.utils.ByteArray;
+import flash.utils.getQualifiedClassName;
 
 import com.streamroot.StreamrootMSE;
 import com.streamroot.IStreamrootInterface;
@@ -49,6 +50,11 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
         //Initializing Streamroot stack
         _streamrootMSE = new StreamrootMSE(this);
+    }
+    
+    public function getBufferLength():uint {
+        //Should call method in provider that return NetStream.bufferLength
+        throw new Error("Metho getTimeLeftToPlay isn't implemented");
     }
 
     public function loaded():void {
@@ -190,13 +196,13 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
 
     //LOGGING
-    public function debug(message):void {
+    public function debug(message:Object):void {
         if (_LOG_DEBUG) {
             ExternalInterface.call("console.debug", String(message));
         }
     }
 
-    public function error(message):void {
+    public function error(message:Object):void {
         if (_LOG_ERROR) {
             ExternalInterface.call("sr_flash_transcodeError", String(message));
         }
