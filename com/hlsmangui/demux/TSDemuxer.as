@@ -16,9 +16,7 @@
     import flash.utils.setInterval;
     import flash.utils.clearInterval;
 
-    CONFIG::LOGGING_PTS {
-        import com.streamroot.TranscodeWorker;
-    }
+    import com.streamroot.TranscodeWorker;
 
     CONFIG::LOGGING {
         import org.mangui.hls.utils.Log;
@@ -84,9 +82,7 @@
         /* parsing interval id */
         //private var _parseTimerInterval : uint;
 
-        CONFIG::LOGGING_PTS {
-            private var _transcodeWorker:TranscodeWorker;
-        }
+        private var _transcodeWorker:TranscodeWorker;
 
         public static function probe(data : ByteArray) : Boolean {
             var pos : uint = data.position;

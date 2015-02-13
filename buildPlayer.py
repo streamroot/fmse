@@ -14,8 +14,8 @@ debug = "false"
 swfversion = "17"
 targetPlayer = "11.4.0"
 
-if (len(sys.argv)>0 ):
-    if (sys.argv[0] == "-debug"):
+if (len(sys.argv)>1 ):
+    if (sys.argv[1] == "-debug"):
         debug = "true"
         swfversion = "18"
         targetPlayer = "11.5.0"
@@ -58,6 +58,8 @@ libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc" + exe),
                           "-swf-version="+swfversion+"",
                           "-include-classes=com.streamroot.StreamrootInterfaceBase",
                           "-debug="+debug+"",
+                          "-define+=CONFIG::LOGGING,false",
+                          "-define+=CONFIG::LOGGING_PTS,true",
                           "-directory=false",
                           "-include-sources",
                           os.path.normpath("com/streamroot/StreamrootMSE.as"),
@@ -115,5 +117,5 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-warnings=false",
                           "-define+=CONFIG::version,\"'4.2.2'\""], stdout=subprocess.PIPE)
 popenPrint(vjsResult)
-shutil.copy2(os.path.normpath("dist/video-js-sr.swf"),os.path.normpath("../sr-client-last/player_wrapper/video-js-wrapper/video-js-sr.swf"))
+shutil.copy2(os.path.normpath("dist/video-js-sr.swf"),os.path.normpath("../sr-client-last/player_wrapper/video-js-wrapper/dist/video-js-sr.swf"))
 print "Successfully built the flash engine swfs! Nice Job!"

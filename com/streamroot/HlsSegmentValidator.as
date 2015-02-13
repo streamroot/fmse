@@ -16,10 +16,7 @@ public class HlsSegmentValidator {
     /** Know if we're in a seek process or not **/
     private var _isSeeking:Boolean = false;
 
-    /** Debugging only **/
-    CONFIG::LOGGING_PTS {
-        private var _streamrootInterface:StreamrootInterfaceBase;
-    }
+    private var _streamrootInterface:StreamrootInterfaceBase;
 
     public function HlsSegmentValidator(streamrootInterface:StreamrootInterfaceBase) {
         _streamrootInterface = streamrootInterface;
