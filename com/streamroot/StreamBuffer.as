@@ -53,8 +53,8 @@ package com.streamroot {
         }
         
         public function areBuffersReady():Boolean {
-            var ready = true;
-            for(var k in _sourceBufferList){
+            var ready:Boolean = true;
+            for(var k:String in _sourceBufferList){
                 ready = ready && _sourceBufferList[k].isReady();
             }
             return (ready && _sourceBufferNumber);
@@ -90,7 +90,7 @@ package com.streamroot {
          * Append a decoded segment in the corresponding sourceBuffer
          */
         public function appendSegment(segment:Segment):void {
-            var type = segment.getType();
+            var type:String = segment.getType();
             var key:String;
             if (type.indexOf("apple") >=0) {
                 key = VIDEO;
@@ -129,7 +129,7 @@ package com.streamroot {
          * Remove all data in every buffer
          */
         public function flushAllSourceBuffer():void{
-            for(var k in _sourceBufferList){
+            for(var k:String in _sourceBufferList){
                 _sourceBufferList[k].flush();
             }
         }
@@ -143,7 +143,7 @@ package com.streamroot {
         public function getMinTimestampAppended():uint {
             var timestamp:uint = 0;
             var isInit:Boolean = false;
-            for(var k in _sourceBufferList){
+            for(var k:String in _sourceBufferList){
                 if(!isInit){
                     timestamp = _sourceBufferList[k].getCurrentTimestamp();
                     isInit = true;
@@ -162,7 +162,7 @@ package com.streamroot {
             var array:Array = new Array();
             var minTimestamp:uint = getMinTimestampAppended();
 
-            for(var k in _sourceBufferList){
+            for(var k:String in _sourceBufferList){
                 if(minTimestamp == _sourceBufferList[k].getCurrentTimestamp()){
                     var tempArray:ByteArray = _sourceBufferList[k].getNextSegmentBytes();
                     if(tempArray != null){

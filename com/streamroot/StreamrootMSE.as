@@ -36,7 +36,7 @@ import com.streamroot.Transcoder;
 
 public class StreamrootMSE {
 
-    private var _streamrootInterface;
+    private var _streamrootInterface:IStreamrootInterface;
     
     private var _streamBuffer:StreamBuffer;
 
@@ -104,7 +104,7 @@ public class StreamrootMSE {
     private var _isWorkerReady:Boolean = false;
 
     private var _isWorkerBusy:Boolean = false;
-    private var _pendingAppend:Object;
+    private var _pendingAppend:Object = null;
     private var _discardAppend:Boolean = false; //Used to discard data from worker in case we were seeking during transcoding
 
 
@@ -119,6 +119,8 @@ public class StreamrootMSE {
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         ExternalInterface.addCallback("buffered", buffered);
+        
+        //StreamBuffer callbacks
         ExternalInterface.addCallback("remove", remove);
         ExternalInterface.addCallback("flushSourceBuffer", flushSourceBuffer);
         
@@ -162,14 +164,6 @@ public class StreamrootMSE {
         _worker.start();
     }
     
-    public function remove(start:uint, end:uint, key:String):uint {
-        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
-    }
-    
-    public function flushSourceBuffer(key:String):void{
-        _streamBuffer.flushSourceBuffer(key);
-    }
-
     public function setSeekOffset(timeSeek:Number):void {
         _streamrootInterface.debug("FLASH: set seek offset");
         _seek_offset = timeSeek;
@@ -179,11 +173,11 @@ public class StreamrootMSE {
 
         setHasData(false);
 
-        if (_pendingAppend) {
+        if (_pendingAppend != null) {
             //remove pending append job to avoid appending it after seek
             _streamrootInterface.debug("FLASH: discarding _pendingAppend " + _pendingAppend.type);
             sendSegmentFlushedMessage(_pendingAppend.type);
-            _pendingAppend = undefined;
+            _pendingAppend = null;
         }
 
         //If worker is appending a segment during seek, discard it as we don't want to append it
@@ -226,7 +220,7 @@ public class StreamrootMSE {
             _hasData[key] = value;
         } else {
             //If no key specified, set all entries in _hasData to value
-            for (var k in _hasData) {
+            for (var k:String in _hasData) {
                 _streamrootInterface.debug("FLASH: setHasData: " + k + " - " + String(value));
                 _hasData[k] = value;
             }
@@ -290,7 +284,7 @@ public class StreamrootMSE {
             _isWorkerBusy = true;
             setTimeout(sendWorkerMessage, TIMEOUT_LENGTH, message);
             //_mainToWorker.send(message);
-        } else if (!_pendingAppend) {
+        } else if (_pendingAppend == null) {
             _pendingAppend = message; //TODO: clear this job when we seek
         } else {
             _streamrootInterface.error("error: not supporting more than one pending job for now");
@@ -439,7 +433,7 @@ public class StreamrootMSE {
             var decodedTS :Number = new Date().valueOf();
 
             var bytes_append_audio:ByteArray = new ByteArray();
-            var audioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, _pendingTimestampAudio - _pendingOffsetAudio, _muxer);
+            var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, _pendingTimestampAudio - _pendingOffsetAudio, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             if (_isWorkerReady){
@@ -477,7 +471,7 @@ public class StreamrootMSE {
             var decodedTS :Number = new Date().valueOf();
 
             var bytes_append:ByteArray = new ByteArray();
-            var videoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, _pendingTimestampVideo - _pendingOffsetVideo, _muxer);
+            var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, _pendingTimestampVideo - _pendingOffsetVideo, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
             if (_isWorkerReady){
@@ -569,7 +563,7 @@ public class StreamrootMSE {
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
         
-        var segment = new Segment(message.segmentBytes, message.type, message.timestamp, message.endTime);
+        var segment:Segment = new Segment(message.segmentBytes, message.type, message.timestamp, message.endTime);
         
         if (!_discardAppend) {
 
@@ -580,10 +574,10 @@ public class StreamrootMSE {
 
             _isWorkerBusy = false;
 
-            if (_pendingAppend != undefined) {
+            if (_pendingAppend != null) {
                 _streamrootInterface.debug("FLASH: unqueing");
                 appendOrQueue(_pendingAppend);
-                _pendingAppend = undefined;
+                _pendingAppend = null;
             }
 
 
@@ -686,6 +680,14 @@ public class StreamrootMSE {
     
     private function paused():Boolean {
         return _streamrootInterface.paused();
+    }
+    
+    public function remove(start:uint, end:uint, key:String):uint {
+        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
+    }
+    
+    public function flushSourceBuffer(key:String):void{
+        _streamBuffer.flushSourceBuffer(key);
     }
 }
 }
