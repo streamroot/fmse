@@ -541,6 +541,8 @@ public class StreamrootMSE {
         var max_pts:Number = message.max_pts;
         var timestamp:Number = message.timestamp;
 
+        _isWorkerBusy = false;
+
         if (!_discardAppend) {
 
             if (!isInit) {
@@ -553,15 +555,13 @@ public class StreamrootMSE {
                 if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
                     // the right segment
-                    CONFIG::LOGGING_PTS {
-                        debug({command: "error", message:"Timestamp and min_pts don't match", type:"apple_error_timestamp", min_pts:min_pts, max_pts:max_pts});
-                    }
+                    _streamrootInterface.error("Timestamp and min_pts don't match")
+                    sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
                 } else if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
-                    CONFIG::LOGGING_PTS {
-                        debug({command: "error", message:"previousPTS and min_pts don't match", type:"apple_error_previousPTS"});
-                    }
+                    _streamrootInterface.error("previousPTS and min_pts don't match")
+                    sendSegmentFlushedMessage("apple_error_previousPTS");
                     return;
                 } else {
                     // Append DASH || Smooth || Validated HLS segment
@@ -572,8 +572,6 @@ public class StreamrootMSE {
                     _streamrootInterface.appendBuffer(segmentBytes);
                 }  
             }
-
-            _isWorkerBusy = false;
 
             if (_pendingAppend != undefined) {
                 _streamrootInterface.debug("FLASH: unqueing");
@@ -603,7 +601,6 @@ public class StreamrootMSE {
         } else {
             sendSegmentFlushedMessage(type);
             _discardAppend = false;
-            _isWorkerBusy = false;
         }
     }
 
