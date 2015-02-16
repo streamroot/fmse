@@ -25,6 +25,7 @@ import com.dash.utils.Base64;
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Dictionary;
+import flash.utils.getQualifiedClassName;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
@@ -114,18 +115,32 @@ public class StreamrootMSE {
         _streamrootInterface = streamrootInterface;
 
         _muxer = new Muxer();
-
+        //StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         ExternalInterface.addCallback("buffered", buffered);
         ExternalInterface.addCallback("remove", remove);
         ExternalInterface.addCallback("flushSourceBuffer", flushSourceBuffer);
         
+        //StreamrootInterface callbacks
+        //METHODS
+        ExternalInterface.addCallback("onMetaData", onMetaData);
+        ExternalInterface.addCallback("play", play);
+        ExternalInterface.addCallback("pause", pause);
+        ExternalInterface.addCallback("stop", stop);
+        ExternalInterface.addCallback("seek", seek);
+        ExternalInterface.addCallback("bufferEmpty", bufferEmpty);
+        ExternalInterface.addCallback("bufferFull", bufferFull);
+        ExternalInterface.addCallback("onTrackList", onTrackList);
+        //GETTERS
+        ExternalInterface.addCallback("currentTime", currentTime);
+        ExternalInterface.addCallback("paused", paused);
+        
         _streamBuffer = new StreamBuffer(streamrootInterface);
 
         setupWorker();
     }
-
+    
     private function setupWorker():void {
         var workerBytes:ByteArray = new WORKER_SWF() as ByteArray;
         _worker = WorkerDomain.current.createWorker(workerBytes);
@@ -632,9 +647,45 @@ public class StreamrootMSE {
             }
         }
     }
-
-
-
-
+    
+    private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
+        _streamrootInterface.onMetaData(duration, width, height);
+    }
+    
+    private function play():void {
+        _streamrootInterface.play();
+    }
+    
+    private function pause():void {
+        _streamrootInterface.pause();
+    }
+    
+    private function stop():void {
+        _streamrootInterface.stop();
+    }
+    
+    private function seek(time:Number):void {
+        _streamrootInterface.seek(time);
+    }
+    
+    private function bufferEmpty():void {
+        _streamrootInterface.bufferEmpty();
+    }
+    
+    private function bufferFull():void {
+        _streamrootInterface.bufferFull();
+    }
+    
+    private function onTrackList(trackList:String):void {
+        _streamrootInterface.onTrackList(trackList);
+    }
+    
+    private function currentTime():Number {
+        return _streamrootInterface.currentTime();
+    }
+    
+    private function paused():Boolean {
+        return _streamrootInterface.paused();
+    }
 }
 }

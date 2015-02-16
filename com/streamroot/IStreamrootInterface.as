@@ -24,10 +24,18 @@ public interface IStreamrootInterface {
     function seek(time:Number):void;
 
     function onTrackList(trackList:String):void;
-
+    
+    function onMetaData(duration:Number, width:Number=0, height:Number=0):void;
+    
+    function bufferEmpty():void;
+    
+    function bufferFull():void;
+    
     //GETTERS
     function currentTime():Number;
 
+    function paused():Boolean;
+    
     //EVENTS
     function triggerSeeked():void;
 
