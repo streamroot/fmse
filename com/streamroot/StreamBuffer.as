@@ -72,7 +72,7 @@ package com.streamroot {
         /*
          * 
          */
-        public function getDiffBetweenBuffers():uint{
+        public function getDiffBetweenBuffers():Number{
             if(_sourceBufferNumber == 0){
                 return 0;              
             }

@@ -45,7 +45,7 @@ public interface IStreamrootInterface {
 
     function triggerStopped():void;
     
-    function getBufferLength():uint;
+    function getBufferLength():Number;
 
     //LOGGING
     function debug(message:Object):void;

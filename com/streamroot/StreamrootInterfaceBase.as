@@ -34,9 +34,9 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         //All these callbacks are set in StreamRootMSE
     }
     
-    public function getBufferLength():uint {
+    public function getBufferLength():Number {
         //Should call method in provider that return NetStream.bufferLength
-        throw new Error("Metho getTimeLeftToPlay isn't implemented");
+        throw new Error("Methode getTimeLeftToPlay isn't implemented");
     }
 
     public function loaded():void {
