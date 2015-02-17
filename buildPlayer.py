@@ -11,19 +11,16 @@ elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
     exe = ".exe"
 
 debug = "false"
-verbose = False
 swfversion = "17"
 targetPlayer = "11.4.0"
 
 def helpParam():
-    print "buildPlayer.py [options]\noptions:\n\t-v : verbose mode\n\t-debug : set debug flag to true\n\t-h print this menu"
+    print "\nbuildPlayer.py [options]\noptions:\n\t-debug : set debug flag to true\n\t-h print this menu\n"
     sys.exit(0)
 
 if (len(sys.argv)>1):
     for i in range(1, len(sys.argv)):
-        if sys.argv[i] == "-v":
-            verbose = True
-        elif sys.argv[i] == "-debug":
+        if sys.argv[i] == "-debug":
             debug = "true"
             swfversion = "18"
             targetPlayer = "11.5.0"
@@ -33,16 +30,14 @@ if (len(sys.argv)>1):
             print "incorrect argument"
             helpParam()
             
-if verbose:
-    print "Debug flag = " + debug
-    print "-swf-version="+swfversion
-    print "-target-player="+targetPlayer
+print "Debug flag = " + debug
+print "-swf-version="+swfversion
+print "-target-player="+targetPlayer
 
 def popenPrint(result):
     result.wait()
     for line in result.stdout:
-        if verbose:
-            print(line)
+        print(line)
             
 if ('sr-flash' not in os.getcwd()):
     os.chdir(os.path.normpath("sr-flash"))
