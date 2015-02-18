@@ -12,8 +12,8 @@ package com.streamroot {
         private var _streamBuffer:StreamBuffer;
         private var _streamrootMSE:StreamrootMSE;
         
-        private var TIMEOUT_LENGTH:uint = 100;
-        private var EMERGENCY_TIME:Number = 3;
+        private const TIMEOUT_LENGTH:uint = 100;
+        private const EMERGENCY_TIME:Number = 3;
         
         public function StreamBufferController(streamBuffer:StreamBuffer, streamrootMSE:StreamrootMSE):void {
             _streamBuffer = streamBuffer;
