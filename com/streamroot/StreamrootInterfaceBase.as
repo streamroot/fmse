@@ -4,7 +4,6 @@ import flash.external.ExternalInterface;
 import flash.net.NetStreamAppendBytesAction;
 
 import flash.utils.ByteArray;
-import flash.utils.getQualifiedClassName;
 
 import com.streamroot.StreamrootMSE;
 import com.streamroot.IStreamrootInterface;

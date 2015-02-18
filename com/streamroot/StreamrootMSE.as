@@ -25,7 +25,6 @@ import com.dash.utils.Base64;
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Dictionary;
-import flash.utils.getQualifiedClassName;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
