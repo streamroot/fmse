@@ -103,7 +103,7 @@ public class StreamrootMSE {
     private var _isWorkerReady:Boolean = false;
 
     private var _isWorkerBusy:Boolean = false;
-    private var _pendingAppend:Object = null;
+    private var _pendingAppend:Object;
     private var _discardAppend:Boolean = false; //Used to discard data from worker in case we were seeking during transcoding
 
 
@@ -171,7 +171,7 @@ public class StreamrootMSE {
 
         setHasData(false);
 
-        if (_pendingAppend != null) {
+        if (_pendingAppend) {
             //remove pending append job to avoid appending it after seek
             _streamrootInterface.debug("FLASH: discarding _pendingAppend " + _pendingAppend.type);
             sendSegmentFlushedMessage(_pendingAppend.type);
@@ -283,7 +283,7 @@ public class StreamrootMSE {
             _isWorkerBusy = true;
             setTimeout(sendWorkerMessage, TIMEOUT_LENGTH, message);
             //_mainToWorker.send(message);
-        } else if (_pendingAppend == null) {
+        } else if (!_pendingAppend) {
             _pendingAppend = message; //TODO: clear this job when we seek
         } else {
             _streamrootInterface.error("error: not supporting more than one pending job for now");
@@ -583,7 +583,7 @@ public class StreamrootMSE {
 
             _isWorkerBusy = false;
 
-            if (_pendingAppend != null) {
+            if (_pendingAppend) {
                 _streamrootInterface.debug("FLASH: unqueing");
                 appendOrQueue(_pendingAppend);
                 _pendingAppend = null;
