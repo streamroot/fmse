@@ -25,12 +25,6 @@ package com.streamroot {
             _type = type;
         }
         
-        public function reset():void {
-            _appendedEndTime = 0;
-            _ready = false;
-        }
-        
-        
         public function appendSegment(segment:Segment):void {
             _buffer.push(segment);
         }
