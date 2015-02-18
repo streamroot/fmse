@@ -67,7 +67,7 @@ package com.streamroot {
                 case 1:
                     return 0;
                 case 2:
-                    return Math.abs(_sourceBufferList[0].getCurrentTimestamp() - _sourceBufferList[1].getCurrentTimestamp())/1000;
+                    return Math.abs(_sourceBufferList[0].getAppendedEndTime() - _sourceBufferList[1].getAppendedEndTime())/1000;
                 default:
                     _streamrootMSE.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferList.length);
                     return 0;
@@ -104,23 +104,23 @@ package com.streamroot {
         }
 
         /*
-         * Each sourceBuffer has an attribute timestamp that correspond to the endTime of the last segment appended in NetStream
-         * Because audio and video segment can have different length, audio and video sourceBuffer may have diffrent timestamp
-         * This function return the minimum timestamp of all sourceBuffer. 
-         * We know that after that timestamp we have both audio and video, but after it we may have only video or only audio appended in NetStream
+         * Each sourceBuffer has an attribute appendedEndTime that correspond to the endTime of the last segment appended in NetStream
+         * Because audio and video segment can have different length, audio and video sourceBuffer may have diffrent appendedEndTime
+         * This function return the minimum appendedEndTime of all sourceBuffer. 
+         * We know that before appendedEndTime we have both audio and video, but after it we may have only video or only audio appended in NetStream
          */
-        public function getMinTimestampAppended():uint {
-            var timestamp:uint = 0;
+        public function getAppendedEndTime():uint {
+            var appendedEndTime:uint = 0;
             var isInit:Boolean = false;
             for(var i:int = 0; i < _sourceBufferList.length; i++){
                 if(!isInit){
-                    timestamp = _sourceBufferList[i].getCurrentTimestamp();
+                    appendedEndTime = _sourceBufferList[i].getAppendedEndTime();
                     isInit = true;
                 }else{
-                    timestamp = Math.min(timestamp, _sourceBufferList[i].getCurrentTimestamp());
+                    appendedEndTime = Math.min(appendedEndTime, _sourceBufferList[i].getAppendedEndTime());
                 }
             } 
-            return timestamp;   
+            return appendedEndTime;   
         }
         
         /*
@@ -129,9 +129,9 @@ package com.streamroot {
          */
         public function getNextSegmentBytes():Array{
             var array:Array = new Array();
-            var minTimestamp:uint = getMinTimestampAppended();
+            var appendedEndTime:uint = getAppendedEndTime();
             for(var i:int = 0; i < _sourceBufferList.length; i++){
-                if(minTimestamp == _sourceBufferList[i].getCurrentTimestamp()){
+                if(appendedEndTime == _sourceBufferList[i].getAppendedEndTime()){
                     var segmentBytes:ByteArray = _sourceBufferList[i].getNextSegmentBytes();
                     if(segmentBytes != null){
                         array.push(segmentBytes);

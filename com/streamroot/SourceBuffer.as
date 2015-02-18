@@ -15,7 +15,7 @@ package com.streamroot {
         
         private var _buffer:Array = new Array();
         private var _streamrootMSE:StreamrootMSE;
-        private var _timestamp:uint = 0;
+        private var _appendedEndTime:uint = 0;
         private var _type:String;
         private var _ready:Boolean = false;
         
@@ -26,7 +26,7 @@ package com.streamroot {
         }
         
         public function reset():void {
-            _timestamp = 0;
+            _appendedEndTime = 0;
             _ready = false;
         }
         
@@ -36,11 +36,11 @@ package com.streamroot {
         }
         
         /**
-         * The timestamp is the endTime of the last segment appended in NetStream
-         * If no segment has been append, it is 0
+         * _appendedEndTime is the endTime of the last segment appended in NetStream
+         * If no segment has been appended, it is 0
          */
-        public function getCurrentTimestamp():uint {
-            return _timestamp;
+        public function getAppendedEndTime():uint {
+            return _appendedEndTime;
         }
         
         /**
@@ -57,7 +57,7 @@ package com.streamroot {
             var bytes:ByteArray = null;
             if(_buffer.length > 0){
                 bytes = _buffer[0].getBytes();
-                _timestamp = _buffer[0].getEndTime();
+                _appendedEndTime = _buffer[0].getEndTime();
                 _buffer.splice(0,1);
                 _ready = true;
             }
@@ -65,9 +65,9 @@ package com.streamroot {
         }
         
         /**
-         * Remove data betwene start and end time from the buffer
+         * Remove data between start and end time from the buffer
          * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
-         * (don't be mistaken, it is not the timestamp which is the endTime of the last segment APPENDED in NetStream)
+         * (don't be mistaken, it is not the _appendedEndTime which is the endTime of the last segment APPENDED in NetStream)
          */
         public function remove(start:uint, end:uint):uint {
             if(start == 0){
@@ -86,11 +86,11 @@ package com.streamroot {
         
         /**
         * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
-        * If buffer is empty, it return the timestamp, which may be 0 if nothing has been appended in Netstream
+        * If buffer is empty, it return the _appendedEndTime, which may be 0 if nothing has been appended in Netstream
         */
         public function getBufferEndTime():uint {
             if(_buffer.length == 0){
-                return _timestamp/1000;
+                return _appendedEndTime/1000;
             }else{
                 return _buffer[_buffer.length-1].getEndTime()/1000;
             }
