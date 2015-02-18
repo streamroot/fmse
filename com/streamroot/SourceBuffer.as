@@ -39,6 +39,7 @@ package com.streamroot {
         
         /**
          * _ready is true if at least one segment has been appended, false if not
+         * It is set a false only at the intialization and after a seek
          */
         public function isReady():Boolean {
             return _ready;
@@ -72,9 +73,6 @@ package com.streamroot {
                     
                 }
             }
-            if(_buffer.length == 0){
-                _ready = false;
-            }
             return getBufferEndTime();
         }
         
@@ -94,12 +92,16 @@ package com.streamroot {
          */
         public function flush():uint{
             _buffer = new Array();
-            _ready = false;
             return getBufferEndTime();
         }
         
         public function getType():String{
             return _type;
+        }
+        
+        public function seek():uint {
+            _ready = false;
+            return flush();
         }
     }
 }

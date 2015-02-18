@@ -95,15 +95,6 @@ package com.streamroot {
         
                 
         /*
-         * Remove all data in every buffer
-         */
-        public function flushAllSourceBuffer():void{
-            for(var i:int = 0; i < _sourceBufferList.length; i++){
-                _sourceBufferList[i].flush();
-            }
-        }
-
-        /*
          * Each sourceBuffer has an attribute appendedEndTime that correspond to the endTime of the last segment appended in NetStream
          * Because audio and video segment can have different length, audio and video sourceBuffer may have diffrent appendedEndTime
          * This function return the minimum appendedEndTime of all sourceBuffer. 
@@ -139,6 +130,12 @@ package com.streamroot {
                 }
             }
             return array;  
+        }
+        
+        public function seek():void{
+            for(var i:int = 0; i < _sourceBufferList.length; i++){
+                _sourceBufferList[i].seek();    
+            }    
         }
     }
 }
