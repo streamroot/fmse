@@ -25,38 +25,54 @@ package com.streamroot {
             _type = type;
         }
         
-        public function appendSegment(segment:Segment):void {
-            _buffer.push(segment);
-        }
-        
         /**
-         * _appendedEndTime is the endTime of the last segment appended in NetStream
-         * If no segment has been appended, it is 0
-         */
-        public function getAppendedEndTime():uint {
+        * _appendedEndTime is the endTime of the last segment appended in NetStream
+        * If no segment has been appended, it is 0
+        */
+        public function get appendedEndTime():uint {
             return _appendedEndTime;
-        }
+        }  
         
+        public function get type():String{
+            return _type;
+        }
+
         /**
-         * _ready is true if at least one segment has been appended, false if not
-         * It is set a false only at the intialization and after a seek
-         */
+        * _ready is true if at least one segment has been appended, false if not
+        * It is set a false only at the intialization and after a seek
+        */
         public function isReady():Boolean {
             return _ready;
         }
         
+        /**
+        * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
+        * If buffer is empty, it return the _appendedEndTime, which may be 0 if nothing has been appended in Netstream
+        */
+        public function getBufferEndTime():uint {
+            if(_buffer.length == 0){
+                return _appendedEndTime/1000;
+            }else{
+                return _buffer[_buffer.length-1].endTime/1000;
+            }
+        }
+                
         /**
          * Return the next segment to be appended in NetStream
          */
         public function getNextSegmentBytes():ByteArray{
             var bytes:ByteArray = null;
             if(_buffer.length > 0){
-                bytes = _buffer[0].getBytes();
-                _appendedEndTime = _buffer[0].getEndTime();
+                bytes = _buffer[0].bytes;
+                _appendedEndTime = _buffer[0].endTime;
                 _buffer.splice(0,1);
                 _ready = true;
             }
             return bytes;    
+        }
+        
+        public function appendSegment(segment:Segment):void {
+            _buffer.push(segment);
         }
         
         /**
@@ -68,7 +84,7 @@ package com.streamroot {
             if(start == 0){
                 _buffer = new Array();
             }else{
-                while(_buffer.length > 0 && _buffer[_buffer.length-1].getStartTime() >= start*1000){
+                while(_buffer.length > 0 && _buffer[_buffer.length-1].startTime >= start*1000){
                     _buffer.pop();
                     
                 }
@@ -77,26 +93,11 @@ package com.streamroot {
         }
         
         /**
-        * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
-        * If buffer is empty, it return the _appendedEndTime, which may be 0 if nothing has been appended in Netstream
-        */
-        public function getBufferEndTime():uint {
-            if(_buffer.length == 0){
-                return _appendedEndTime/1000;
-            }else{
-                return _buffer[_buffer.length-1].getEndTime()/1000;
-            }
-        }
-        /**
          * Clear all data in the buffer
          */
         public function flush():uint{
             _buffer = new Array();
             return getBufferEndTime();
-        }
-        
-        public function getType():String{
-            return _type;
         }
         
         public function seek():uint {

@@ -14,24 +14,23 @@ package com.streamroot {
         public function Segment(bytes:ByteArray, type:String, startTime:uint, endTime:uint):void {
             _type = type;
             _segmentBytes = bytes;
-
             _startTime = startTime;
             _endTime = endTime;
         }
         
-        public function getBytes():ByteArray {
+        public function get bytes():ByteArray {
             return _segmentBytes;
         }
         
-        public function getType():String {
+        public function get type():String {
             return _type;
         }
         
-        public function getStartTime():uint {
+        public function get startTime():uint {
             return _startTime;
         }
         
-        public function getEndTime():uint {
+        public function get endTime():uint {
             return _endTime;
         }        
     }

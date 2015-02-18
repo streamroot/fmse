@@ -568,11 +568,11 @@ public class StreamrootMSE {
             if (!isInit) {
                 
                 var key:String;
-                if (segment.getType().indexOf("apple") >=0) {
+                if (segment.type.indexOf("apple") >=0) {
                     key = VIDEO;
-                }else if (segment.getType().indexOf("audio") >= 0) {
+                }else if (segment.type.indexOf("audio") >= 0) {
                     key = AUDIO;
-                }else if (segment.getType().indexOf("video") >= 0) {
+                }else if (segment.type.indexOf("video") >= 0) {
                     key = VIDEO;
                 }else {
                     _streamrootInterface.error("Error: Type not supported: " + type);

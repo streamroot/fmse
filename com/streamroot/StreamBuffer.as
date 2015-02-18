@@ -7,9 +7,6 @@ package com.streamroot {
     import flash.utils.ByteArray;
     import flash.utils.Dictionary;
     
-    import flash.external.ExternalInterface;
-    
-    
     /**
      * This class is an intermediate buffer before NetStream
      * It has been created because we can't remove data from NetStream.
@@ -39,7 +36,7 @@ package com.streamroot {
         
         private function getSourceBufferByType(type:String):SourceBuffer {
             for(var i:int = 0; i < _sourceBufferList.length; i++){
-                if(_sourceBufferList[i].getType() == type){
+                if(_sourceBufferList[i].type == type){
                     return _sourceBufferList[i];
                 }
             }
@@ -67,7 +64,7 @@ package com.streamroot {
                 case 1:
                     return 0;
                 case 2:
-                    return Math.abs(_sourceBufferList[0].getAppendedEndTime() - _sourceBufferList[1].getAppendedEndTime())/1000;
+                    return Math.abs(_sourceBufferList[0].appendedEndTime - _sourceBufferList[1].appendedEndTime)/1000;
                 default:
                     _streamrootMSE.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferList.length);
                     return 0;
@@ -105,10 +102,10 @@ package com.streamroot {
             var isInit:Boolean = false;
             for(var i:int = 0; i < _sourceBufferList.length; i++){
                 if(!isInit){
-                    appendedEndTime = _sourceBufferList[i].getAppendedEndTime();
+                    appendedEndTime = _sourceBufferList[i].appendedEndTime;
                     isInit = true;
                 }else{
-                    appendedEndTime = Math.min(appendedEndTime, _sourceBufferList[i].getAppendedEndTime());
+                    appendedEndTime = Math.min(appendedEndTime, _sourceBufferList[i].appendedEndTime);
                 }
             } 
             return appendedEndTime;   
@@ -122,7 +119,7 @@ package com.streamroot {
             var array:Array = new Array();
             var appendedEndTime:uint = getAppendedEndTime();
             for(var i:int = 0; i < _sourceBufferList.length; i++){
-                if(appendedEndTime == _sourceBufferList[i].getAppendedEndTime()){
+                if(appendedEndTime == _sourceBufferList[i].appendedEndTime){
                     var segmentBytes:ByteArray = _sourceBufferList[i].getNextSegmentBytes();
                     if(segmentBytes != null){
                         array.push(segmentBytes);
