@@ -2,8 +2,6 @@ package com.streamroot {
     
     import com.streamroot.Segment;
     import com.streamroot.StreamBufferController;
-    import com.streamroot.IStreamrootInterface;
-    import com.streamroot.StreamrootInterfaceBase;
     import com.streamroot.StreamrootMSE;
     
     import flash.utils.ByteArray;
@@ -24,113 +22,84 @@ package com.streamroot {
     public class StreamBuffer{
         
         private var _streamBufferController:StreamBufferController;
-        private var _streamrootInterface:IStreamrootInterface;
-        private var _sourceBufferList:Dictionary = new Dictionary();
-        private var _sourceBufferNumber:uint = 0;
+        private var _sourceBufferList:Array = new Array();
+        private var _streamrootMSE:StreamrootMSE;
         
         private var VIDEO:String = "video";
         private var AUDIO:String = "audio";
         
-        private function addSourceBuffer(type:String):void {
-            
-            var key:String;
-            if (type.indexOf("apple") >=0) {
-                key = VIDEO;
-            }else if (type.indexOf("audio") >= 0) {
-                key = AUDIO;
-            }else if (type.indexOf("video") >= 0) {
-                key = VIDEO;
-            }else {
-                _streamrootInterface.error("Error: Type not supported: " + type);
-            }
-                    
-            if (key) {
-                if (!_sourceBufferList.hasOwnProperty(key)) {
-                    _sourceBufferList[key] = new SourceBuffer(_streamrootInterface, key);
-                    _sourceBufferNumber++;
+        public function StreamBuffer(streamrootMSE:StreamrootMSE):void {
+            _streamrootMSE = streamrootMSE;
+            _streamBufferController = new StreamBufferController(this, _streamrootMSE); 
+        }
+    
+        public function addSourceBuffer(type:String):void {
+            _sourceBufferList.push(new SourceBuffer(_streamrootMSE, type));  
+        }
+        
+        private function getSourceBufferByType(type:String):SourceBuffer {
+            for(var i:int = 0; i < _sourceBufferList.length; i++){
+                if(_sourceBufferList[i].getType() == type){
+                    return _sourceBufferList[i];
                 }
-           }
+            }
+            return null;
         }
         
         public function areBuffersReady():Boolean {
             var ready:Boolean = true;
-            for(var k:String in _sourceBufferList){
-                ready = ready && _sourceBufferList[k].isReady();
+            for(var i:int =0; i < _sourceBufferList.length; i++){
+                ready = ready && _sourceBufferList[i].isReady();
             }
-            return (ready && _sourceBufferNumber);
+            return (ready && _sourceBufferList.length);
         } 
         
            
-        public function StreamBuffer(streamrootInterface:IStreamrootInterface):void {
-            _streamrootInterface = streamrootInterface;
-            _streamBufferController = new StreamBufferController(this, _streamrootInterface); 
-            
-            ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
-            
-        }
+    
         
         /*
          * 
          */
         public function getDiffBetweenBuffers():Number{
-            if(_sourceBufferNumber == 0){
-                return 0;              
-            }
-            if(_sourceBufferNumber == 1){
-                return 0;
-            }else if(_sourceBufferNumber == 2){
-                return Math.abs(_sourceBufferList[VIDEO].getCurrentTimestamp() - _sourceBufferList[AUDIO].getCurrentTimestamp())/1000;
-            }else{
-                _streamrootInterface.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferNumber);
-                return 0;
+            switch(_sourceBufferList.length){
+                case 0:
+                    return 0;            
+                case 1:
+                    return 0;
+                case 2:
+                    return Math.abs(_sourceBufferList[0].getCurrentTimestamp() - _sourceBufferList[1].getCurrentTimestamp())/1000;
+                default:
+                    _streamrootMSE.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferList.length);
+                    return 0;
             }
         }
         
         /*
          * Append a decoded segment in the corresponding sourceBuffer
          */
-        public function appendSegment(segment:Segment):void {
-            var type:String = segment.getType();
-            var key:String;
-            if (type.indexOf("apple") >=0) {
-                key = VIDEO;
-            }else if (type.indexOf("audio") >= 0) {
-                key = AUDIO;
-            }else if (type.indexOf("video") >= 0) {
-                key = VIDEO;
-            }else {
-                _streamrootInterface.error("Error: Type not supported: " + type);
-            }
-            
-            if (key) {
-                if (_sourceBufferList.hasOwnProperty(key)) {
-                    _sourceBufferList[key].appendSegment(segment);
-                }else{
-                    _streamrootInterface.error("Missing a BufferSource : " + type);                    
-                }
+        public function appendSegment(segment:Segment, type:String):void {
+            var sb:SourceBuffer = getSourceBufferByType(type);
+            if(sb != null) {
+                sb.appendSegment(segment);
+            }else{
+                _streamrootMSE.error("BufferSource for type " + type + " not found");                    
             }    
         }
         
         /*
-         * Remove data between start and end time in the sourceBuffer corresponding the key
+         * Remove data between start and end time in the sourceBuffer corresponding the type
          */    
-        public function removeDataFromSourceBuffer(start:uint, end:uint, key:String):uint {
-            return _sourceBufferList[key].remove(start, end);
+        public function removeDataFromSourceBuffer(start:uint, end:uint, type:String):uint {
+            return getSourceBufferByType(type).remove(start, end);
         }
         
-        /*
-         * Remove all data in the buffer corresponding to the key
-         */
-        public function flushSourceBuffer(key:String):uint{
-            return _sourceBufferList[key].flush();
-        }
-        
+                
         /*
          * Remove all data in every buffer
          */
         public function flushAllSourceBuffer():void{
-            for(var k:String in _sourceBufferList){
-                _sourceBufferList[k].flush();
+            for(var i:int = 0; i < _sourceBufferList.length; i++){
+                _sourceBufferList[i].flush();
             }
         }
 
@@ -143,12 +112,12 @@ package com.streamroot {
         public function getMinTimestampAppended():uint {
             var timestamp:uint = 0;
             var isInit:Boolean = false;
-            for(var k:String in _sourceBufferList){
+            for(var i:int = 0; i < _sourceBufferList.length; i++){
                 if(!isInit){
-                    timestamp = _sourceBufferList[k].getCurrentTimestamp();
+                    timestamp = _sourceBufferList[i].getCurrentTimestamp();
                     isInit = true;
                 }else{
-                    timestamp = Math.min(timestamp, _sourceBufferList[k].getCurrentTimestamp());
+                    timestamp = Math.min(timestamp, _sourceBufferList[i].getCurrentTimestamp());
                 }
             } 
             return timestamp;   
@@ -161,16 +130,14 @@ package com.streamroot {
         public function getNextSegmentBytes():Array{
             var array:Array = new Array();
             var minTimestamp:uint = getMinTimestampAppended();
-
-            for(var k:String in _sourceBufferList){
-                if(minTimestamp == _sourceBufferList[k].getCurrentTimestamp()){
-                    var tempArray:ByteArray = _sourceBufferList[k].getNextSegmentBytes();
-                    if(tempArray != null){
-                        array.push(tempArray);
+            for(var i:int = 0; i < _sourceBufferList.length; i++){
+                if(minTimestamp == _sourceBufferList[i].getCurrentTimestamp()){
+                    var segmentBytes:ByteArray = _sourceBufferList[i].getNextSegmentBytes();
+                    if(segmentBytes != null){
+                        array.push(segmentBytes);
                     }
                 }
             }
-            minTimestamp = getMinTimestampAppended();
             return array;  
         }
     }

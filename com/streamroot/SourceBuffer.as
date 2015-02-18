@@ -2,8 +2,6 @@ package com.streamroot {
     
     import com.streamroot.Segment;
     import com.streamroot.StreamBufferController;
-    import com.streamroot.IStreamrootInterface;
-    import com.streamroot.StreamrootInterfaceBase;
     import com.streamroot.StreamrootMSE;
     
     import flash.utils.ByteArray;
@@ -16,20 +14,22 @@ package com.streamroot {
     public class SourceBuffer{
         
         private var _buffer:Array = new Array();
-        private var _streamrootInterface:IStreamrootInterface;
+        private var _streamrootMSE:StreamrootMSE;
         private var _timestamp:uint = 0;
         private var _type:String;
         private var _ready:Boolean = false;
+        
+        
+        public function SourceBuffer(streamrootMSE:StreamrootMSE, type:String):void {
+            _streamrootMSE = streamrootMSE;
+            _type = type;
+        }
         
         public function reset():void {
             _timestamp = 0;
             _ready = false;
         }
         
-        public function SourceBuffer(streamrootInterface:IStreamrootInterface, type:String):void {
-            _streamrootInterface = streamrootInterface;
-            _type = type;
-        }
         
         public function appendSegment(segment:Segment):void {
             _buffer.push(segment);

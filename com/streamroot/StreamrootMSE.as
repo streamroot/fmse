@@ -122,7 +122,6 @@ public class StreamrootMSE {
         
         //StreamBuffer callbacks
         ExternalInterface.addCallback("remove", remove);
-        ExternalInterface.addCallback("flushSourceBuffer", flushSourceBuffer);
         
         //StreamrootInterface callbacks
         //METHODS
@@ -138,7 +137,7 @@ public class StreamrootMSE {
         ExternalInterface.addCallback("currentTime", currentTime);
         ExternalInterface.addCallback("paused", paused);
         
-        _streamBuffer = new StreamBuffer(streamrootInterface);
+        _streamBuffer = new StreamBuffer(this);
 
         setupWorker();
     }
@@ -206,6 +205,7 @@ public class StreamrootMSE {
 
         if (key) {
             if (!_hasData.hasOwnProperty(key)) {
+                _streamBuffer.addSourceBuffer(key);
                 _streamrootInterface.debug("FLASH: adding sourceBuffer " + type);
                 _hasData[key] = false;
             } else {
@@ -295,7 +295,7 @@ public class StreamrootMSE {
     private function sendWorkerMessage():void {
         _mainToWorker.send(arguments[0]);
     }
-
+    
     private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         //var bytes_event:ByteArray = Base64.decode(data);
 
@@ -555,8 +555,6 @@ public class StreamrootMSE {
         return _streamBuffer.areBuffersReady();
     }
     
-    
-    
     private function onWorkerToMain(event:Event):void {
         var message:* = _workerToMain.receive();
 
@@ -568,8 +566,20 @@ public class StreamrootMSE {
         if (!_discardAppend) {
 
             if (!isInit) {
+                
+                var key:String;
+                if (segment.getType().indexOf("apple") >=0) {
+                    key = VIDEO;
+                }else if (segment.getType().indexOf("audio") >= 0) {
+                    key = AUDIO;
+                }else if (segment.getType().indexOf("video") >= 0) {
+                    key = VIDEO;
+                }else {
+                    _streamrootInterface.error("Error: Type not supported: " + type);
+                }
+                
                 _streamrootInterface.debug("FLASH: appending segment in StreamBuffer");
-                _streamBuffer.appendSegment(segment);
+                _streamBuffer.appendSegment(segment, key);
             }
 
             _isWorkerBusy = false;
@@ -642,6 +652,30 @@ public class StreamrootMSE {
         }
     }
     
+    //StreamBuffer function
+    public function appendIntoNetStream(bytes:ByteArray):void {
+        _streamrootInterface.appendBuffer(bytes);
+    }
+    
+    public function remove(start:uint, end:uint, type:String):uint {
+        var key:String;
+        if (type.indexOf("apple") >=0) {
+            key = VIDEO;
+        }else if (type.indexOf("audio") >= 0) {
+            key = AUDIO;
+        }else if (type.indexOf("video") >= 0) {
+            key = VIDEO;
+        }else {
+            _streamrootInterface.error("Error: Type not supported: " + type);
+        }
+        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
+    }
+    
+    public function getBufferLength():Number{
+        return _streamrootInterface.getBufferLength();
+    }
+        
+    //StreamrootInterface function   
     private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
         _streamrootInterface.onMetaData(duration, width, height);
     }
@@ -662,6 +696,14 @@ public class StreamrootMSE {
         _streamrootInterface.seek(time);
     }
     
+    private function currentTime():Number {
+        return _streamrootInterface.currentTime();
+    }
+        
+    private function paused():Boolean {
+        return _streamrootInterface.paused();
+    }
+    
     private function bufferEmpty():void {
         _streamrootInterface.bufferEmpty();
     }
@@ -674,20 +716,8 @@ public class StreamrootMSE {
         _streamrootInterface.onTrackList(trackList);
     }
     
-    private function currentTime():Number {
-        return _streamrootInterface.currentTime();
-    }
-    
-    private function paused():Boolean {
-        return _streamrootInterface.paused();
-    }
-    
-    public function remove(start:uint, end:uint, key:String):uint {
-        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
-    }
-    
-    public function flushSourceBuffer(key:String):void{
-        _streamBuffer.flushSourceBuffer(key);
+    public function error(message:Object):void {
+        _streamrootInterface.error(String(message));
     }
 }
 }
