@@ -41,7 +41,7 @@ package com.streamroot {
         * _ready is true if at least one segment has been appended, false if not
         * It is set a false only at the intialization and after a seek
         */
-        public function isReady():Boolean {
+        public function get ready():Boolean {
             return _ready;
         }
         
@@ -95,12 +95,12 @@ package com.streamroot {
         /**
          * Clear all data in the buffer
          */
-        public function flush():uint{
+        private function flush():uint{
             _buffer = new Array();
             return getBufferEndTime();
         }
         
-        public function seek():uint {
+        public function onSeek():uint {
             _ready = false;
             return flush();
         }

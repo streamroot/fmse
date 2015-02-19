@@ -22,8 +22,8 @@ package com.streamroot {
         private var _sourceBufferList:Array = new Array();
         private var _streamrootMSE:StreamrootMSE;
         
-        private var VIDEO:String = "video";
-        private var AUDIO:String = "audio";
+        private const VIDEO:String = "video";
+        private const AUDIO:String = "audio";
         
         public function StreamBuffer(streamrootMSE:StreamrootMSE):void {
             _streamrootMSE = streamrootMSE;
@@ -46,7 +46,7 @@ package com.streamroot {
         public function areBuffersReady():Boolean {
             var ready:Boolean = true;
             for(var i:int =0; i < _sourceBufferList.length; i++){
-                ready = ready && _sourceBufferList[i].isReady();
+                ready = ready && _sourceBufferList[i].ready;
             }
             return (ready && _sourceBufferList.length);
         } 
@@ -60,7 +60,6 @@ package com.streamroot {
         public function getDiffBetweenBuffers():Number{
             switch(_sourceBufferList.length){
                 case 0:
-                    return 0;            
                 case 1:
                     return 0;
                 case 2:
@@ -129,9 +128,9 @@ package com.streamroot {
             return array;  
         }
         
-        public function seek():void{
+        public function onSeek():void{
             for(var i:int = 0; i < _sourceBufferList.length; i++){
-                _sourceBufferList[i].seek();    
+                _sourceBufferList[i].onSeek();    
             }    
         }
     }

@@ -184,7 +184,7 @@ public class StreamrootMSE {
             _discardAppend = true
         }
 
-        _streamBuffer.seek();
+        _streamBuffer.onSeek();
         _mainToWorker.send('seeking');
     }
 
