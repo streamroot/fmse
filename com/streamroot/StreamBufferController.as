@@ -11,6 +11,7 @@ package com.streamroot {
         
         private var _streamBuffer:StreamBuffer;
         private var _streamrootMSE:StreamrootMSE;
+        private var _needData:Boolean = true;    
         
         private const TIMEOUT_LENGTH:uint = 100;
         private const EMERGENCY_TIME:Number = 3;
@@ -32,8 +33,17 @@ package com.streamroot {
                 var array:Array = _streamBuffer.getNextSegmentBytes();
                 for(var i:uint = 0; i < array.length; i++){
                     _streamrootMSE.appendIntoNetStream(array[i]);
+                    if(_needData && _streamBuffer.isBufferReady()){
+                        _streamrootMSE.bufferFull();
+                        _needData = false;
+                    }
+                    
                 }
             }
+        }
+        
+        public function onSeek():void{
+            _needData = true;
         }
     
     }

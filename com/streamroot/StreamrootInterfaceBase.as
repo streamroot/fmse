@@ -63,12 +63,8 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     }
 
     public function appendBuffer(bytes:ByteArray):void {
-        //FIRST: Should call method in provider that calls NetStream.appendBytes, then super
-
-        //If data needed, check if we have data in both video and audio buffer
-        if (_needData && _streamrootMSE.areBuffersReady()) {
-            bufferFull();
-        }
+        //Should call method in provider that calls NetStream.appendBytes
+        throw new Error("Method appendBuffer is not implemented");
     }
 
     public function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
@@ -76,10 +72,10 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         throw new Error("Method onMetaData isn't implemented");
     }
 
-    public function areBuffersReady():Boolean {
+    /*public function areBuffersReady():Boolean {
         //Asks streamrrot stack if we have data in buffer for both audio and video
         return (_streamrootMSE.areBuffersReady());
-    }
+    }*/
 
     public function bufferEmpty():void {
       //Calls methods in provider that deals with empty buffer. It should be what you call in "NetStream.Buffer.Empty" NetStream status event,
@@ -94,10 +90,8 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         //This provider method should not be executed in any other situation, and "NetStream.Buffer.Full"
         //should call netStream.pause(), because in case of separate audio / video tracks it will fire
         //when only one of the two tracks will have be bufferized enough.
-
-        //Set needData to false, as we don't want to check bufferReady at each append
-        _needData = false;
-
+        
+        throw new Error("Method bufferFull is not implemented");
         //You should call your provider's onBufferFull method after super
     }
 
@@ -122,10 +116,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         //must call requestSeek below, and Javascript will in turn call the seek method. It is necessary to do it like this because
         //Javascript has the information to seek at a video KeyFrame
 
-        //Set needData to true, because we'll need both audio and video data.
-        _needData = true;
-
-        //Tell streamrrot stack we've seekd, and pass the time.
+        //Tell streamrrot stack we've seeked, and pass the time.
         _streamrootMSE.setSeekOffset(time);
 
         //You should call provider's seek method that wrapps NetStream's seek method, after super. Shouldn't be needed if controls are in flash

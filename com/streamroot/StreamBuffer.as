@@ -43,7 +43,7 @@ package com.streamroot {
             return null;
         }
         
-        public function areBuffersReady():Boolean {
+        public function isBufferReady():Boolean {
             var ready:Boolean = true;
             for(var i:int =0; i < _sourceBufferList.length; i++){
                 ready = ready && _sourceBufferList[i].ready;
@@ -145,7 +145,8 @@ package com.streamroot {
         public function onSeek():void{
             for(var i:int = 0; i < _sourceBufferList.length; i++){
                 _sourceBufferList[i].onSeek();    
-            }    
+            }   
+            _streamBufferController.onSeek();
         }
     }
 }

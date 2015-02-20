@@ -134,7 +134,6 @@ public class StreamrootMSE {
         ExternalInterface.addCallback("stop", stop);
         ExternalInterface.addCallback("seek", seek);
         ExternalInterface.addCallback("bufferEmpty", bufferEmpty);
-        ExternalInterface.addCallback("bufferFull", bufferFull);
         ExternalInterface.addCallback("onTrackList", onTrackList);
         //GETTERS
         ExternalInterface.addCallback("currentTime", currentTime);
@@ -544,19 +543,6 @@ public class StreamrootMSE {
         ns.appendBytes(flv_header);
     }
 
-    public function areBuffersReady():Boolean {
-        /*var flag:Boolean = true;
-        var sourceBufferNumber:Number = 0;
-
-        for (var k in _hasData) {
-            flag = flag && _hasData[k];
-            sourceBufferNumber++;
-        }
-
-        return (flag && (sourceBufferNumber > 0));*/
-        return _streamBuffer.areBuffersReady();
-    }
-
     private function onWorkerToMain(event:Event):void {
         var message:* = _workerToMain.receive();
 
@@ -767,7 +753,7 @@ public class StreamrootMSE {
         _streamrootInterface.bufferEmpty();
     }
     
-    private function bufferFull():void {
+    public function bufferFull():void {
         _streamrootInterface.bufferFull();
     }
     

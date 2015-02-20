@@ -13,8 +13,6 @@ public interface IStreamrootInterface {
 
     function appendBuffer(bytes:ByteArray):void;
 
-    function areBuffersReady():Boolean;
-
     function play():void;
 
     function pause():void;
