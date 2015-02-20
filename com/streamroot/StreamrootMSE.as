@@ -48,8 +48,8 @@ public class StreamrootMSE {
     private var _seek_offset:Number = 0;
     private var _audio_offset:Number = 0;
 
-    private var _buffered:uint = 0;
-    private var _buffered_audio:uint = 0;
+    //private var _buffered:uint = 0;
+    //private var _buffered_audio:uint = 0;
 
     private var _hasData:Dictionary = new Dictionary();
     private static const VIDEO:String = "video";
@@ -121,7 +121,7 @@ public class StreamrootMSE {
 		//StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
-        ExternalInterface.addCallback("buffered", buffered);
+        //ExternalInterface.addCallback("buffered", buffered);
         
         //StreamBuffer callbacks
         ExternalInterface.addCallback("remove", remove);
@@ -170,8 +170,8 @@ public class StreamrootMSE {
         _streamrootInterface.debug("FLASH: set seek offset");
         _seek_offset = timeSeek;
 
-        _buffered = timeSeek*1000000;
-        _buffered_audio = timeSeek*1000000;
+        //_buffered = timeSeek*1000000;
+        //_buffered_audio = timeSeek*1000000;
         setHasData(false);
         // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
         _hlsSegmentValidator.setIsSeeking(true);
@@ -298,8 +298,7 @@ public class StreamrootMSE {
         _mainToWorker.send(arguments[0]);
     }
     
-    //not used anymore
-    private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
+    /*private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         //var bytes_event:ByteArray = Base64.decode(data);
 
         _streamrootInterface.debug("ASYNC APPEND");
@@ -503,9 +502,9 @@ public class StreamrootMSE {
 
         ExternalInterface.call("sr_flash_updateend_video");
         return;
-    }
+    }*/
 
-    private function buffered(type:String):Number{
+    /*private function buffered(type:String):Number{
             if (type.indexOf("audio") >= 0){
                 return _buffered_audio;
             }
@@ -513,7 +512,7 @@ public class StreamrootMSE {
                 return _buffered;
             }
             return _buffered;
-    }
+    }*/
 
     public function getFileHeader():ByteArray {
         var output:ByteArray = new ByteArray();
