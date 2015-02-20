@@ -14,15 +14,23 @@ debug = "false"
 swfversion = "17"
 targetPlayer = "11.4.0"
 
-if (len(sys.argv)>1 ):
-    if (sys.argv[1] == "-debug"):
-        debug = "true"
-        swfversion = "18"
-        targetPlayer = "11.5.0"
-    else:
-        print "incorrect argument"
+def helpParam():
+    print "\nbuildPlayer.py [options]\noptions:\n\t-debug : set debug flag to true\n\t-h print this menu\n"
+    sys.exit(0)
 
-print debug
+if (len(sys.argv)>1):
+    for i in range(1, len(sys.argv)):
+        if sys.argv[i] == "-debug":
+            debug = "true"
+            swfversion = "18"
+            targetPlayer = "11.5.0"
+        elif sys.argv[i] in ["--help","-h"]:
+            helpParam()
+        else:
+            print "incorrect argument"
+            helpParam()
+            
+print "Debug flag = " + debug
 print "-swf-version="+swfversion
 print "-target-player="+targetPlayer
 
@@ -30,6 +38,7 @@ def popenPrint(result):
     result.wait()
     for line in result.stdout:
         print(line)
+            
 if ('sr-flash' not in os.getcwd()):
     os.chdir(os.path.normpath("sr-flash"))
 

@@ -1,6 +1,6 @@
 package com.streamroot {
 
-import com.streamroot.StreamrootInterfaceBase;
+import com.streamroot.IStreamrootInterface;
 
 public class HlsSegmentValidator {
 
@@ -11,14 +11,12 @@ public class HlsSegmentValidator {
 
     //Remember pts/dts have been converted to ms from the start in pes parsing
     
-    /** max_pts of the last appended segment **/
-    private var _previousPTS:Number;
     /** Know if we're in a seek process or not **/
     private var _isSeeking:Boolean = false;
 
-    private var _streamrootInterface:StreamrootInterfaceBase;
+    private var _streamrootInterface:IStreamrootInterface;
 
-    public function HlsSegmentValidator(streamrootInterface:StreamrootInterfaceBase) {
+    public function HlsSegmentValidator(streamrootInterface:IStreamrootInterface) {
         _streamrootInterface = streamrootInterface;
     }
 
@@ -31,20 +29,20 @@ public class HlsSegmentValidator {
     }
 
     /** Check if this segment is the right one and if its pts is consistent with its map timestamp **/
-    public function checkSegmentPTS(min_pts:Number, max_pts:Number, timestamp:Number):String {
+    public function checkSegmentPTS(min_pts:Number, max_pts:Number, timestamp:Number, previousPTS:Number):String {
         CONFIG::LOGGING_PTS { 
             _streamrootInterface.debug("VALIDATOR timestamp: " + timestamp/1000);
-            _streamrootInterface.debug("VALIDATOR _previousPTS: " + _previousPTS/1000);
+            _streamrootInterface.debug("VALIDATOR previousPTS: " + previousPTS/1000);
             _streamrootInterface.debug("VALIDATOR min_pts: " + min_pts/1000);
             _streamrootInterface.debug("VALIDATOR max_pts: " + max_pts/1000);
         }
 
         if(Math.abs(min_pts - (timestamp + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
             return "apple_error_timestamp";
-        } else if(!_isSeeking && _previousPTS && Math.abs(min_pts - (_previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {      
+        } else if(!_isSeeking && previousPTS != 0 && Math.abs(min_pts - (previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {      
             return "apple_error_previousPTS";
         } else {
-            _previousPTS = max_pts;
+        //    previousPTS = max_pts;
             return "true";
         }
     }

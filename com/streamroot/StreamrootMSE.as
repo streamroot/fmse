@@ -21,19 +21,24 @@ import com.dash.handlers.AudioSegmentHandler;
 import com.dash.boxes.Muxer;
 
 import com.dash.utils.Base64;
+
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Dictionary;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
+import com.streamroot.StreamBuffer;
+import com.streamroot.Segment;
 
 import com.streamroot.Transcoder;
 import com.streamroot.HlsSegmentValidator;
 
 public class StreamrootMSE {
 
-    private var _streamrootInterface;
+    private var _streamrootInterface:IStreamrootInterface;
+    
+    private var _streamBuffer:StreamBuffer;
 
     private var _muxer:Muxer;
 
@@ -112,10 +117,30 @@ public class StreamrootMSE {
 
         _muxer = new Muxer();
         _hlsSegmentValidator = new HlsSegmentValidator(_streamrootInterface);
-
+		
+		//StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         ExternalInterface.addCallback("buffered", buffered);
+        
+        //StreamBuffer callbacks
+        ExternalInterface.addCallback("remove", remove);
+        
+        //StreamrootInterface callbacks
+        //METHODS
+        ExternalInterface.addCallback("onMetaData", onMetaData);
+        ExternalInterface.addCallback("play", play);
+        ExternalInterface.addCallback("pause", pause);
+        ExternalInterface.addCallback("stop", stop);
+        ExternalInterface.addCallback("seek", seek);
+        ExternalInterface.addCallback("bufferEmpty", bufferEmpty);
+        ExternalInterface.addCallback("bufferFull", bufferFull);
+        ExternalInterface.addCallback("onTrackList", onTrackList);
+        //GETTERS
+        ExternalInterface.addCallback("currentTime", currentTime);
+        ExternalInterface.addCallback("paused", paused);
+        
+        _streamBuffer = new StreamBuffer(this);
 
         setupWorker();
     }
@@ -147,7 +172,6 @@ public class StreamrootMSE {
 
         _buffered = timeSeek*1000000;
         _buffered_audio = timeSeek*1000000;
-
         setHasData(false);
         // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
         _hlsSegmentValidator.setIsSeeking(true);
@@ -156,7 +180,7 @@ public class StreamrootMSE {
             //remove pending append job to avoid appending it after seek
             _streamrootInterface.debug("FLASH: discarding _pendingAppend " + _pendingAppend.type);
             sendSegmentFlushedMessage(_pendingAppend.type);
-            _pendingAppend = undefined;
+            _pendingAppend = null;
         }
 
         //If worker is appending a segment during seek, discard it as we don't want to append it
@@ -164,7 +188,7 @@ public class StreamrootMSE {
             _streamrootInterface.debug("FLASH: setting discard to true");
             _discardAppend = true
         }
-
+        _streamBuffer.onSeek();
         _mainToWorker.send('seeking');
     }
 
@@ -184,7 +208,8 @@ public class StreamrootMSE {
 
         if (key) {
             if (!_hasData.hasOwnProperty(key)) {
-                _streamrootInterface.debug("FLASH: daaing sourceBuffer " + type);
+                _streamBuffer.addSourceBuffer(key);
+                _streamrootInterface.debug("FLASH: adding sourceBuffer " + type);
                 _hasData[key] = false;
             } else {
                 _streamrootInterface.error("Error: source buffer with this type already exists: " + type);
@@ -198,18 +223,18 @@ public class StreamrootMSE {
             _hasData[key] = value;
         } else {
             //If no key specified, set all entries in _hasData to value
-            for (var k in _hasData) {
+            for (var k:String in _hasData) {
                 _streamrootInterface.debug("FLASH: setHasData: " + k + " - " + String(value));
                 _hasData[k] = value;
             }
         }
     }
-
-    private function appendBuffer(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
+    
+    //timestampStart and timestampEnd in millisecond
+    private function appendBuffer(data:String, type:String, isInit:Boolean, timestampStart:Number = 0, timestampEnd:uint = 0 ):void {
         _streamrootInterface.debug("FLASH: appendBuffer");
         var offset :Number = _seek_offset * 1000;
-        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestamp, offset: offset};/* - offset + 100}*/;
-
+        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestampStart, offset: offset, endTime:timestampEnd};// - offset + 100};
         appendOrQueue(message);
 
 
@@ -411,7 +436,7 @@ public class StreamrootMSE {
             var decodedTS :Number = new Date().valueOf();
 
             var bytes_append_audio:ByteArray = new ByteArray();
-            var audioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, _pendingTimestampAudio - _pendingOffsetAudio, _muxer);
+            var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, _pendingTimestampAudio - _pendingOffsetAudio, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             if (_isWorkerReady){
@@ -449,7 +474,7 @@ public class StreamrootMSE {
             var decodedTS :Number = new Date().valueOf();
 
             var bytes_append:ByteArray = new ByteArray();
-            var videoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, _pendingTimestampVideo - _pendingOffsetVideo, _muxer);
+            var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, _pendingTimestampVideo - _pendingOffsetVideo, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
             if (_isWorkerReady){
@@ -521,7 +546,7 @@ public class StreamrootMSE {
     }
 
     public function areBuffersReady():Boolean {
-        var flag:Boolean = true;
+        /*var flag:Boolean = true;
         var sourceBufferNumber:Number = 0;
 
         for (var k in _hasData) {
@@ -529,7 +554,8 @@ public class StreamrootMSE {
             sourceBufferNumber++;
         }
 
-        return (flag && (sourceBufferNumber > 0));
+        return (flag && (sourceBufferNumber > 0));*/
+        return _streamBuffer.areBuffersReady();
     }
 
     private function onWorkerToMain(event:Event):void {
@@ -540,43 +566,58 @@ public class StreamrootMSE {
         var min_pts:Number = message.min_pts;
         var max_pts:Number = message.max_pts;
         var timestamp:Number = message.timestamp;
-
-        _isWorkerBusy = false;
+        
+		var segment:Segment = new Segment(message.segmentBytes, message.type, message.timestamp, message.endTime);
+        
+		_isWorkerBusy = false;
 
         if (!_discardAppend) {
 
             if (!isInit) {
                 // CLIEN-19: check if it's the right hls segment before appending it. 
                 
-                if (type.indexOf("apple") >= 0) {
-                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, timestamp);
-                }
-
-                if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
+                if (segment.type.indexOf("apple") >= 0) {
+                    var previousPTS:Number = _streamBuffer.getBufferEndTime() * 1000;
+                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, timestamp, previousPTS);
+				}
+                
+                if (segment.type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
                     // the right segment
                     _streamrootInterface.error("Timestamp and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
-                } else if (type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
+                } else if (segment.type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
                     _streamrootInterface.error("previousPTS and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_previousPTS");
                     return;
                 } else {
+
                     // Append DASH || Smooth || Validated HLS segment
                     CONFIG::LOGGING_PTS {
-                        _streamrootInterface.debug("FLASH: appending segment");
+                        _streamrootInterface.debug("FLASH: appending segment in StreamBuffer");
                     }
-                    var segmentBytes:ByteArray = message.segmentBytes;
-                    _streamrootInterface.appendBuffer(segmentBytes);
-                }  
+					var key:String;
+                	if (segment.type.indexOf("apple") >=0) {
+                	    key = VIDEO;
+                	}else if (segment.type.indexOf("audio") >= 0) {
+                	    key = AUDIO;
+                	}else if (segment.type.indexOf("video") >= 0) {
+                	    key = VIDEO;
+                	}else {
+                	    _streamrootInterface.error("Error: Type not supported: " + type);
+                	}
+                
+                	_streamBuffer.appendSegment(segment, key);				
+                    //appendIntoNetStream(message.segmentBytes);				
+				}  
             }
 
-            if (_pendingAppend != undefined) {
+            if (_pendingAppend) {
                 _streamrootInterface.debug("FLASH: unqueing");
                 appendOrQueue(_pendingAppend);
-                _pendingAppend = undefined;
+                _pendingAppend = null;
             }
 
 
@@ -670,9 +711,73 @@ public class StreamrootMSE {
             }
         }
     }
-
-
-
-
+    
+    //StreamBuffer function
+    public function appendIntoNetStream(bytes:ByteArray):void {
+        _streamrootInterface.appendBuffer(bytes);
+    }
+    
+    public function remove(start:uint, end:uint, type:String):uint {
+        var key:String;
+        if (type.indexOf("apple") >=0) {
+            key = VIDEO;
+        }else if (type.indexOf("audio") >= 0) {
+            key = AUDIO;
+        }else if (type.indexOf("video") >= 0) {
+            key = VIDEO;
+        }else {
+            _streamrootInterface.error("Error: Type not supported: " + type);
+        }
+        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
+    }
+    
+    public function getBufferLength():Number{
+        return _streamrootInterface.getBufferLength();
+    }
+        
+    //StreamrootInterface function   
+    private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
+        _streamrootInterface.onMetaData(duration, width, height);
+    }
+    
+    private function play():void {
+        _streamrootInterface.play();
+    }
+    
+    private function pause():void {
+        _streamrootInterface.pause();
+    }
+    
+    private function stop():void {
+        _streamrootInterface.stop();
+    }
+    
+    private function seek(time:Number):void {
+        _streamrootInterface.seek(time);
+    }
+    
+    private function currentTime():Number {
+        return _streamrootInterface.currentTime();
+    }
+        
+    private function paused():Boolean {
+        return _streamrootInterface.paused();
+    }
+    
+    private function bufferEmpty():void {
+        _streamrootInterface.bufferEmpty();
+    }
+    
+    private function bufferFull():void {
+        _streamrootInterface.bufferFull();
+    }
+    
+    private function onTrackList(trackList:String):void {
+        _streamrootInterface.onTrackList(trackList);
+    }
+    
+    public function error(message:Object):void {
+        _streamrootInterface.error(String(message));
+    }
 }
 }

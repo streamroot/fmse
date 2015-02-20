@@ -11,7 +11,7 @@ import com.streamroot.IStreamrootInterface;
 
 public class StreamrootInterfaceBase implements IStreamrootInterface{
 
-    protected var _provider;//your provider
+    protected var _provider:Object;//your provider - must be an IProvider implementation;
     protected var _streamrootMSE:StreamrootMSE;
 
     protected var _loaded:Boolean = false;
@@ -22,33 +22,20 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     protected var _LOG_ERROR:Boolean = true;
 
 
-    public function StreamrootInterfaceBase(provider):void {
+    public function StreamrootInterfaceBase(provider:Object):void {
         //Your provider. You'll need to change the type in variable and argument definition
         _provider = provider;
 
-        //Adding external interface for Javascript. Exposed method names need to stay the same
-
-        //METHODS
-        ExternalInterface.addCallback("onMetaData", onMetaData)
-
-        ExternalInterface.addCallback("play", play);
-        ExternalInterface.addCallback("pause", pause);
-        ExternalInterface.addCallback("stop", stop);
-        ExternalInterface.addCallback("seek", seek);
-
-        ExternalInterface.addCallback("bufferEmpty", bufferEmpty);
-        ExternalInterface.addCallback("bufferFull", bufferFull);
-
-        ExternalInterface.addCallback("onTrackList", onTrackList);
-
-
-        //GETTERS
-        ExternalInterface.addCallback("currentTime", currentTime);
-        ExternalInterface.addCallback("paused", paused);
-
-
         //Initializing Streamroot stack
         _streamrootMSE = new StreamrootMSE(this);
+        
+        //Some of following methods are called from javascript through ExternalInterface callback.
+        //All these callbacks are set in StreamRootMSE
+    }
+    
+    public function getBufferLength():Number {
+        //Should call method in provider that return NetStream.bufferLength
+        throw new Error("Methode getTimeLeftToPlay isn't implemented");
     }
 
     public function loaded():void {
@@ -84,7 +71,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         }
     }
 
-    protected function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
+    public function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
         //Call method in provider that uses the metaData
         throw new Error("Method onMetaData isn't implemented");
     }
@@ -94,13 +81,13 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         return (_streamrootMSE.areBuffersReady());
     }
 
-    protected function bufferEmpty():void {
+    public function bufferEmpty():void {
       //Calls methods in provider that deals with empty buffer. It should be what you call in "NetStream.Buffer.Empty" NetStream status event,
       //or in the case the buffer is low if you check buffer level at a regular interval
       throw new Error("Method bufferEmpty isn't implemented");
     }
 
-    protected function bufferFull():void {
+    public function bufferFull():void {
         //Calls the provider method to be executed in case of full buffer. It should be what you used to
         //call in "NetStream.Buffer.Full" NetStream status event, or your equivalent if you check buffer
         //level using a timer.
@@ -162,7 +149,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         throw new Error("Method currentTime isn't implemented");
     }
 
-    protected function paused():Boolean {
+    public function paused():Boolean {
         //Getter for paused property. It isn't a NetStream property, but you probably have implemented player states in your provider
         throw new Error("Method paused isn't implemented");
     }
@@ -190,13 +177,13 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
 
     //LOGGING
-    public function debug(message):void {
+    public function debug(message:Object):void {
         if (_LOG_DEBUG) {
             ExternalInterface.call("console.debug", String(message));
         }
     }
 
-    public function error(message):void {
+    public function error(message:Object):void {
         if (_LOG_ERROR) {
             ExternalInterface.call("sr_flash_transcodeError", String(message));
         }

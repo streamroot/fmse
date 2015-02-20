@@ -17,6 +17,7 @@ public class TranscodeWorker extends Sprite {
 	private var _debugChannel:MessageChannel;
 
     private var _timestamp:Number;
+	private var _endTime:uint;
 
 	private var _transcoder:Transcoder;
 
@@ -45,8 +46,10 @@ public class TranscodeWorker extends Sprite {
         var type:String = message.type;
 		var isInit:Boolean = message.isInit;
 		var timestamp:Number = message.timestamp;
+		var endTime:uint = message.endTime;
 		var offset:Number = message.offset;
         _timestamp = timestamp;
+		_endTime = endTime;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
 
@@ -95,10 +98,11 @@ public class TranscodeWorker extends Sprite {
         CONFIG::LOGGING_PTS {
             debug("asyncTranscodeCB");
         }
+		var answer:Object;
         if(type.indexOf("apple") >= 0) {
-            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp:_timestamp, min_pts: min_pts, max_pts: max_pts};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp:_timestamp, endTime: _endTime, min_pts: min_pts, max_pts: max_pts};
         } else {
-            var answer:Object = {type: type, isInit: isInit, segmentBytes: segmentBytes};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp: _timestamp, endTime: _endTime};
         }
 
         debug("sending back message");
