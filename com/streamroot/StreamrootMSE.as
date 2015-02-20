@@ -230,11 +230,10 @@ public class StreamrootMSE {
         }
     }
     
-    //timestampStart and timestampEnd in millisecond
-    private function appendBuffer(data:String, type:String, isInit:Boolean, timestampStart:Number = 0, timestampEnd:uint = 0 ):void {
+    //timestampStart and timestampEnd in second
+    private function appendBuffer(data:String, type:String, isInit:Boolean, startTime:Number = 0, endTime:Number = 0 ):void {
         _streamrootInterface.debug("FLASH: appendBuffer");
-        var offset :Number = _seek_offset * 1000;
-        var message:Object = {data: data, type: type, isInit: isInit, timestamp: timestampStart, offset: offset, endTime:timestampEnd};// - offset + 100};
+        var message:Object = {data: data, type: type, isInit: isInit, startTime: startTime, endTime: endTime, offset: _seek_offset};// - offset + 100};
         appendOrQueue(message);
 
 
@@ -298,7 +297,8 @@ public class StreamrootMSE {
     private function sendWorkerMessage():void {
         _mainToWorker.send(arguments[0]);
     }
-
+    
+    //not used anymore
     private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         //var bytes_event:ByteArray = Base64.decode(data);
 
@@ -563,11 +563,11 @@ public class StreamrootMSE {
 
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
-        var min_pts:Number = message.min_pts;
-        var max_pts:Number = message.max_pts;
-        var timestamp:Number = message.timestamp;
+        var min_pts:Number = message.min_pts;//second
+        var max_pts:Number = message.max_pts;//second
+        var startTime:Number = message.startTime;
         
-		var segment:Segment = new Segment(message.segmentBytes, message.type, message.timestamp, message.endTime);
+		var segment:Segment = new Segment(message.segmentBytes, message.type, message.startTime, message.endTime);
         
 		_isWorkerBusy = false;
 
@@ -577,8 +577,8 @@ public class StreamrootMSE {
                 // CLIEN-19: check if it's the right hls segment before appending it. 
                 
                 if (segment.type.indexOf("apple") >= 0) {
-                    var previousPTS:Number = _streamBuffer.getBufferEndTime() * 1000;
-                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, timestamp, previousPTS);
+                    var previousPTS:Number = _streamBuffer.getBufferEndTime();
+                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
 				}
                 
                 if (segment.type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
@@ -651,8 +651,8 @@ public class StreamrootMSE {
         }
         if(type.indexOf("apple_error_timestamp") >= 0) {
             CONFIG::LOGGING_PTS {
-                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts/1000);
-                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts/1000);
+                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts);
+                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts);
             }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
         } else if (type.indexOf("apple") >= 0) {    // This case includes apple_error_previousPTS case
@@ -669,8 +669,8 @@ public class StreamrootMSE {
 
     private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
         CONFIG::LOGGING_PTS {
-            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts/1000);
-            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts/1000);
+            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts);
+            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts);
         }
         ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
     }
@@ -703,8 +703,8 @@ public class StreamrootMSE {
                 //block the append pipeline
                 _isWorkerBusy = false;
                 CONFIG::LOGGING_PTS {
-                    _streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts/1000);
-                    _streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts/1000);
+                    _streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts);
+                    _streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts);
                     _streamrootInterface.debug("StreamrootMSE.debug error type: " + message.type);
                 }
                 sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
@@ -717,7 +717,7 @@ public class StreamrootMSE {
         _streamrootInterface.appendBuffer(bytes);
     }
     
-    public function remove(start:uint, end:uint, type:String):uint {
+    public function remove(start:Number, end:Number, type:String):Number {
         var key:String;
         if (type.indexOf("apple") >=0) {
             key = VIDEO;

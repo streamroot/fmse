@@ -15,7 +15,7 @@ package com.streamroot {
         
         private var _buffer:Array = new Array();
         private var _streamrootMSE:StreamrootMSE;
-        private var _appendedEndTime:uint = 0;
+        private var _appendedEndTime:Number = 0;
         private var _type:String;
         private var _ready:Boolean = false;
         
@@ -29,7 +29,7 @@ package com.streamroot {
         * _appendedEndTime is the endTime of the last segment appended in NetStream
         * If no segment has been appended, it is 0
         */
-        public function get appendedEndTime():uint {
+        public function get appendedEndTime():Number {
             return _appendedEndTime;
         }  
         
@@ -49,11 +49,11 @@ package com.streamroot {
         * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
         * If buffer is empty, it return the _appendedEndTime, which may be 0 if nothing has been appended in Netstream
         */
-        public function getBufferEndTime():uint {
+        public function getBufferEndTime():Number {
             if(_buffer.length == 0){
-                return _appendedEndTime/1000;
+                return _appendedEndTime;
             }else{
-                return _buffer[_buffer.length-1].endTime/1000;
+                return _buffer[_buffer.length-1].endTime;
             }
         }
                 
@@ -80,13 +80,12 @@ package com.streamroot {
          * Return bufferEndTime, ie that endTime of the last segment in the buffer, in second
          * (don't be mistaken, it is not the _appendedEndTime which is the endTime of the last segment APPENDED in NetStream)
          */
-        public function remove(start:uint, end:uint):uint {
+        public function remove(start:Number, end:Number):Number {
             if(start == 0){
                 _buffer = new Array();
             }else{
-                while(_buffer.length > 0 && _buffer[_buffer.length-1].startTime >= start*1000){
-                    _buffer.pop();
-                    
+                while(_buffer.length > 0 && _buffer[_buffer.length-1].startTime >= start){
+                    _buffer.pop();    
                 }
             }
             return getBufferEndTime();
@@ -95,12 +94,12 @@ package com.streamroot {
         /**
          * Clear all data in the buffer
          */
-        private function flush():uint{
+        private function flush():Number{
             _buffer = new Array();
             return getBufferEndTime();
         }
         
-        public function onSeek():uint {
+        public function onSeek():Number {
             _ready = false;
             _appendedEndTime = 0;
             return flush();

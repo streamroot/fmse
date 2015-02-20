@@ -10,14 +10,19 @@ import flash.utils.ByteArray;
 
 import com.streamroot.Transcoder;
 
+/**
+ * WARN : don't get lose between second and millisecond !
+ * Basically what is named timestamp or pts is in millisecond, what is name something_time is in second
+ * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
+ */
 public class TranscodeWorker extends Sprite {
 
 	private var _mainToWorker:MessageChannel;
 	private var _workerToMain:MessageChannel;
 	private var _commChannel:MessageChannel;
 
-    private var _timestamp:Number;
-	private var _endTime:uint;
+    private var _startTime:Number;//second
+	private var _endTime:Number;//second
 
 	private var _transcoder:Transcoder;
 
@@ -45,11 +50,10 @@ public class TranscodeWorker extends Sprite {
         var data:String = message.data;
         var type:String = message.type;
 		var isInit:Boolean = message.isInit;
-		var timestamp:Number = message.timestamp;
-		var endTime:uint = message.endTime;
-		var offset:Number = message.offset;
-        _timestamp = timestamp;
-		_endTime = endTime;
+		var timestamp:Number = message.startTime * 1000;//message.startTime in seocnd and timestamp in millisecond
+		var offset:Number = message.offset * 1000;
+        _startTime = message.startTime;
+		_endTime = message.endTime;
 
 		var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
 
@@ -81,28 +85,28 @@ public class TranscodeWorker extends Sprite {
         } else {
         	debug("transcoding media");
             try {
-                //var segmentBytes:ByteArray = _transcoder.transcode(data, type, timestamp, offset);
                 _transcoder.asyncTranscode(data, type, timestamp, offset, isInit);
             } catch (e:Error) {
                 error(e.toString(), type);
                 return;
             }
-
-            //answer = {type: type, isInit: isInit, segmentBytes: segmentBytes};
         }
 	}
 
-
+	/**
+	 * min_pts and max_pts are in millisecond
+	 * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
+	 */
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
-        /** If type is HLS we return timestamp and PTS as well as segment bytes to be able to check if it's the right segment in HlsSegmentValidator **/
+        /** If type is HLS we return PTS as well as segment bytes, startTime and endTime to be able to check if it's the right segment in HlsSegmentValidator **/
         CONFIG::LOGGING_PTS {
             debug("asyncTranscodeCB");
         }
 		var answer:Object;
         if(type.indexOf("apple") >= 0) {
-            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp:_timestamp, endTime: _endTime, min_pts: min_pts, max_pts: max_pts};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, startTime:_startTime, endTime: _endTime, min_pts: min_pts / 1000, max_pts: max_pts / 1000};
         } else {
-            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, timestamp: _timestamp, endTime: _endTime};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, startTime:_startTime, endTime: _endTime};
         }
 
         debug("sending back message");
@@ -115,11 +119,15 @@ public class TranscodeWorker extends Sprite {
 		_commChannel.send(object);
 	}
 
+	/**
+	 * min_pts and max_pts are in millisecond
+	 * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
+ 	 */
 	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
-		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts, max_pts:max_pts};
+		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts / 1000, max_pts:max_pts / 1000};
         CONFIG::LOGGING_PTS {
-            debug("Transcodeworker.error min_pts: " + min_pts/1000);
-            debug("TranscodeWorker.error max_pts: " + max_pts/1000);
+            debug("Transcodeworker.error min_pts: " + min_pts);
+            debug("TranscodeWorker.error max_pts: " + max_pts);
         }
 		_commChannel.send(object);
 	}
