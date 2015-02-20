@@ -5,7 +5,6 @@ import flash.net.NetStream;
 import flash.net.NetStreamAppendBytesAction;
 
 import flash.events.TimerEvent;
-import flash.utils.Timer;
 import flash.events.Event;
 
 import flash.system.Worker;
@@ -24,14 +23,16 @@ import com.dash.utils.Base64;
 
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
+import flash.utils.Timer;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
 import com.streamroot.StreamBuffer;
 import com.streamroot.Segment;
-
 import com.streamroot.Transcoder;
 import com.streamroot.HlsSegmentValidator;
+
+import com.util.SourceBufferHelper;
 
 public class StreamrootMSE {
 
@@ -190,17 +191,12 @@ public class StreamrootMSE {
     }
 
     private function addSourceBuffer(type:String):void {
-        var key:String;
-        if (type.indexOf("apple") >=0) {
-            key = VIDEO;
-        }else if (type.indexOf("audio") >= 0) {
-            key = AUDIO;
-        } else if (type.indexOf("video") >= 0) {
-            key = VIDEO;
-        } else {
+        var key:String = SourceBufferHelper.getType(type);
+        if(key){
+            _streamBuffer.addSourceBuffer(key);            
+        }else{
             _streamrootInterface.error("Error: Type not supported: " + type);
         }
-        _streamBuffer.addSourceBuffer(key);
     }
 
     //timestampStart and timestampEnd in second
@@ -535,42 +531,33 @@ public class StreamrootMSE {
             if (!isInit) {
                 // CLIEN-19: check if it's the right hls segment before appending it. 
                 
-                if (segment.type.indexOf("apple") >= 0) {
+                if (isHLS(segment.type)) {
                     var previousPTS:Number = _streamBuffer.getBufferEndTime();
                     var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
 				}
                 
-                if (segment.type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
-                    // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download
-                    // the right segment
+                if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
+                    // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
                     _streamrootInterface.error("Timestamp and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
-                } else if (segment.type.indexOf("apple") >= 0 && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
+                } else if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
                     _streamrootInterface.error("previousPTS and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_previousPTS");
                     return;
                 } else {
-
                     // Append DASH || Smooth || Validated HLS segment
                     CONFIG::LOGGING_PTS {
                         _streamrootInterface.debug("FLASH: appending segment in StreamBuffer");
                     }
-					var key:String;
-                	if (segment.type.indexOf("apple") >=0) {
-                	    key = VIDEO;
-                	}else if (segment.type.indexOf("audio") >= 0) {
-                	    key = AUDIO;
-                	}else if (segment.type.indexOf("video") >= 0) {
-                	    key = VIDEO;
+					var key:String = SourceBufferHelper.getType(segment.type);
+                    if(key){
+                        _streamBuffer.appendSegment(segment, key);                        
                 	}else {
                 	    _streamrootInterface.error("Error: Type not supported: " + type);
                 	}
-                
-                	_streamBuffer.appendSegment(segment, key);				
-                    //appendIntoNetStream(message.segmentBytes);				
-				}  
+				}
             }
 
             if (_pendingAppend) {
@@ -581,12 +568,12 @@ public class StreamrootMSE {
 
 
             //Check better way to check type here as well
-            if (type.indexOf("apple") >=0) {
+            if (isHLS(type)) {
                 _hlsSegmentValidator.setIsSeeking(false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
-            } else if (type.indexOf("audio") >= 0) {
+            } else if (isAudio(type)) {
                 setTimeout(updateendAudio, TIMEOUT_LENGTH);
-            } else if (type.indexOf("video") >= 0) {
+            } else if (isVideo(type)) {
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
             } else {
                 _streamrootInterface.error("no type matching");
@@ -607,14 +594,14 @@ public class StreamrootMSE {
                 _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts);
             }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
-        } else if (type.indexOf("apple") >= 0) {    // This case includes apple_error_previousPTS case
+        } else if (isHLS(type)) {    // This case includes apple_error_previousPTS case
             CONFIG::LOGGING_PTS {
                 _streamrootInterface.debug("FLASH inside case discarding but no min/max pts returned to js");
             }
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
-        } else if (type.indexOf("audio") >= 0) {
+        } else if (isAudio(type)) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
-        } else if (type.indexOf("video") >= 0) {
+        } else if (isVideo(type)) {
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         }
     }
@@ -670,17 +657,13 @@ public class StreamrootMSE {
     }
     
     public function remove(start:Number, end:Number, type:String):Number {
-        var key:String;
-        if (type.indexOf("apple") >=0) {
-            key = VIDEO;
-        }else if (type.indexOf("audio") >= 0) {
-            key = AUDIO;
-        }else if (type.indexOf("video") >= 0) {
-            key = VIDEO;
-        }else {
+        var key:String = SourceBufferHelper.getType(type);
+        if(key){
+            return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
+        }else{
             _streamrootInterface.error("Error: Type not supported: " + type);
+            return 0;        
         }
-        return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
     }
     
     public function getBufferLength():Number{
@@ -730,6 +713,18 @@ public class StreamrootMSE {
     
     public function error(message:Object):void {
         _streamrootInterface.error(String(message));
+    }
+    
+    private function isHLS(type:String):Boolean{
+        return SourceBufferHelper.isHLS(type);
+    }
+    
+    private function isAudio(type:String):Boolean{
+        return SourceBufferHelper.isAudio(type);
+    }
+    
+    private function isVideo(type:String):Boolean{
+        return SourceBufferHelper.isVideo(type);
     }
 }
 }
