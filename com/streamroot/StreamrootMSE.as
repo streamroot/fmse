@@ -24,7 +24,6 @@ import com.dash.utils.Base64;
 
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
-import flash.utils.Dictionary;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
@@ -51,7 +50,6 @@ public class StreamrootMSE {
     //private var _buffered:uint = 0;
     //private var _buffered_audio:uint = 0;
 
-    private var _hasData:Dictionary = new Dictionary();
     private static const VIDEO:String = "video";
     private static const AUDIO:String = "audio";
 
@@ -171,7 +169,7 @@ public class StreamrootMSE {
 
         //_buffered = timeSeek*1000000;
         //_buffered_audio = timeSeek*1000000;
-        setHasData(false);
+        
         // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
         _hlsSegmentValidator.setIsSeeking(true);
 
@@ -192,8 +190,6 @@ public class StreamrootMSE {
     }
 
     private function addSourceBuffer(type:String):void {
-
-        //TODO: this _hasData should live in a different class, and we would just have to pass the type everytime
         var key:String;
         if (type.indexOf("apple") >=0) {
             key = VIDEO;
@@ -204,31 +200,9 @@ public class StreamrootMSE {
         } else {
             _streamrootInterface.error("Error: Type not supported: " + type);
         }
-
-        if (key) {
-            if (!_hasData.hasOwnProperty(key)) {
-                _streamBuffer.addSourceBuffer(key);
-                _streamrootInterface.debug("FLASH: adding sourceBuffer " + type);
-                _hasData[key] = false;
-            } else {
-                _streamrootInterface.error("Error: source buffer with this type already exists: " + type);
-            }
-        }
+        _streamBuffer.addSourceBuffer(key);
     }
 
-    private function setHasData(value:Boolean, key:String = null):void {
-        if (key) {
-            _streamrootInterface.debug("FLASH: setHasData: " + key + " - " + String(value));
-            _hasData[key] = value;
-        } else {
-            //If no key specified, set all entries in _hasData to value
-            for (var k:String in _hasData) {
-                _streamrootInterface.debug("FLASH: setHasData: " + k + " - " + String(value));
-                _hasData[k] = value;
-            }
-        }
-    }
-    
     //timestampStart and timestampEnd in second
     private function appendBuffer(data:String, type:String, isInit:Boolean, startTime:Number = 0, endTime:Number = 0 ):void {
         _streamrootInterface.debug("FLASH: appendBuffer");
@@ -608,18 +582,11 @@ public class StreamrootMSE {
 
             //Check better way to check type here as well
             if (type.indexOf("apple") >=0) {
-                setHasData(true, VIDEO);
                 _hlsSegmentValidator.setIsSeeking(false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
             } else if (type.indexOf("audio") >= 0) {
-                if (!isInit) {
-                    setHasData(true, AUDIO);
-                }
                 setTimeout(updateendAudio, TIMEOUT_LENGTH);
             } else if (type.indexOf("video") >= 0) {
-                if (!isInit) {
-                    setHasData(true, VIDEO);
-                }
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
             } else {
                 _streamrootInterface.error("no type matching");

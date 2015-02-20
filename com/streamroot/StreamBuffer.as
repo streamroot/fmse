@@ -31,7 +31,11 @@ package com.streamroot {
         }
     
         public function addSourceBuffer(type:String):void {
-            _sourceBufferList.push(new SourceBuffer(_streamrootMSE, type));  
+            if(getSourceBufferByType(type) == null){
+                _sourceBufferList.push(new SourceBuffer(_streamrootMSE, type)); 
+            }else{
+                _streamrootMSE.error('SourceBuffer for this type already exists : ' + type);
+            }
         }
         
         private function getSourceBufferByType(type:String):SourceBuffer {
