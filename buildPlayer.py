@@ -11,6 +11,7 @@ elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
     exe = ".exe"
 
 debug = "false"
+log_pts = "true"
 swfversion = "17"
 targetPlayer = "11.4.0"
 
@@ -31,6 +32,7 @@ if (len(sys.argv)>1):
             helpParam()
             
 print "Debug flag = " + debug
+print "LOGGING_PTS = " + log_pts 
 print "-swf-version="+swfversion
 print "-target-player="+targetPlayer
 
@@ -68,7 +70,7 @@ libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc" + exe),
                           "-include-classes=com.streamroot.StreamrootInterfaceBase",
                           "-debug="+debug+"",
                           "-define+=CONFIG::LOGGING,false",
-                          "-define+=CONFIG::LOGGING_PTS,true",
+                          "-define+=CONFIG::LOGGING_PTS," + log_pts,
                           "-directory=false",
                           "-include-sources",
                           os.path.normpath("com/streamroot/StreamrootMSE.as"),

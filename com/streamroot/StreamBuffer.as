@@ -66,7 +66,7 @@ package com.streamroot {
                 case 2:
                     return Math.abs(_sourceBufferList[0].appendedEndTime - _sourceBufferList[1].appendedEndTime);
                 default:
-                    _streamrootMSE.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferList.length);
+                    _streamrootMSE.error("Wrong number of source buffer in flash StreamBuffer (should be 1 or 2) : " + _sourceBufferList.length, this);
                     return 0;
             }
         }

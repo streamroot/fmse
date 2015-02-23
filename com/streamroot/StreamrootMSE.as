@@ -40,9 +40,9 @@ public class StreamrootMSE {
     private var _streamrootInterface:IStreamrootInterface;
     
     private var _streamBuffer:StreamBuffer;
-
+    
     private var _muxer:Muxer;
-
+    
 //    private var _initHandlerAudio:InitializationAudioSegmentHandler;
 //    private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
@@ -112,7 +112,7 @@ public class StreamrootMSE {
         _streamrootInterface = streamrootInterface;
 
         _muxer = new Muxer();
-        _hlsSegmentValidator = new HlsSegmentValidator(_streamrootInterface);
+        _hlsSegmentValidator = new HlsSegmentValidator(this);
 		
 		//StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
@@ -162,7 +162,7 @@ public class StreamrootMSE {
     }
 
     public function setSeekOffset(timeSeek:Number):void {
-        _streamrootInterface.debug("FLASH: set seek offset");
+        debug("Set seek offset", this);
         _seek_offset = timeSeek;
 
         //_buffered = timeSeek*1000000;
@@ -173,14 +173,14 @@ public class StreamrootMSE {
 
         if (_pendingAppend) {
             //remove pending append job to avoid appending it after seek
-            _streamrootInterface.debug("FLASH: discarding _pendingAppend " + _pendingAppend.type);
+            debug("Discarding _pendingAppend " + _pendingAppend.type, this);
             sendSegmentFlushedMessage(_pendingAppend.type);
             _pendingAppend = null;
         }
 
         //If worker is appending a segment during seek, discard it as we don't want to append it
         if (_isWorkerBusy) {
-            _streamrootInterface.debug("FLASH: setting discard to true");
+            debug("Setting discard to true", this);
             _discardAppend = true
         }
         _streamBuffer.onSeek();
@@ -198,7 +198,7 @@ public class StreamrootMSE {
 
     //timestampStart and timestampEnd in second
     private function appendBuffer(data:String, type:String, isInit:Boolean, startTime:Number = 0, endTime:Number = 0 ):void {
-        _streamrootInterface.debug("FLASH: appendBuffer");
+        debug("AppendBuffer", this);
         var message:Object = {data: data, type: type, isInit: isInit, startTime: startTime, endTime: endTime, offset: _seek_offset};// - offset + 100};
         appendOrQueue(message);
 
@@ -267,7 +267,7 @@ public class StreamrootMSE {
     /*private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         //var bytes_event:ByteArray = Base64.decode(data);
 
-        _streamrootInterface.debug("ASYNC APPEND");
+        debug("ASYNC APPEND");
 
         var offset :Number = _seek_offset * 1000;
 
@@ -356,7 +356,7 @@ public class StreamrootMSE {
 
             var decodedTS:Number = new Date().valueOf();
             var decoded:Number = decodedTS - beginTS;
-            _streamrootInterface.debug('DECODED (ms): ' + decoded);
+            debug('DECODED (ms): ' + decoded);
         }
     }
 
@@ -390,7 +390,7 @@ public class StreamrootMSE {
 
             var decodedTS :Number = new Date().valueOf();
             var decoded :Number = decodedTS - beginTS;
-            _streamrootInterface.debug('DECODED (ms): ' + decoded);
+            debug('DECODED (ms): ' + decoded);
         }
     }
 
@@ -411,13 +411,13 @@ public class StreamrootMSE {
 
             var transcodedTS:Number = new Date().valueOf();
             var transcoded:Number = transcodedTS - decodedTS;
-            _streamrootInterface.debug('TRANSCODED (ms): ' + transcoded);
+            debug('TRANSCODED (ms): ' + transcoded);
 
             _streamrootInterface.appendBuffer(bytes_append_audio);
 
             var appendedTS:Number = new Date().valueOf();
             var appended:Number = appendedTS - transcodedTS;
-            _streamrootInterface.debug('APPENDED (ms): ' + appended);
+            debug('APPENDED (ms): ' + appended);
 
             setHasData(true, AUDIO);
         }
@@ -448,15 +448,15 @@ public class StreamrootMSE {
 
             var transcodedTS:Number = new Date().valueOf();
             var transcoded:Number = transcodedTS - decodedTS;
-            _streamrootInterface.debug('TRANSCODED (ms): ' + transcoded);
+            debug('TRANSCODED (ms): ' + transcoded);
 
             _streamrootInterface.appendBuffer(bytes_append)
 
             var appendedTS:Number = new Date().valueOf();
             var appended:Number = appendedTS - transcodedTS;
-            _streamrootInterface.debug('APPENDED (ms): ' + appended);
+            debug('APPENDED (ms): ' + appended);
 
-            //_streamrootInterface.debug('media appended');
+            //debug('media appended');
             setHasData(true, VIDEO);
         }
 
@@ -535,30 +535,30 @@ public class StreamrootMSE {
                 
                 if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
-                    error("Timestamp and min_pts don't match")
+                    debug("Timestamp and min_pts don't match", this)
                     sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
                 } else if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
-                    error("previousPTS and min_pts don't match")
+                    debug("previousPTS and min_pts don't match", this)
                     sendSegmentFlushedMessage("apple_error_previousPTS");
                     return;
                 } else {
                     // Append DASH || Smooth || Validated HLS segment
                     CONFIG::LOGGING_PTS {
-                        _streamrootInterface.debug("FLASH: appending segment in StreamBuffer");
+                        debug("Appending segment in StreamBuffer", this);
                     }
 					var key:String = SourceBufferHelper.getType(segment.type);
                     if(key){
                         _streamBuffer.appendSegment(segment, key);                        
                 	}else {
-                	    error("Error: Type not supported: " + type);
+                	    error("Error: Type not supported: " + type, this);
                 	}
 				}
             }
 
             if (_pendingAppend) {
-                _streamrootInterface.debug("FLASH: unqueing");
+                debug("Unqueing", this);
                 appendOrQueue(_pendingAppend);
                 _pendingAppend = null;
             }
@@ -583,17 +583,17 @@ public class StreamrootMSE {
 
     private function sendSegmentFlushedMessage(type:String, min_pts:Number = 0, max_pts:Number = 0):void {
         CONFIG::LOGGING {
-            _streamrootInterface.debug("FLASH: discarding segment    " + type);
+            debug("Discarding segment    " + type, this);
         }
         if(type.indexOf("apple_error_timestamp") >= 0) {
             CONFIG::LOGGING_PTS {
-                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage min_pts: " + min_pts);
-                _streamrootInterface.debug("StreamrootMSE.sendSegmentFlushedMessage max_pts: " + max_pts);
+                debug("sendSegmentFlushedMessage min_pts: " + min_pts, this);
+                debug("sendSegmentFlushedMessage max_pts: " + max_pts, this);
             }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
         } else if (isHLS(type)) {    // This case includes apple_error_previousPTS case
             CONFIG::LOGGING_PTS {
-                _streamrootInterface.debug("FLASH inside case discarding but no min/max pts returned to js");
+                debug("Inside case discarding but no min/max pts returned to js", this);
             }
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         } else if (isAudio(type)) {
@@ -605,8 +605,8 @@ public class StreamrootMSE {
 
     private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
         CONFIG::LOGGING_PTS {
-            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls min_pts: " + min_pts);
-            _streamrootInterface.debug("StreamrootMSE.updateendVideoHls max_pts: " + max_pts);
+            debug("updateendVideoHls min_pts: " + min_pts, this);
+            debug("updateendVideoHls max_pts: " + max_pts, this);
         }
         ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
     }
@@ -621,15 +621,11 @@ public class StreamrootMSE {
 
     private function onCommChannel(event:Event):void {
         var message:* = _commChannel.receive();
-        debug(message);
-    }
-
-    private function debug(message:Object):void {
         _isWorkerReady = true;
 
         if (message.command == "debug") {
-            CONFIG::LOGGING_PTS {
-                _streamrootInterface.debug(message.message);
+            if(CONFIG::LOGGING_PTS){
+                debug(message.message, this);
             }
         } else if (message.command == "error") {
             error(message.message);
@@ -638,10 +634,10 @@ public class StreamrootMSE {
                 //a segment flushed message to notify the JS that append didn't work well, in order not to
                 //block the append pipeline
                 _isWorkerBusy = false;
-                CONFIG::LOGGING_PTS {
-                    _streamrootInterface.debug("StreamrootMSE.debug min_pts: " + message.min_pts);
-                    _streamrootInterface.debug("StreamrootMSE.debug max_pts: " + message.max_pts);
-                    _streamrootInterface.debug("StreamrootMSE.debug error type: " + message.type);
+                if(CONFIG::LOGGING_PTS){
+                    debug("min_pts: " + message.min_pts, this);
+                    debug("max_pts: " + message.max_pts, this);
+                    debug("error type: " + message.type, this);
                 }
                 sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
             }
@@ -710,10 +706,19 @@ public class StreamrootMSE {
     
     public function error(message:Object, obj:Object = null):void {
         if(obj != null){
-            var textMessage:String = "FLASH " + getQualifiedClassName(obj) + String(message);
+            var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
             _streamrootInterface.error(textMessage);
         }else{
             _streamrootInterface.error(String(message));            
+        }
+    }
+    
+    public function debug(message:Object, obj:Object = null):void {
+        if(obj != null){
+            var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+            _streamrootInterface.debug(textMessage);
+        }else{
+            _streamrootInterface.debug(String(message));            
         }
     }
     
