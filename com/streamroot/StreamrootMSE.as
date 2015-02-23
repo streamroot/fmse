@@ -99,7 +99,7 @@ public class StreamrootMSE {
 
     private var _mainToWorker:MessageChannel;
     private var _workerToMain:MessageChannel;
-    private var _debugChannel:MessageChannel;
+    private var _commChannel:MessageChannel;
 
     private var _isWorkerReady:Boolean = false;
 
@@ -159,9 +159,9 @@ public class StreamrootMSE {
         _worker.setSharedProperty("workerToMain", _workerToMain);
 
         // Receive startup message from worker
-        _debugChannel = _worker.createMessageChannel(Worker.current);
-        _debugChannel.addEventListener(Event.CHANNEL_MESSAGE, onDebugChannel);
-        _worker.setSharedProperty("debugChannel", _debugChannel);
+        _commChannel = _worker.createMessageChannel(Worker.current);
+        _commChannel.addEventListener(Event.CHANNEL_MESSAGE, onCommChannel);
+        _worker.setSharedProperty("commChannel", _commChannel);
 
         _worker.start();
     }
@@ -683,8 +683,8 @@ public class StreamrootMSE {
         ExternalInterface.call("sr_flash_updateend_video", error);
     }
 
-    private function onDebugChannel(event:Event):void {
-        var message:* = _debugChannel.receive();
+    private function onCommChannel(event:Event):void {
+        var message:* = _commChannel.receive();
         debug(message);
     }
 

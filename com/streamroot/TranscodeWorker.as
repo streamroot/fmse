@@ -14,7 +14,7 @@ public class TranscodeWorker extends Sprite {
 
 	private var _mainToWorker:MessageChannel;
 	private var _workerToMain:MessageChannel;
-	private var _debugChannel:MessageChannel;
+	private var _commChannel:MessageChannel;
 
     private var _timestamp:Number;
 	private var _endTime:uint;
@@ -27,10 +27,10 @@ public class TranscodeWorker extends Sprite {
 
 		_workerToMain = Worker.current.getSharedProperty("workerToMain");
 
-		_debugChannel = Worker.current.getSharedProperty("debugChannel");
+		_commChannel = Worker.current.getSharedProperty("commChannel");
 
 		var object:Object = {command:'init'}
-		_debugChannel.send(object);
+		_commChannel.send(object);
 		_transcoder = new Transcoder(this, asyncTranscodeCB);
 	}
 
@@ -112,7 +112,7 @@ public class TranscodeWorker extends Sprite {
 
 	public function debug(message:String):void {
 		var object:Object = {command:'debug', message: message};
-		_debugChannel.send(object);
+		_commChannel.send(object);
 	}
 
 	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
@@ -121,7 +121,7 @@ public class TranscodeWorker extends Sprite {
             debug("Transcodeworker.error min_pts: " + min_pts/1000);
             debug("TranscodeWorker.error max_pts: " + max_pts/1000);
         }
-		_debugChannel.send(object);
+		_commChannel.send(object);
 	}
 
 }
