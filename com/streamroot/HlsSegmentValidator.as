@@ -1,13 +1,11 @@
 package com.streamroot {
 
 import com.streamroot.IStreamrootInterface;
+import com.util.Conf;
+
 
 public class HlsSegmentValidator {
 
-    /** 1s margin because we compare manifest timestamp and pts **/
-    private static const _TIMESTAMP_MARGIN:Number = 1;
-    /** Average duration of 1 frame **/
-    private static const _FRAME_TIME:Number = 1/30;
 
     //Remember pts/dts have been converted to ms from the start in pes parsing
     
@@ -40,9 +38,9 @@ public class HlsSegmentValidator {
             _streamrootInterface.debug("VALIDATOR max_pts: " + max_pts);
         }
 
-        if(Math.abs(min_pts - (startTime + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {
+        if(Math.abs(min_pts - (startTime + Conf._FRAME_TIME)) > Conf._TIMESTAMP_MARGIN) {
             return "apple_error_timestamp";
-        } else if(!_isSeeking && previousPTS != 0 && Math.abs(min_pts - (previousPTS + _FRAME_TIME)) > _TIMESTAMP_MARGIN) {      
+        } else if(!_isSeeking && previousPTS != 0 && Math.abs(min_pts - (previousPTS + Conf._FRAME_TIME)) > Conf._TIMESTAMP_MARGIN) {      
             return "apple_error_previousPTS";
         } else {
             return "true";

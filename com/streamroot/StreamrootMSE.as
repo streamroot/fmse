@@ -4,7 +4,7 @@ import flash.external.ExternalInterface;
 import flash.net.NetStream;
 import flash.net.NetStreamAppendBytesAction;
 
-import flash.events.TimerEvent;
+//import flash.events.TimerEvent;
 import flash.events.Event;
 
 import flash.system.Worker;
@@ -12,10 +12,10 @@ import flash.system.WorkerDomain;
 import flash.system.MessageChannel;
 import flash.system.WorkerState;
 
-import com.dash.handlers.InitializationAudioSegmentHandler;
+/*import com.dash.handlers.InitializationAudioSegmentHandler;
 import com.dash.handlers.InitializationVideoSegmentHandler;
 import com.dash.handlers.VideoSegmentHandler;
-import com.dash.handlers.AudioSegmentHandler;
+import com.dash.handlers.AudioSegmentHandler;*/
 
 import com.dash.boxes.Muxer;
 
@@ -24,6 +24,7 @@ import com.dash.utils.Base64;
 import flash.utils.ByteArray;
 import flash.utils.setTimeout;
 import flash.utils.Timer;
+import flash.utils.getQualifiedClassName;
 
 import com.streamroot.IStreamrootInterface;
 import com.streamroot.StreamrootInterfaceBase;
@@ -42,19 +43,15 @@ public class StreamrootMSE {
 
     private var _muxer:Muxer;
 
-    private var _initHandlerAudio:InitializationAudioSegmentHandler;
-    private var _initHandlerVideo:InitializationVideoSegmentHandler;
+//    private var _initHandlerAudio:InitializationAudioSegmentHandler;
+//    private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
     private var _seek_offset:Number = 0;
-    private var _audio_offset:Number = 0;
 
     //private var _buffered:uint = 0;
     //private var _buffered_audio:uint = 0;
 
-    private static const VIDEO:String = "video";
-    private static const AUDIO:String = "audio";
-
-    private var _pendingOffsetVideo:Number;
+    /*private var _pendingOffsetVideo:Number;
     private var _pendingOffsetAudio:Number;
 
     private var _pendingTimestampVideo:Number;
@@ -86,7 +83,7 @@ public class StreamrootMSE {
     private var _timerStateAudio:String = TIMER_IDLE;
 
     private static const DECODE_CHUNK_SIZE : uint = 64 * 1024;
-    private static const DECODE_INTERVAL : uint = 0;
+    private static const DECODE_INTERVAL : uint = 0;*/
 
     private static const TIMEOUT_LENGTH:uint = 5;
 
@@ -195,7 +192,7 @@ public class StreamrootMSE {
         if(key){
             _streamBuffer.addSourceBuffer(key);            
         }else{
-            _streamrootInterface.error("Error: Type not supported: " + type);
+            error("Error: Type not supported: " + type);
         }
     }
 
@@ -215,7 +212,7 @@ public class StreamrootMSE {
             } else if (type.indexOf("video") >= 0) {
                 ExternalInterface.call("sr_flash_updateend_video");
             } else {
-                _streamrootInterface.error("no type matching");
+                error("no type matching");
             }
         } else {
 
@@ -234,7 +231,7 @@ public class StreamrootMSE {
                 _hasVideo = true;
                 ExternalInterface.call("sr_flash_updateend_video");
             } else {
-                _streamrootInterface.error("no type matching");
+                error("no type matching");
             }
         }
         */
@@ -258,7 +255,7 @@ public class StreamrootMSE {
         } else if (!_pendingAppend) {
             _pendingAppend = message; //TODO: clear this job when we seek
         } else {
-            _streamrootInterface.error("error: not supporting more than one pending job for now");
+            error("Error: not supporting more than one pending job for now", this);
             sendSegmentFlushedMessage(message.type);
         }
     }
@@ -538,12 +535,12 @@ public class StreamrootMSE {
                 
                 if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
-                    _streamrootInterface.error("Timestamp and min_pts don't match")
+                    error("Timestamp and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
                 } else if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
-                    _streamrootInterface.error("previousPTS and min_pts don't match")
+                    error("previousPTS and min_pts don't match")
                     sendSegmentFlushedMessage("apple_error_previousPTS");
                     return;
                 } else {
@@ -555,7 +552,7 @@ public class StreamrootMSE {
                     if(key){
                         _streamBuffer.appendSegment(segment, key);                        
                 	}else {
-                	    _streamrootInterface.error("Error: Type not supported: " + type);
+                	    error("Error: Type not supported: " + type);
                 	}
 				}
             }
@@ -576,7 +573,7 @@ public class StreamrootMSE {
             } else if (isVideo(type)) {
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
             } else {
-                _streamrootInterface.error("no type matching");
+                error("no type matching");
             }
         } else {
             sendSegmentFlushedMessage(type);
@@ -635,7 +632,7 @@ public class StreamrootMSE {
                 _streamrootInterface.debug(message.message);
             }
         } else if (message.command == "error") {
-            _streamrootInterface.error(message.message);
+            error(message.message);
             if (message.type) {
                 //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger
                 //a segment flushed message to notify the JS that append didn't work well, in order not to
@@ -661,7 +658,7 @@ public class StreamrootMSE {
         if(key){
             return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
         }else{
-            _streamrootInterface.error("Error: Type not supported: " + type);
+            error("Error: Type not supported: " + type);
             return 0;        
         }
     }
@@ -711,8 +708,13 @@ public class StreamrootMSE {
         _streamrootInterface.onTrackList(trackList);
     }
     
-    public function error(message:Object):void {
-        _streamrootInterface.error(String(message));
+    public function error(message:Object, obj:Object = null):void {
+        if(obj != null){
+            var textMessage:String = "FLASH " + getQualifiedClassName(obj) + String(message);
+            _streamrootInterface.error(textMessage);
+        }else{
+            _streamrootInterface.error(String(message));            
+        }
     }
     
     private function isHLS(type:String):Boolean{

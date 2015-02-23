@@ -8,6 +8,8 @@ import flash.utils.ByteArray;
 import com.streamroot.StreamrootMSE;
 import com.streamroot.IStreamrootInterface;
 
+import com.util.Conf;
+
 
 public class StreamrootInterfaceBase implements IStreamrootInterface{
 
@@ -18,8 +20,6 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     protected var _needData:Boolean = true;
 
-    protected var _LOG_DEBUG:Boolean = false;
-    protected var _LOG_ERROR:Boolean = true;
 
 
     public function StreamrootInterfaceBase(provider:Object):void {
@@ -169,13 +169,13 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     //LOGGING
     public function debug(message:Object):void {
-        if (_LOG_DEBUG) {
+        if (Conf._LOG_DEBUG) {
             ExternalInterface.call("console.debug", String(message));
         }
     }
 
     public function error(message:Object):void {
-        if (_LOG_ERROR) {
+        if (Conf._LOG_ERROR) {
             ExternalInterface.call("sr_flash_transcodeError", String(message));
         }
     }

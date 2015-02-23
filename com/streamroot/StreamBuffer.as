@@ -22,9 +22,6 @@ package com.streamroot {
         private var _sourceBufferList:Array = new Array();
         private var _streamrootMSE:StreamrootMSE;
         
-        private const VIDEO:String = "video";
-        private const AUDIO:String = "audio";
-        
         public function StreamBuffer(streamrootMSE:StreamrootMSE):void {
             _streamrootMSE = streamrootMSE;
             _streamBufferController = new StreamBufferController(this, _streamrootMSE); 
@@ -34,7 +31,7 @@ package com.streamroot {
             if(getSourceBufferByType(type) == null){
                 _sourceBufferList.push(new SourceBuffer(_streamrootMSE, type)); 
             }else{
-                _streamrootMSE.error('SourceBuffer for this type already exists : ' + type);
+                _streamrootMSE.error('SourceBuffer for this type already exists : ' + type, this);
             }
         }
         
