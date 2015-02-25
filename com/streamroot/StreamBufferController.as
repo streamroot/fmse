@@ -6,7 +6,7 @@ package com.streamroot {
     import com.streamroot.StreamrootMSE; 
     import com.streamroot.StreamBuffer;
     
-    import com.util.Conf;
+    import com.streamroot.util.Conf;
 
     
     public class StreamBufferController{

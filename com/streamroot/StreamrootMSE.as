@@ -33,7 +33,8 @@ import com.streamroot.Segment;
 import com.streamroot.Transcoder;
 import com.streamroot.HlsSegmentValidator;
 
-import com.util.SourceBufferHelper;
+import com.streamroot.util.TrackTypeHelper;
+import com.streamroot.util.Conf;
 
 public class StreamrootMSE {
 
@@ -188,7 +189,7 @@ public class StreamrootMSE {
     }
 
     private function addSourceBuffer(type:String):void {
-        var key:String = SourceBufferHelper.getType(type);
+        var key:String = TrackTypeHelper.getType(type);
         if(key){
             _streamBuffer.addSourceBuffer(key);            
         }else{
@@ -528,17 +529,17 @@ public class StreamrootMSE {
             if (!isInit) {
                 // CLIEN-19: check if it's the right hls segment before appending it. 
                 
-                if (isHLS(segment.type)) {
+                if (TrackTypeHelper.isHLS(segment.type)) {
                     var previousPTS:Number = _streamBuffer.getBufferEndTime();
                     var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
 				}
                 
-                if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
+                if (TrackTypeHelper.isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
                     debug("Timestamp and min_pts don't match", this)
                     sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
                     return;
-                } else if (isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
+                } else if (TrackTypeHelper.isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
                     debug("previousPTS and min_pts don't match", this)
                     sendSegmentFlushedMessage("apple_error_previousPTS");
@@ -548,7 +549,7 @@ public class StreamrootMSE {
                     CONFIG::LOGGING_PTS {
                         debug("Appending segment in StreamBuffer", this);
                     }
-					var key:String = SourceBufferHelper.getType(segment.type);
+					var key:String = TrackTypeHelper.getType(segment.type);
                     if(key){
                         _streamBuffer.appendSegment(segment, key);                        
                 	}else {
@@ -565,12 +566,12 @@ public class StreamrootMSE {
 
 
             //Check better way to check type here as well
-            if (isHLS(type)) {
+            if (TrackTypeHelper.isHLS(type)) {
                 _hlsSegmentValidator.setIsSeeking(false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
-            } else if (isAudio(type)) {
+            } else if (TrackTypeHelper.isAudio(type)) {
                 setTimeout(updateendAudio, TIMEOUT_LENGTH);
-            } else if (isVideo(type)) {
+            } else if (TrackTypeHelper.isVideo(type)) {
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
             } else {
                 error("no type matching");
@@ -591,14 +592,14 @@ public class StreamrootMSE {
                 debug("sendSegmentFlushedMessage max_pts: " + max_pts, this);
             }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
-        } else if (isHLS(type)) {    // This case includes apple_error_previousPTS case
+        } else if (TrackTypeHelper.isHLS(type)) {    // This case includes apple_error_previousPTS case
             CONFIG::LOGGING_PTS {
                 debug("Inside case discarding but no min/max pts returned to js", this);
             }
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
-        } else if (isAudio(type)) {
+        } else if (TrackTypeHelper.isAudio(type)) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
-        } else if (isVideo(type)) {
+        } else if (TrackTypeHelper.isVideo(type)) {
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         }
     }
@@ -650,7 +651,7 @@ public class StreamrootMSE {
     }
     
     public function remove(start:Number, end:Number, type:String):Number {
-        var key:String = SourceBufferHelper.getType(type);
+        var key:String = TrackTypeHelper.getType(type);
         if(key){
             return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
         }else{
@@ -720,18 +721,6 @@ public class StreamrootMSE {
         }else{
             _streamrootInterface.debug(String(message));            
         }
-    }
-    
-    private function isHLS(type:String):Boolean{
-        return SourceBufferHelper.isHLS(type);
-    }
-    
-    private function isAudio(type:String):Boolean{
-        return SourceBufferHelper.isAudio(type);
-    }
-    
-    private function isVideo(type:String):Boolean{
-        return SourceBufferHelper.isVideo(type);
     }
 }
 }

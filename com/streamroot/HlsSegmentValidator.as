@@ -1,7 +1,7 @@
 package com.streamroot {
 
 import com.streamroot.StreamrootMSE;
-import com.util.Conf;
+import com.streamroot.util.Conf;
 
 
 public class HlsSegmentValidator {
@@ -38,9 +38,9 @@ public class HlsSegmentValidator {
             _streamrootMSE.debug("max_pts: " + max_pts, this);
         }
 
-        if(Math.abs(min_pts - (startTime + Conf._FRAME_TIME)) > Conf._TIMESTAMP_MARGIN) {
+        if(Math.abs(min_pts - (startTime + Conf.FRAME_TIME)) > Conf.TIMESTAMP_MARGIN) {
             return "apple_error_timestamp";
-        } else if(!_isSeeking && previousPTS != 0 && Math.abs(min_pts - (previousPTS + Conf._FRAME_TIME)) > Conf._TIMESTAMP_MARGIN) {      
+        } else if(!_isSeeking && previousPTS != 0 && Math.abs(min_pts - (previousPTS + Conf.FRAME_TIME)) > Conf.TIMESTAMP_MARGIN) {      
             return "apple_error_previousPTS";
         } else {
             return "true";

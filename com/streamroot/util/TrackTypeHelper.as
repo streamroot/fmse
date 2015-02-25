@@ -1,6 +1,6 @@
-package com.util {
+package com.streamroot.util {
 
-public class SourceBufferHelper{
+public class TrackTypeHelper{
         private static const VIDEO:String = "video";
         private static const AUDIO:String = "audio";
         private static const hls:String = "apple";
