@@ -1,15 +1,11 @@
 package com.streamroot {
 
-import flash.external.ExternalInterface;
 import flash.net.NetStreamAppendBytesAction;
 
 import flash.utils.ByteArray;
 
 import com.streamroot.StreamrootMSE;
 import com.streamroot.IStreamrootInterface;
-
-import com.streamroot.util.Conf;
-
 
 public class StreamrootInterfaceBase implements IStreamrootInterface{
 
@@ -49,7 +45,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
             //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
             //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
             //_loaded Boolean is for here)
-            ExternalInterface.call('sr_flash_ready');
+            _streamrootMSE.triggerReady();
             _loaded = true;
         }
 
@@ -71,12 +67,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         //Call method in provider that uses the metaData
         throw new Error("Method onMetaData isn't implemented");
     }
-
-    /*public function areBuffersReady():Boolean {
-        //Asks streamrrot stack if we have data in buffer for both audio and video
-        return (_streamrootMSE.areBuffersReady());
-    }*/
-
+    
     public function bufferEmpty():void {
       //Calls methods in provider that deals with empty buffer. It should be what you call in "NetStream.Buffer.Empty" NetStream status event,
       //or in the case the buffer is low if you check buffer level at a regular interval
@@ -148,36 +139,32 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     //EVENTS
     public function triggerSeeked():void {
         //Trigger event when seek is done. Not used for now
-        ExternalInterface.call("sr_flash_seeked");
+        _streamrootMSE.triggerSeeked();
     }
 
     public function triggerLoadStart():void {
         //Trigger event when we want to start loading data (at the beginning of the video or on replay)
-        ExternalInterface.call("sr_flash_loadstart");
+        _streamrootMSE.triggerLoadStart();
     }
 
     public function triggerPlaying():void {
         //Trigger event when video starts playing. Not used for now
-        ExternalInterface.call("sr_flash_playing");
+        _streamrootMSE.triggerPlaying();
     }
 
     public function triggerStopped():void {
         //Trigger event when video ends.
-        ExternalInterface.call("sr_flash_stopped");
+        _streamrootMSE.triggerStopped();
     }
 
 
     //LOGGING
     public function debug(message:Object):void {
-        if (Conf.LOG_DEBUG) {
-            ExternalInterface.call("console.debug", String(message));
-        }
+        _streamrootMSE.debug(message);
     }
 
     public function error(message:Object):void {
-        if (Conf.LOG_ERROR) {
-            ExternalInterface.call("sr_flash_transcodeError", String(message));
-        }
+        _streamrootMSE.error(message);
     }
 
 }

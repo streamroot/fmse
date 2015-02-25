@@ -13,13 +13,15 @@ package com.streamroot {
         
         private var _streamBuffer:StreamBuffer;
         private var _streamrootMSE:StreamrootMSE;
-        private var _needData:Boolean = true;    
+        private var _needData:Boolean = true;  
+        
+        private const TIMEOUT_LENGTH:int = 100;  
 
         public function StreamBufferController(streamBuffer:StreamBuffer, streamrootMSE:StreamrootMSE):void {
             _streamBuffer = streamBuffer;
             _streamrootMSE = streamrootMSE;
             
-            setInterval(bufferize, 100);
+            setInterval(bufferize, TIMEOUT_LENGTH);
             
             
         }

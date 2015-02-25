@@ -66,17 +66,7 @@ public class TranscodeWorker extends Sprite {
                 error(e.toString(), type);
                 return;
             }
-            //Check better way to check type here as well
-            /*
-            if (type.indexOf("audio") >= 0) {
-                ExternalInterface.call("sr_flash_updateend_audio");
-            } else if (type.indexOf("video") >= 0) {
-                ExternalInterface.call("sr_flash_updateend_video");
-            } else {
-                _streamrootInterface.error("no type matching");
-            }
-            */
-
+            
             answer = {type: type, isInit: isInit};
             debug("sending back message");
             _workerToMain.send(answer);
@@ -123,15 +113,10 @@ public class TranscodeWorker extends Sprite {
 	 * min_pts and max_pts are in millisecond
 	 * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
  	 */
-	public function error(message:String, type:String, min_pts:Number = 0, max_pts:Number = 0):void {
-		var object:Object = {command:'error', message: message, type: type, min_pts:min_pts / 1000, max_pts:max_pts / 1000};
-        CONFIG::LOGGING_PTS {
-            debug("Transcodeworker.error min_pts: " + min_pts);
-            debug("TranscodeWorker.error max_pts: " + max_pts);
-        }
+	public function error(message:String, type:String):void {
+		var object:Object = {command:'error', message: message, type: type};
 		_commChannel.send(object);
 	}
-
 }
 
 }

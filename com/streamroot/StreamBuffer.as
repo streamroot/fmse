@@ -36,9 +36,13 @@ package com.streamroot {
         }
         
         private function getSourceBufferByType(type:String):SourceBuffer {
-            for(var i:int = 0; i < _sourceBufferList.length; i++){
-                if(_sourceBufferList[i].type == type){
-                    return _sourceBufferList[i];
+            if(type == null){
+                _streamrootMSE.error("No buffer for type null", this);
+            }else{            
+                for(var i:int = 0; i < _sourceBufferList.length; i++){
+                    if(_sourceBufferList[i].type == type){
+                        return _sourceBufferList[i];
+                    }
                 }
             }
             return null;
@@ -101,7 +105,12 @@ package com.streamroot {
          * Remove data between start and end time in the sourceBuffer corresponding the type
          */    
         public function removeDataFromSourceBuffer(start:Number, end:Number, type:String):Number {
-            return getSourceBufferByType(type).remove(start, end);
+            var sb:SourceBuffer = getSourceBufferByType(type);
+            if(sb != null){
+                return sb.remove(start, end);
+            }else{
+                return 0;
+            }
         }
         
                 

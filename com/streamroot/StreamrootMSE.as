@@ -34,6 +34,7 @@ import com.streamroot.Transcoder;
 import com.streamroot.HlsSegmentValidator;
 
 import com.streamroot.util.TrackTypeHelper;
+import com.streamroot.util.TranscoderHelper;
 import com.streamroot.util.Conf;
 
 public class StreamrootMSE {
@@ -207,7 +208,6 @@ public class StreamrootMSE {
         /*
         if (isInit) {
             _transcoder.transcodeInit(data, type);
-            //Check better way to check type here as well
             if (type.indexOf("audio") >= 0) {
                 ExternalInterface.call("sr_flash_updateend_audio");
             } else if (type.indexOf("video") >= 0) {
@@ -534,27 +534,22 @@ public class StreamrootMSE {
                     var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
 				}
                 
-                if (TrackTypeHelper.isHLS(segment.type) && segmentChecked.indexOf("apple_error_timestamp") >= 0) {
+                if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPTSError(segmentChecked)) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
                     debug("Timestamp and min_pts don't match", this)
-                    sendSegmentFlushedMessage("apple_error_timestamp", min_pts, max_pts);
+                    sendSegmentFlushedMessage(TranscoderHelper.PTS_ERROR, min_pts, max_pts);
                     return;
-                } else if (TrackTypeHelper.isHLS(segment.type) && segmentChecked.indexOf("apple_error_previousPTS") >= 0) {
+                } else if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPreviousPTSError(segmentChecked)) {
                     // No need to send back min and max pts in this case since media map doesn't need to be updated
                     debug("previousPTS and min_pts don't match", this)
-                    sendSegmentFlushedMessage("apple_error_previousPTS");
+                    sendSegmentFlushedMessage(TranscoderHelper.PREVIOUS_PTS_ERROR);
                     return;
                 } else {
                     // Append DASH || Smooth || Validated HLS segment
                     CONFIG::LOGGING_PTS {
                         debug("Appending segment in StreamBuffer", this);
                     }
-					var key:String = TrackTypeHelper.getType(segment.type);
-                    if(key){
-                        _streamBuffer.appendSegment(segment, key);                        
-                	}else {
-                	    error("Error: Type not supported: " + type, this);
-                	}
+	                _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
 				}
             }
 
@@ -565,7 +560,6 @@ public class StreamrootMSE {
             }
 
 
-            //Check better way to check type here as well
             if (TrackTypeHelper.isHLS(type)) {
                 _hlsSegmentValidator.setIsSeeking(false);
                 setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
@@ -586,13 +580,13 @@ public class StreamrootMSE {
         CONFIG::LOGGING {
             debug("Discarding segment    " + type, this);
         }
-        if(type.indexOf("apple_error_timestamp") >= 0) {
+        if(TranscoderHelper.isPTSError(type)) {
             CONFIG::LOGGING_PTS {
                 debug("sendSegmentFlushedMessage min_pts: " + min_pts, this);
                 debug("sendSegmentFlushedMessage max_pts: " + max_pts, this);
             }
             setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
-        } else if (TrackTypeHelper.isHLS(type)) {    // This case includes apple_error_previousPTS case
+        } else if (TrackTypeHelper.isHLS(type)) {    // This case includes PREVIOUS_PTS_ERROR case
             CONFIG::LOGGING_PTS {
                 debug("Inside case discarding but no min/max pts returned to js", this);
             }
@@ -625,23 +619,10 @@ public class StreamrootMSE {
         _isWorkerReady = true;
 
         if (message.command == "debug") {
-            if(CONFIG::LOGGING_PTS){
-                debug(message.message, this);
-            }
+            debug(message.message, this);
         } else if (message.command == "error") {
-            error(message.message);
-            if (message.type) {
-                //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger
-                //a segment flushed message to notify the JS that append didn't work well, in order not to
-                //block the append pipeline
-                _isWorkerBusy = false;
-                if(CONFIG::LOGGING_PTS){
-                    debug("min_pts: " + message.min_pts, this);
-                    debug("max_pts: " + message.max_pts, this);
-                    debug("error type: " + message.type, this);
-                }
-                sendSegmentFlushedMessage(message.type, message.min_pts, message.max_pts);
-            }
+            transcodeError(message.message);
+            flush(message);
         }
     }
     
@@ -651,13 +632,7 @@ public class StreamrootMSE {
     }
     
     public function remove(start:Number, end:Number, type:String):Number {
-        var key:String = TrackTypeHelper.getType(type);
-        if(key){
-            return _streamBuffer.removeDataFromSourceBuffer(start, end, key);
-        }else{
-            error("Error: Type not supported: " + type);
-            return 0;        
-        }
+        return _streamBuffer.removeDataFromSourceBuffer(start, end, TrackTypeHelper.getType(type));
     }
     
     public function getBufferLength():Number{
@@ -705,22 +680,66 @@ public class StreamrootMSE {
         _streamrootInterface.onTrackList(trackList);
     }
     
+    //StreamrootInterface events
+    public function triggerSeeked():void {
+        //Trigger event when seek is done. Not used for now
+        ExternalInterface.call("sr_flash_seeked");
+    }
+    
+    public function triggerLoadStart():void {
+        //Trigger event when we want to start loading data (at the beginning of the video or on replay)
+        ExternalInterface.call("sr_flash_loadstart");
+    }
+    
+    public function triggerPlaying():void {
+        //Trigger event when video starts playing. Not used for now
+        ExternalInterface.call("sr_flash_playing");
+    }
+    
+    public function triggerStopped():void {
+        //Trigger event when video ends.
+        ExternalInterface.call("sr_flash_stopped");
+    }
+    
+    public function triggerReady():void {
+        ExternalInterface.call('sr_flash_ready');
+    }
+    
     public function error(message:Object, obj:Object = null):void {
-        if(obj != null){
-            var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-            _streamrootInterface.error(textMessage);
-        }else{
-            _streamrootInterface.error(String(message));            
+        if (Conf.LOG_ERROR) {
+            if(obj != null){
+                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                ExternalInterface.call("console.error", textMessage);
+            }else{
+                ExternalInterface.call("console.error", String(message));
+            }
         }
     }
     
-    public function debug(message:Object, obj:Object = null):void {
-        if(obj != null){
-            var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-            _streamrootInterface.debug(textMessage);
-        }else{
-            _streamrootInterface.debug(String(message));            
-        }
+    public function transcodeError(message:Object):void{
+        ExternalInterface.call("sr_flash_transcodeError", String(message));
     }
+    
+    public function debug(message:Object, obj:Object = null):void {
+        if (Conf.LOG_DEBUG) {
+            if(obj != null){
+                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                ExternalInterface.call("console.debug", textMessage);
+            }else{
+                ExternalInterface.call("console.debug", String(message));
+            }
+        }
+    } 
+    
+    public function flush(message:Object):void{
+        if(message.type){
+            //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger
+            //a segment flushed message to notify the JS that append didn't work well, in order not to
+            //block the append pipeline
+            _isWorkerBusy = false;
+            debug("Error type: " + message.type, this);
+            sendSegmentFlushedMessage(message.type);
+        }
+    }  
 }
 }
