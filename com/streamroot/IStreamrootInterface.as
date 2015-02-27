@@ -39,7 +39,7 @@ public interface IStreamrootInterface {
 
     function triggerLoadStart():void;
 
-    function triggerPlaying():void;
+    function triggerPlay():void;
 
     function triggerStopped():void;
     

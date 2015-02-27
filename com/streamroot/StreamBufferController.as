@@ -16,6 +16,7 @@ package com.streamroot {
         private var _needData:Boolean = true;  
         
         private const TIMEOUT_LENGTH:int = 100;  
+        private const BUFFER_EMPTY: Number = 0.1;
 
         public function StreamBufferController(streamBuffer:StreamBuffer, streamrootMSE:StreamrootMSE):void {
             _streamBuffer = streamBuffer;
@@ -32,13 +33,17 @@ package com.streamroot {
             var trueBufferLength:Number = _streamrootMSE.getBufferLength() - _streamBuffer.getDiffBetweenBuffers();
             if(trueBufferLength < Conf.NETSTREAM_BUFFER_LENGTH){
                 var array:Array = _streamBuffer.getNextSegmentBytes();
+                if (array.length == 0 && trueBufferLength < BUFFER_EMPTY && !_needData){
+                    _streamBuffer.bufferEmpty();
+                    _needData = true;
+                }
                 for(var i:uint = 0; i < array.length; i++){
                     _streamrootMSE.appendIntoNetStream(array[i]);
                     if(_needData && _streamBuffer.isBufferReady()){
                         _streamrootMSE.bufferFull();
+                        _streamrootMSE.triggerPlaying();
                         _needData = false;
                     }
-                    
                 }
             }
         }
@@ -46,6 +51,5 @@ package com.streamroot {
         public function onSeek():void{
             _needData = true;
         }
-    
     }
 }

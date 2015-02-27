@@ -147,9 +147,9 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         _streamrootMSE.triggerLoadStart();
     }
 
-    public function triggerPlaying():void {
+    public function triggerPlay():void {
         //Trigger event when video starts playing. Not used for now
-        _streamrootMSE.triggerPlaying();
+        _streamrootMSE.triggerPlay();
     }
 
     public function triggerStopped():void {

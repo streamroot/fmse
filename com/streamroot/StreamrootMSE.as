@@ -165,6 +165,7 @@ public class StreamrootMSE {
 
     public function setSeekOffset(timeSeek:Number):void {
         debug("Set seek offset", this);
+        _streamBuffer.onSeek();
         _seek_offset = timeSeek;
 
         //_buffered = timeSeek*1000000;
@@ -668,7 +669,7 @@ public class StreamrootMSE {
         return _streamrootInterface.paused();
     }
     
-    private function bufferEmpty():void {
+    public function bufferEmpty():void {
         _streamrootInterface.bufferEmpty();
     }
     
@@ -691,9 +692,19 @@ public class StreamrootMSE {
         ExternalInterface.call("sr_flash_loadstart");
     }
     
+    public function triggerPlay():void {
+        //Trigger event when video starts playing. Not used for now
+        ExternalInterface.call("sr_flash_play");
+    }
+    
     public function triggerPlaying():void {
         //Trigger event when video starts playing. Not used for now
         ExternalInterface.call("sr_flash_playing");
+    }
+    
+    public function triggerWaiting():void {
+        //Trigger event when video starts playing. Not used for now
+        ExternalInterface.call("sr_flash_waiting");
     }
     
     public function triggerStopped():void {

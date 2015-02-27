@@ -104,5 +104,11 @@ package com.streamroot {
             _appendedEndTime = 0;
             return flush();
         }
+        
+        public function bufferEmpty(appendedEndTime:Number): void{
+            if(_appendedEndTime == appendedEndTime){
+                _ready = false;
+            }
+        }
     }
 }
