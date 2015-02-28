@@ -10,8 +10,10 @@ import com.streamroot.StreamrootMSE;
 public interface IStreamrootInterface {
 
     function loaded():void;
+    
+    function appendBytesAction(action:String):void;
 
-    function appendBuffer(bytes:ByteArray):void;
+    function appendBytes(bytes:ByteArray):void;
 
     function play():void;
 
@@ -28,6 +30,9 @@ public interface IStreamrootInterface {
     function bufferEmpty():void;
     
     function bufferFull():void;
+        
+    //Should return NetStream buffer length, ie the max length of the different buffers
+    function getBufferLength():Number;
     
     //GETTERS
     function currentTime():Number;
@@ -42,8 +47,6 @@ public interface IStreamrootInterface {
     function triggerPlay():void;
 
     function triggerStopped():void;
-    
-    function getBufferLength():Number;
 
     //LOGGING
     function debug(message:Object):void;

@@ -45,6 +45,8 @@ public class StreamrootMSE {
     
     private var _muxer:Muxer;
     
+    private var _loaded:Boolean = false;
+    
 //    private var _initHandlerAudio:InitializationAudioSegmentHandler;
 //    private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
@@ -629,7 +631,7 @@ public class StreamrootMSE {
     
     //StreamBuffer function
     public function appendIntoNetStream(bytes:ByteArray):void {
-        _streamrootInterface.appendBuffer(bytes);
+        _streamrootInterface.appendBytes(bytes);
     }
     
     public function remove(start:Number, end:Number, type:String):Number {
@@ -681,6 +683,23 @@ public class StreamrootMSE {
         _streamrootInterface.onTrackList(trackList);
     }
     
+    public function loaded():void {
+        //append the FLV Header to the provider, using appendBytesAction
+        _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)
+        _streamrootInterface.appendBytes(getFileHeader());
+        
+        if (!_loaded) {
+            //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
+            //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
+            //_loaded Boolean is for here)
+            ExternalInterface.call('sr_flash_ready');
+            _loaded = true;
+        }
+        
+        //Tell our Javascript library to start loading video segments
+        triggerLoadStart();
+    }
+    
     //StreamrootInterface events
     public function triggerSeeked():void {
         //Trigger event when seek is done. Not used for now
@@ -710,10 +729,6 @@ public class StreamrootMSE {
     public function triggerStopped():void {
         //Trigger event when video ends.
         ExternalInterface.call("sr_flash_stopped");
-    }
-    
-    public function triggerReady():void {
-        ExternalInterface.call('sr_flash_ready');
     }
     
     public function error(message:Object, obj:Object = null):void {

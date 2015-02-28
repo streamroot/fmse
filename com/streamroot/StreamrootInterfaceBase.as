@@ -12,8 +12,6 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     protected var _provider:Object;//your provider - must be an IProvider implementation;
     protected var _streamrootMSE:StreamrootMSE;
 
-    protected var _loaded:Boolean = false;
-
     protected var _needData:Boolean = true;
 
 
@@ -36,31 +34,17 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     public function loaded():void {
         //Method to call when provider is initialized and ready
-
-        //you need to append the FLV Header to your provider, using appendBytesAction
-        appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)
-        appendBuffer(_streamrootMSE.getFileHeader());
-
-        if (!_loaded) {
-            //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
-            //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
-            //_loaded Boolean is for here)
-            _streamrootMSE.triggerReady();
-            _loaded = true;
-        }
-
-        //Tell our Javascript library to start loading video segments
-        triggerLoadStart();
+        _streamrootMSE.loaded();
     }
 
-    protected function appendBytesAction(action:String):void {
+    public function appendBytesAction(action:String):void {
       //Should call method in provider that calls NetStream.appendBytesAction
       throw new Error("Method appendBytesAction isn't implemented");
     }
 
-    public function appendBuffer(bytes:ByteArray):void {
+    public function appendBytes(bytes:ByteArray):void {
         //Should call method in provider that calls NetStream.appendBytes
-        throw new Error("Method appendBuffer is not implemented");
+        throw new Error("Method appendBytes is not implemented");
     }
 
     public function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
