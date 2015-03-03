@@ -158,7 +158,6 @@ package com.streamroot {
             }   
             _streamBufferController.onSeek();
             _streamrootMSE.bufferEmpty();
-            _streamrootMSE.triggerWaiting();
         }
         
         public function bufferEmpty():void{
@@ -166,7 +165,6 @@ package com.streamroot {
                 _sourceBufferList[i].bufferEmpty(getAppendedEndTime);    
             } 
             _streamrootMSE.bufferEmpty();
-            _streamrootMSE.triggerWaiting();  
         }
     }
 }

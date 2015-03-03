@@ -27,21 +27,31 @@ package com.streamroot {
             
         }
         
+        /**              
+         * This method is call at fixed interval to check the time length of Netstream
+         * If the time left is less than a fixed value (BUFFER_EMPTY) we call streambuffer to get the next segment to append
+         * 
+         * It also check if buffer is empty or not, and call bufferEmpty and bufferFull is needed
+         */         
         private function bufferize():void {
             //this is because _streamrootMSE.getBufferLength return the max length of audio and video track
-            // but we want the lenght of the buffer for which we have both audio and video
+            // but we want the length of the buffer for which we have both audio and video
             var trueBufferLength:Number = _streamrootMSE.getBufferLength() - _streamBuffer.getDiffBetweenBuffers();
             if(trueBufferLength < Conf.NETSTREAM_BUFFER_LENGTH){
                 var array:Array = _streamBuffer.getNextSegmentBytes();
+                
+                //check for buffer empty
                 if (array.length == 0 && trueBufferLength < BUFFER_EMPTY && !_needData){
                     _streamBuffer.bufferEmpty();
                     _needData = true;
                 }
+                
                 for(var i:uint = 0; i < array.length; i++){
-                    _streamrootMSE.appendIntoNetStream(array[i]);
+                    _streamrootMSE.appendNetStream(array[i]);
+    
+                    //check for buffer full
                     if(_needData && _streamBuffer.isBufferReady()){
                         _streamrootMSE.bufferFull();
-                        _streamrootMSE.triggerPlaying();
                         _needData = false;
                     }
                 }

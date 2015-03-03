@@ -630,7 +630,7 @@ public class StreamrootMSE {
     }
     
     //StreamBuffer function
-    public function appendIntoNetStream(bytes:ByteArray):void {
+    public function appendNetStream(bytes:ByteArray):void {
         _streamrootInterface.appendBytes(bytes);
     }
     
@@ -673,10 +673,12 @@ public class StreamrootMSE {
     
     public function bufferEmpty():void {
         _streamrootInterface.bufferEmpty();
+        triggerWaiting();
     }
     
     public function bufferFull():void {
         _streamrootInterface.bufferFull();
+        triggerPlaying();
     }
     
     private function onTrackList(trackList:String):void {
