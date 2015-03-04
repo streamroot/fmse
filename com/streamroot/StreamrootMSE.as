@@ -167,7 +167,6 @@ public class StreamrootMSE {
 
     public function setSeekOffset(timeSeek:Number):void {
         debug("Set seek offset", this);
-        _streamBuffer.onSeek();
         _seek_offset = timeSeek;
 
         //_buffered = timeSeek*1000000;
