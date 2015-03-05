@@ -716,6 +716,11 @@ public class StreamrootMSE {
         //Trigger event when video starts playing. Not used for now
         ExternalInterface.call("sr_flash_play");
     }
+
+    public function triggerPause():void {
+        //Trigger event when video starts playing. Not used for now
+        ExternalInterface.call("sr_flash_pause");
+    }
     
     public function triggerPlaying():void {
         //Trigger event when video starts playing. Not used for now
