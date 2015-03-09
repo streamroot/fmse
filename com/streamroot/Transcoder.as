@@ -9,7 +9,7 @@ import com.dash.handlers.VideoSegmentHandler;
 import com.dash.handlers.AudioSegmentHandler;
 
 import com.streamroot.TranscodeWorker;
-import com.hlsmangui.HlsTranscodeHandler;
+import com.hls.HlsTranscodeHandler;
 
 import com.dash.boxes.Muxer;
 

@@ -1,19 +1,19 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- package com.hlsmangui.demux {
-    /** Audio Frame **/
-    public class AudioFrame {
+package com.hls.demux {
+    /** Video Frame **/
+    public class VideoFrame {
+        public var header : int;
         public var start : int;
         public var length : int;
-        public var expected_length : int;
-        public var rate : int;
+        public var type : int;
 
-        public function AudioFrame(start : int, length : int, expected_length : int, rate : int) {
+        public function VideoFrame(header : int, length : int, start : int, type : int) {
+            this.header = header;
             this.start = start;
             this.length = length;
-            this.expected_length = expected_length;
-            this.rate = rate;
+            this.type = type;
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.hlsmangui.model {
+package com.hls.model {
 	import flash.utils.ByteArray;
 	import flash.utils.IDataInput;
 

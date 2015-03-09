@@ -1,12 +1,12 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- package com.hlsmangui.demux {
+ package com.hls.demux {
     import flash.utils.getTimer;
     //import flash.display.DisplayObject;
 
-    import com.hlsmangui.FLVTag;
-    import com.hlsmangui.model.AudioTrack;
+    import com.hls.FLVTag;
+    import com.hls.model.AudioTrack;
 
     import flash.events.Event;
     import flash.events.EventDispatcher;

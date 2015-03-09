@@ -1,184 +1,177 @@
-/*****************************************************
-*
-*  Copyright 2009 Adobe Systems Incorporated.  All Rights Reserved.
-*
-*****************************************************
-*  The contents of this file are subject to the Mozilla Public License
-*  Version 1.1 (the "License"); you may not use this file except in
-*  compliance with the License. You may obtain a copy of the License at
-*  http://www.mozilla.org/MPL/
-*
-*  Software distributed under the License is distributed on an "AS IS"
-*  basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-*  License for the specific language governing rights and limitations
-*  under the License.
-*
-*
-*  The Initial Developer of the Original Code is Adobe Systems Incorporated.
-*  Portions created by Adobe Systems Incorporated are Copyright (C) 2009 Adobe Systems
-*  Incorporated. All Rights Reserved.
-*
-*****************************************************/
-package com.hls {
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+ package com.hls {
+    import flash.utils.ByteArray;
 
-	import flash.utils.ByteArray;
-	import flash.utils.IDataInput;
-	import flash.utils.IDataOutput;
+    /** Metadata needed to build an FLV tag. **/
+    public class FLVTag {
+        /** AAC Header Type ID. **/
+        public static const AAC_HEADER : int = 0;
+        /** AAC Data Type ID. **/
+        public static const AAC_RAW : int = 1;
+        /** AVC Header Type ID. **/
+        public static const AVC_HEADER : int = 2;
+        /** AVC Data Type ID. **/
+        public static const AVC_NALU : int = 3;
+        /** MP3 Data Type ID. **/
+        public static const MP3_RAW : int = 4;
+        /** Discontinuity Data Type ID. **/
+        public static const DISCONTINUITY : int = 5;
+        /** metadata Type ID. **/
+        public static const METADATA : int = 6;
+        /* FLV TAG TYPE */
+        private static var TAG_TYPE_AUDIO : int = 8;
+        private static var TAG_TYPE_VIDEO : int = 9;
+        private static var TAG_TYPE_SCRIPT : int = 18;
+        /** Is this a keyframe. **/
+        public var keyframe : Boolean;
+        /** Array with data pointers. **/
+        private var pointers : Vector.<TagData> = new Vector.<TagData>();
+        /** PTS of this frame. **/
+        public var pts : Number;
+        /** DTS of this frame. **/
+        public var dts : Number;
+        /** Type of FLV tag.**/
+        public var type : int;
 
-	[ExcludeClass]
+        /** Get the FLV file header. **/
+        public static function getHeader() : ByteArray {
+            var flv : ByteArray = new ByteArray();
+            flv.length = 13;
+            // "F" + "L" + "V".
+            flv.writeByte(0x46);
+            flv.writeByte(0x4C);
+            flv.writeByte(0x56);
+            // File version (1)
+            flv.writeByte(1);
+            // Audio + Video tags.
+            flv.writeByte(1);
+            // Length of the header.
+            flv.writeUnsignedInt(9);
+            // PreviousTagSize0
+            flv.writeUnsignedInt(0);
+            return flv;
+        };
 
-	/**
-	 * @private
-	 */
-  	public class FLVTag
-	{
-		// arguably these should move to their own class...
-		public static const TAG_TYPE_AUDIO:int = 8;
-		public static const TAG_TYPE_VIDEO:int = 9;
-		public static const TAG_TYPE_SCRIPTDATAOBJECT:int = 18;
+        /** Get an FLV Tag header (11 bytes). **/
+        public static function getTagHeader(type : int, length : int, stamp : int) : ByteArray {
+            var tag : ByteArray = new ByteArray();
+            tag.length = 11;
+            tag.writeByte(type);
 
-		// TODO: Do we call this "filtered" or "encrypted" or "DRM" or "protected"?
-		public static const TAG_FLAG_ENCRYPTED:int = 0x20;
-		public static const TAG_TYPE_ENCRYPTED_AUDIO:int = TAG_TYPE_AUDIO + TAG_FLAG_ENCRYPTED;
-		public static const TAG_TYPE_ENCRYPTED_VIDEO:int = TAG_TYPE_VIDEO + TAG_FLAG_ENCRYPTED;
-		public static const TAG_TYPE_ENCRYPTED_SCRIPTDATAOBJECT:int = TAG_TYPE_SCRIPTDATAOBJECT + TAG_FLAG_ENCRYPTED;
+            // Size of the tag in bytes after StreamID.
+            tag.writeByte(length >> 16);
+            tag.writeByte(length >> 8);
+            tag.writeByte(length);
+            // Timestamp (lower 24 plus upper 8)
+            tag.writeByte(stamp >> 16);
+            tag.writeByte(stamp >> 8);
+            tag.writeByte(stamp);
+            tag.writeByte(stamp >> 24);
+            // StreamID (3 empty bytes)
+            tag.writeByte(0);
+            tag.writeByte(0);
+            tag.writeByte(0);
+            // All done
+            return tag;
+        };
 
-		// but these are good here...
-		public static const TAG_HEADER_BYTE_COUNT:int = 11;
-		public static const PREV_TAG_BYTE_COUNT:int = 4;
+        /** Save the frame data and parameters. **/
+        public function FLVTag(typ : int, stp_p : Number, stp_d : Number, key : Boolean) {
+            type = typ;
+            pts = stp_p;
+            dts = stp_d;
+            keyframe = key;
+        }
+        ;
 
-		public function FLVTag(type:int)
-		{
-			super();
+        /** Returns the tag data. **/
+        public function get data() : ByteArray {
+            var array : ByteArray;
+            /* following specification http://download.macromedia.com/f4v/video_file_format_spec_v10_1.pdf */
 
-			bytes = new ByteArray();
-			bytes.length = TAG_HEADER_BYTE_COUNT;
-			bytes[0] = type;
-		}
+            // Render header data
+            if (type == FLVTag.MP3_RAW) {
+                array = getTagHeader(TAG_TYPE_AUDIO, length + 1, pts);
+                // Presume MP3 is 44.1 stereo.
+                array.writeByte(0x2F);
+            } else if (type == AVC_HEADER || type == AVC_NALU) {
+                array = getTagHeader(TAG_TYPE_VIDEO, length + 5, dts);
+                // keyframe/interframe switch (0x10 / 0x20) + AVC (0x07)
+                keyframe ? array.writeByte(0x17) : array.writeByte(0x27);
+                /* AVC Packet Type :
+                0 = AVC sequence header
+                1 = AVC NALU
+                2 = AVC end of sequence (lower level NALU sequence ender is
+                not required or supported) */
+                type == AVC_HEADER ? array.writeByte(0x00) : array.writeByte(0x01);
+                // CompositionTime (in ms)
+                // CONFIG::LOGGING {
+                // Log.info("pts:"+pts+",dts:"+dts+",delta:"+compositionTime);
+                // }
+                var compositionTime : Number = (pts - dts);
+                array.writeByte(compositionTime >> 16);
+                array.writeByte(compositionTime >> 8);
+                array.writeByte(compositionTime);
+            } else if (type == DISCONTINUITY || type == METADATA) {
+                array = getTagHeader(FLVTag.TAG_TYPE_SCRIPT, length, pts);
+            } else {
+                array = getTagHeader(TAG_TYPE_AUDIO, length + 2, pts);
+                // SoundFormat, -Rate, -Size, Type and Header/Raw switch.
+                array.writeByte(0xAF);
+                type == AAC_HEADER ? array.writeByte(0x00) : array.writeByte(0x01);
+            }
+            for (var i : int = 0; i < pointers.length; i++) {
+                if (type == AVC_NALU) {
+                    array.writeUnsignedInt(pointers[i].length);
+                }
+                array.writeBytes(pointers[i].array, pointers[i].start, pointers[i].length);
+            }
+            // Write previousTagSize and return data.
+            array.writeUnsignedInt(array.length);
+            return array;
+        }
 
-		public function read(input:IDataInput):void
-		{
-			// Reads a complete Tag, overwriting type.
-			readType(input);
-			readRemainingHeader(input);
-			readData(input);
-			readPrevTag(input);
-		}
+        /** Returns the bytesize of the frame. **/
+        private function get length() : int {
+            var length : int = 0;
+            for (var i : int = 0; i < pointers.length; i++) {
+                length += pointers[i].length;
+                // Account for NAL startcode length.
+                if (type == AVC_NALU) {
+                    length += 4;
+                }
+            }
+            return length;
+        }
+        ;
 
-		public function readType(input:IDataInput):void
-		{
-			if (input.bytesAvailable < 1)
-			{
-				throw new Error("FLVTag.readType() input too short");
-			}
+        /** push a data pointer into the frame. **/
+        public function push(array : ByteArray, start : int, length : int) : void {
+            pointers.push(new TagData(array, start, length));
+        }
+        ;
 
-			input.readBytes(bytes, 0, 1);	// just the type field, 1 byte
-		}
+        /** Trace the contents of this tag. **/
+        public function toString() : String {
+            return "TAG (type: " + type + ", pts:" + pts + ", dts:" + dts + ", length:" + length + ")";
+        }
+        ;
+    }
+}
 
-		public function readRemaining(input:IDataInput):void
-		{
-			// Note that the TYPE must have already been read in order to
-			// construct us.
-			readRemainingHeader(input);
-			readData(input);
-			readPrevTag(input);
-		}
+/** Tag Content **/
+class TagData {
+    import flash.utils.ByteArray;
 
-		public function readRemainingHeader(input:IDataInput):void
-		{
-			if (input.bytesAvailable < 10)
-			{
-				throw new Error("FLVTag.readHeader() input too short");
-			}
+    public var array : ByteArray;
+    public var start : int;
+    public var length : int;
 
-			input.readBytes(bytes, 1, TAG_HEADER_BYTE_COUNT - 1);	// skipping type field at first byte
-		}
-
-		public function readData(input:IDataInput):void
-		{
-			if (dataSize > 0)
-			{
-				if (input.bytesAvailable < dataSize)
-				{
-					throw new Error("FLVTag().readData input shorter than dataSize");
-				}
-
-				input.readBytes(bytes, TAG_HEADER_BYTE_COUNT, dataSize); // starting immediately after header, for computed size
-			}
-		}
-
-		public function readPrevTag(input:IDataInput):void
-		{
-			if (input.bytesAvailable < 4)
-			{
-				throw new Error("FLVTag.readPrevTag() input too short");
-			}
-
-			input.readUnsignedInt();	// discard, because we can regenerate and we also don't care if value is correct
-		}
-
-		public function write(output:IDataOutput):void
-		{
-			output.writeBytes(bytes, 0, TAG_HEADER_BYTE_COUNT + dataSize);
-			output.writeUnsignedInt(TAG_HEADER_BYTE_COUNT + dataSize); // correct prevTagSize, even though many things don't care
-		}
-
-		public function get tagType():uint
-		{
-			return bytes[0];
-		}
-
-		public function set tagType(value:uint):void
-		{
-			bytes[0] = value;
-		}
-
-		public function get isEncrpted():Boolean
-		{
-			return((bytes[0] & TAG_FLAG_ENCRYPTED) ? true : false);
-		}
-
-		public function get dataSize():uint
-		{
-			return (bytes[1] << 16) | (bytes[2] << 8) | (bytes[3]);
-		}
-
-		public function set dataSize(value:uint):void
-		{
-			bytes[1] = (value >> 16) & 0xff;
-			bytes[2] = (value >> 8) & 0xff;
-			bytes[3] = (value) & 0xff;
-			bytes.length = TAG_HEADER_BYTE_COUNT + value;	// truncate/grow as necessary
-		}
-
-		public function get timestamp():uint
-		{
-			// noting the unusual order
-			return (bytes[7] << 24) | (bytes[4] << 16) | (bytes[5] << 8) | (bytes[6]);
-		}
-
-		public function set timestamp(value:uint):void
-		{
-			bytes[7] = (value >> 24) & 0xff; // extended byte in unusual location
-			bytes[4] = (value >> 16) & 0xff;
-			bytes[5] = (value >> 8) & 0xff;
-			bytes[6] = (value) & 0xff;
-		}
-
-		public function get data():ByteArray
-		{
-			var data:ByteArray = new ByteArray();
-			data.writeBytes(bytes, TAG_HEADER_BYTE_COUNT, dataSize);
-			return data;
-		}
-
-		public function set data(value:ByteArray):void
-		{
-			bytes.length = TAG_HEADER_BYTE_COUNT + value.length;	// resize first
-			bytes.position = TAG_HEADER_BYTE_COUNT;
-			bytes.writeBytes(value, 0, value.length); // copy in
-			dataSize = value.length;	// set dataSize field to new payload length
-		}
-		protected var bytes:ByteArray = null;
-	}
+    public function TagData(array : ByteArray, start : int, length : int) {
+        this.array = array;
+        this.start = start;
+        this.length = length;
+    }
 }

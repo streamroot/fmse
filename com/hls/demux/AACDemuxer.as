@@ -1,9 +1,9 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- package com.hlsmangui.demux {
-    import com.hlsmangui.model.AudioTrack;
-    import com.hlsmangui.FLVTag;
+ package com.hls.demux {
+    import com.hls.model.AudioTrack;
+    import com.hls.FLVTag;
 
     import flash.utils.ByteArray;
 

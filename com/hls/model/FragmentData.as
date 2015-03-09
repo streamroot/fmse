@@ -1,6 +1,6 @@
-package com.hlsmangui.model {
+package com.hls.model {
 	import flash.utils.ByteArray;
-    import com.hlsmangui.FLVTag;
+    import com.hls.FLVTag;
     import flash.utils.IDataInput;
 
 	/** Fragment Data **/
