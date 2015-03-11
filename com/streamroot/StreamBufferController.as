@@ -48,18 +48,14 @@ package com.streamroot {
                 
                 for(var i:uint = 0; i < array.length; i++){
                     _streamrootMSE.appendNetStream(array[i]);
-    
-                    //check for buffer full
-                    if(_needData && _streamBuffer.isBufferReady()){
-                        _streamrootMSE.bufferFull();
-                        _needData = false;
-                    }
                 }
             }
-        }
-        
-        public function onSeek():void{
-            _needData = true;
+            
+            //check for buffer full
+            if(_needData && _streamBuffer.isBufferReady()){
+                _streamrootMSE.bufferFull();
+                _needData = false;
+            }
         }
     }
 }

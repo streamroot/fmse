@@ -156,13 +156,11 @@ package com.streamroot {
             for(var i:int = 0; i < _sourceBufferList.length; i++){
                 _sourceBufferList[i].onSeek();    
             }   
-            _streamBufferController.onSeek();
-            _streamrootMSE.bufferEmpty();
         }
         
         public function bufferEmpty():void{
             for(var i:int = 0; i < _sourceBufferList.length; i++){
-                _sourceBufferList[i].bufferEmpty(getAppendedEndTime);    
+                _sourceBufferList[i].bufferEmpty(getAppendedEndTime());    
             } 
             _streamrootMSE.bufferEmpty();
         }
