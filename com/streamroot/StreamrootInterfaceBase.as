@@ -12,9 +12,6 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     protected var _provider:Object;//your provider - must be an IProvider implementation;
     protected var _streamrootMSE:StreamrootMSE;
 
-    protected var _needData:Boolean = true;
-
-
 
     public function StreamrootInterfaceBase(provider:Object):void {
         //Your provider. You'll need to change the type in variable and argument definition
