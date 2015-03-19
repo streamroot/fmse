@@ -31,7 +31,7 @@ public interface IStreamrootInterface {
     
     function bufferFull():void;
         
-    //Should return NetStream buffer length, ie the max length of the different buffers
+    //Should return NetStream buffer length, ie the max length of the different buffers, or -1 if NetStream is not yet initialized
     function getBufferLength():Number;
     
     //GETTERS
