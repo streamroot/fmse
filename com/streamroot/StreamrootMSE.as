@@ -686,7 +686,7 @@ public class StreamrootMSE {
     
     public function loaded():void {
         //append the FLV Header to the provider, using appendBytesAction
-        _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)
+        _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
         _streamrootInterface.appendBytes(getFileHeader());
         
         if (!_loaded) {
