@@ -109,6 +109,12 @@ public class StreamrootMSE {
 
     private var _hlsSegmentValidator:HlsSegmentValidator;
 
+    //TODO: Introduced _firstPlayEventSent because "playing" is triggered 2 times at the beginning of the video for JW.
+    //Problem is for VJS the event play is not triggered at the beginning, so after the 1st pause event playing counter is not started again in the analytics.
+    //For now it's better to have 2 "playing" event at the beginning of the video for JW, but once VJS behaviour is corrected (Stan hotfix),
+    //we can work that out
+    //private var _firstPlayEventSent:Boolean = false;
+
 
 
 
@@ -715,6 +721,10 @@ public class StreamrootMSE {
     public function triggerPlay():void {
         //Trigger event when video starts playing. Not used for now
         ExternalInterface.call("sr_flash_play");
+        if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
+            triggerPlaying();
+        }
+        //_firstPlayEventSent = true;
     }
 
     public function triggerPause():void {
