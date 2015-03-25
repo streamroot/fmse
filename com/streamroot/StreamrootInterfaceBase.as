@@ -133,6 +133,11 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
         _streamrootMSE.triggerPlay();
     }
 
+    public function triggerPause():void {
+        //Trigger event when video pauses. Used for analytics
+        _streamrootMSE.triggerPause();
+    }
+
     public function triggerStopped():void {
         //Trigger event when video ends.
         _streamrootMSE.triggerStopped();
