@@ -158,8 +158,8 @@ else:
 if vjs:
     if (os.path.exists(os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))):
         os.remove("../streamroot-videojs/src/com/streamroot/mse.swc")
-        shutil.copyfile(os.path.normpath(MAIN_OUTPUT),os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))
-        printPurple(">> " + MAIN_OUTPUT + " has been copied in VideoJS directory")
+    shutil.copyfile(os.path.normpath(MAIN_OUTPUT),os.path.normpath("../streamroot-videojs/src/com/streamroot/mse.swc"))
+    printPurple(">> " + MAIN_OUTPUT + " has been copied in VideoJS directory")
         
 if jwp:
     if (os.path.exists(os.path.normpath("../streamroot-jwplayer/src/flash/com/streamroot/mse.swc"))):
