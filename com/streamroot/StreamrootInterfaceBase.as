@@ -25,7 +25,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     }
     
     public function getBufferLength():Number {
-        //Should call method in provider that return NetStream.bufferLength
+        //Should call method in provider that return NetStream.bufferLength, or -1 if NetStream is not yet initialized
         throw new Error("Methode getTimeLeftToPlay isn't implemented");
     }
 

@@ -44,7 +44,9 @@ public class StreamrootMSE {
     private var _streamBuffer:StreamBuffer;
     
     private var _muxer:Muxer;
-    
+
+    private var _jsReady:Boolean = false;
+
     private var _loaded:Boolean = false;
     
 //    private var _initHandlerAudio:InitializationAudioSegmentHandler;
@@ -131,7 +133,9 @@ public class StreamrootMSE {
         
         //StreamBuffer callbacks
         ExternalInterface.addCallback("remove", remove);
-        
+
+        ExternalInterface.addCallback("jsReady", jsReady);
+
         //StreamrootInterface callbacks
         //METHODS
         ExternalInterface.addCallback("onMetaData", onMetaData);
@@ -633,7 +637,11 @@ public class StreamrootMSE {
             flush(message);
         }
     }
-    
+
+    private function jsReady():void {
+        _jsReady = true;
+    }
+
     //StreamBuffer function
     public function appendNetStream(bytes:ByteArray):void {
         _streamrootInterface.appendBytes(bytes);
@@ -692,7 +700,7 @@ public class StreamrootMSE {
     
     public function loaded():void {
         //append the FLV Header to the provider, using appendBytesAction
-        _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN)
+        _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
         _streamrootInterface.appendBytes(getFileHeader());
         
         if (!_loaded) {
@@ -709,7 +717,7 @@ public class StreamrootMSE {
     
     //StreamrootInterface events
     public function triggerSeeked():void {
-        //Trigger event when seek is done. Not used for now
+        //Trigger event when seek is done
         ExternalInterface.call("sr_flash_seeked");
     }
     
@@ -719,27 +727,34 @@ public class StreamrootMSE {
     }
     
     public function triggerPlay():void {
-        //Trigger event when video starts playing. Not used for now
-        ExternalInterface.call("sr_flash_play");
-        if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
-            triggerPlaying();
+        //Trigger event when media is ready to play
+        if(_jsReady){
+            ExternalInterface.call("sr_flash_play");
+        	if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
+            	triggerPlaying();
+        	}
+        	//_firstPlayEventSent = true;
+        }else{
+            setTimeout(triggerPlay, 10);
         }
-        //_firstPlayEventSent = true;
-    }
-
-    public function triggerPause():void {
-        //Trigger event when video starts playing. Not used for now
-        ExternalInterface.call("sr_flash_pause");
     }
     
     public function triggerPlaying():void {
-        //Trigger event when video starts playing. Not used for now
-        ExternalInterface.call("sr_flash_playing");
+        //Trigger event when media is playing
+        if(_jsReady){
+            ExternalInterface.call("sr_flash_playing");
+        }else{
+            setTimeout(triggerPlaying, 10);
+        }
     }
     
     public function triggerWaiting():void {
-        //Trigger event when video starts playing. Not used for now
-        ExternalInterface.call("sr_flash_waiting");
+        //Trigger event when video has been paused but is expected to resume (ie on buffering or manual paused)
+        if(_jsReady){
+            ExternalInterface.call("sr_flash_waiting");
+        }else{
+            setTimeout(triggerWaiting, 10);
+        }
     }
     
     public function triggerStopped():void {
@@ -748,28 +763,40 @@ public class StreamrootMSE {
     }
     
     public function error(message:Object, obj:Object = null):void {
-        if (Conf.LOG_ERROR) {
-            if(obj != null){
-                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-                ExternalInterface.call("console.error", textMessage);
-            }else{
-                ExternalInterface.call("console.error", String(message));
+        if(_jsReady){
+            if (Conf.LOG_ERROR) {
+                if(obj != null){
+                    var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                    ExternalInterface.call("console.error", textMessage);
+                }else{
+                    ExternalInterface.call("console.error", String(message));
+                }
             }
+        }else{
+            setTimeout(error, 10, message, obj);
         }
     }
     
     public function transcodeError(message:Object):void{
-        ExternalInterface.call("sr_flash_transcodeError", String(message));
+        if(_jsReady){
+            ExternalInterface.call("sr_flash_transcodeError", String(message));
+        }else{
+            setTimeout(transcodeError, 10, message);
+        }
     }
     
     public function debug(message:Object, obj:Object = null):void {
-        if (Conf.LOG_DEBUG) {
-            if(obj != null){
-                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-                ExternalInterface.call("console.debug", textMessage);
-            }else{
-                ExternalInterface.call("console.debug", String(message));
+        if(_jsReady){
+            if (Conf.LOG_DEBUG) {
+                if(obj != null){
+                    var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                    ExternalInterface.call("console.debug", textMessage);
+                }else{
+                    ExternalInterface.call("console.debug", String(message));
+                }
             }
+        }else{
+            setTimeout(debug, 10, message, obj);
         }
     } 
     

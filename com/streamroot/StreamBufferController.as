@@ -36,25 +36,29 @@ package com.streamroot {
         private function bufferize():void {
             //this is because _streamrootMSE.getBufferLength return the max length of audio and video track
             // but we want the length of the buffer for which we have both audio and video
-            var trueBufferLength:Number = _streamrootMSE.getBufferLength() - _streamBuffer.getDiffBetweenBuffers();
-            if(trueBufferLength < Conf.NETSTREAM_BUFFER_LENGTH){
-                var array:Array = _streamBuffer.getNextSegmentBytes();
-                
-                //check for buffer empty
-                if (array.length == 0 && trueBufferLength < BUFFER_EMPTY && !_needData){
-                    _streamBuffer.bufferEmpty();
-                    _needData = true;
+
+            var bufferLength:Number = _streamrootMSE.getBufferLength(); // return -1 is NetStream is not ready
+            if(bufferLength >= 0){
+                var trueBufferLength:Number = bufferLength - _streamBuffer.getDiffBetweenBuffers();
+                if(trueBufferLength < Conf.NETSTREAM_BUFFER_LENGTH){
+                    var array:Array = _streamBuffer.getNextSegmentBytes();
+                    
+                    //check for buffer empty
+                    if (array.length == 0 && trueBufferLength < BUFFER_EMPTY && !_needData){
+                        _streamBuffer.bufferEmpty();
+                        _needData = true;
+                    }
+                    
+                    for(var i:uint = 0; i < array.length; i++){
+                        _streamrootMSE.appendNetStream(array[i]);
+                    }
                 }
                 
-                for(var i:uint = 0; i < array.length; i++){
-                    _streamrootMSE.appendNetStream(array[i]);
+                //check for buffer full
+                if(_needData && _streamBuffer.isBufferReady()){
+                    _streamrootMSE.bufferFull();
+                    _needData = false;
                 }
-            }
-            
-            //check for buffer full
-            if(_needData && _streamBuffer.isBufferReady()){
-                _streamrootMSE.bufferFull();
-                _needData = false;
             }
         }
     }
