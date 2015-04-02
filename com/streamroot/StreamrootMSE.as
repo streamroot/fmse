@@ -125,8 +125,8 @@ public class StreamrootMSE {
 
         _muxer = new Muxer();
         _hlsSegmentValidator = new HlsSegmentValidator(this);
-		
-		//StreamrootMSE callbacks
+        
+        //StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         //ExternalInterface.addCallback("buffered", buffered);
@@ -532,9 +532,9 @@ public class StreamrootMSE {
         var max_pts:Number = message.max_pts;//second
         var startTime:Number = message.startTime;
         
-		var segment:Segment = new Segment(message.segmentBytes, message.type, message.startTime, message.endTime);
+        var segment:Segment = new Segment(message.segmentBytes, message.type, message.startTime, message.endTime);
         
-		_isWorkerBusy = false;
+        _isWorkerBusy = false;
 
         if (!_discardAppend) {
 
@@ -544,7 +544,7 @@ public class StreamrootMSE {
                 if (TrackTypeHelper.isHLS(segment.type)) {
                     var previousPTS:Number = _streamBuffer.getBufferEndTime();
                     var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
-				}
+                }
                 
                 if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPTSError(segmentChecked)) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
@@ -561,8 +561,8 @@ public class StreamrootMSE {
                     CONFIG::LOGGING_PTS {
                         debug("Appending segment in StreamBuffer", this);
                     }
-	                _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
-				}
+                    _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
+                }
             }
 
             if (_pendingAppend) {
@@ -727,16 +727,21 @@ public class StreamrootMSE {
     }
     
     public function triggerPlay():void {
-        //Trigger event when media is ready to play
-        if(_jsReady){
+        if(_jsReady){            
+            //Trigger event when video starts playing.
             ExternalInterface.call("sr_flash_play");
-        	if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
-            	triggerPlaying();
-        	}
-        	//_firstPlayEventSent = true;
+            if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
+                triggerPlaying();
+            }
+            //_firstPlayEventSent = true;
         }else{
-            setTimeout(triggerPlay, 10);
+            setTimeout(triggerPlay, 10);        
         }
+    }
+
+    public function triggerPause():void {
+        //Trigger event when video starts playing. Not used for now
+        ExternalInterface.call("sr_flash_pause");
     }
     
     public function triggerPlaying():void {
