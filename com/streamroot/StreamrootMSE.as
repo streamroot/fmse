@@ -54,6 +54,8 @@ public class StreamrootMSE {
 
     private var _seek_offset:Number = 0;
 
+    private var _ended:Boolean = false;
+
     //private var _buffered:uint = 0;
     //private var _buffered_audio:uint = 0;
 
@@ -657,6 +659,7 @@ public class StreamrootMSE {
         
     //StreamrootInterface function   
     private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
+        _streamBuffer.setDuration(duration);
         _streamrootInterface.onMetaData(duration, width, height);
     }
     
@@ -676,7 +679,7 @@ public class StreamrootMSE {
         _streamrootInterface.seek(time);
     }
     
-    private function currentTime():Number {
+    public function currentTime():Number {
         return _streamrootInterface.currentTime();
     }
         
@@ -727,6 +730,8 @@ public class StreamrootMSE {
     }
     
     public function triggerPlay():void {
+        _ended = false;
+
         if(_jsReady){            
             //Trigger event when video starts playing.
             ExternalInterface.call("sr_flash_play");
@@ -745,6 +750,8 @@ public class StreamrootMSE {
     }
     
     public function triggerPlaying():void {
+        _ended = false;
+
         //Trigger event when media is playing
         if(_jsReady){
             ExternalInterface.call("sr_flash_playing");
@@ -764,7 +771,11 @@ public class StreamrootMSE {
     
     public function triggerStopped():void {
         //Trigger event when video ends.
-        ExternalInterface.call("sr_flash_stopped");
+        if (!_ended) {
+            _streamrootInterface.onStop();
+            ExternalInterface.call("sr_flash_stopped");
+            _ended = true;
+        }
     }
     
     public function error(message:Object, obj:Object = null):void {

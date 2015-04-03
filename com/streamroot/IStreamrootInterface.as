@@ -50,6 +50,10 @@ public interface IStreamrootInterface {
 
     function triggerStopped():void;
 
+    //NOTIFICATIONS
+
+    function onStop():void;
+
     //LOGGING
     function debug(message:Object):void;
     

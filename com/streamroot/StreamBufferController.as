@@ -14,6 +14,8 @@ package com.streamroot {
         private var _streamBuffer:StreamBuffer;
         private var _streamrootMSE:StreamrootMSE;
         private var _needData:Boolean = true;  
+
+        private var _duration:Number;
         
         private const TIMEOUT_LENGTH:int = 100;  
         private const BUFFER_EMPTY: Number = 0.1;
@@ -25,6 +27,10 @@ package com.streamroot {
             setInterval(bufferize, TIMEOUT_LENGTH);
             
             
+        }
+
+        public function set duration(duration:Number):void {
+            _duration = duration;
         }
         
         /**              
@@ -59,6 +65,12 @@ package com.streamroot {
                     _streamrootMSE.bufferFull();
                     _needData = false;
                 }
+
+                if(_duration && _streamrootMSE.currentTime() + 0.3 >= _duration ) {
+                    _streamrootMSE.triggerStopped();
+                }
+
+
             }
         }
     }

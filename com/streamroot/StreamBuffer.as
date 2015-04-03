@@ -164,5 +164,9 @@ package com.streamroot {
             } 
             _streamrootMSE.bufferEmpty();
         }
+
+        public function setDuration(duration:Number):void {
+            _streamBufferController.duration = duration;
+        }
     }
 }

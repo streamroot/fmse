@@ -144,6 +144,14 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     }
 
 
+    //NOTIFICATIONS
+
+    public function onStop():void {
+    //Your event handler for the Stop notification
+
+    };
+
+
     //LOGGING
     public function debug(message:Object):void {
         _streamrootMSE.debug(message);
