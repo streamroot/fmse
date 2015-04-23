@@ -40,15 +40,15 @@ import com.streamroot.util.Conf;
 public class StreamrootMSE {
 
     private var _streamrootInterface:IStreamrootInterface;
-    
+
     private var _streamBuffer:StreamBuffer;
-    
+
     private var _muxer:Muxer;
 
     private var _jsReady:Boolean = false;
 
     private var _loaded:Boolean = false;
-    
+
 //    private var _initHandlerAudio:InitializationAudioSegmentHandler;
 //    private var _initHandlerVideo:InitializationVideoSegmentHandler;
 
@@ -127,12 +127,12 @@ public class StreamrootMSE {
 
         _muxer = new Muxer();
         _hlsSegmentValidator = new HlsSegmentValidator(this);
-        
+
         //StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
         ExternalInterface.addCallback("appendBuffer", appendBuffer);
         //ExternalInterface.addCallback("buffered", buffered);
-        
+
         //StreamBuffer callbacks
         ExternalInterface.addCallback("remove", remove);
 
@@ -150,7 +150,7 @@ public class StreamrootMSE {
         //GETTERS
         ExternalInterface.addCallback("currentTime", currentTime);
         ExternalInterface.addCallback("paused", paused);
-        
+
         _streamBuffer = new StreamBuffer(this);
 
         setupWorker();
@@ -177,13 +177,13 @@ public class StreamrootMSE {
         _worker.start();
     }
 
-    public function setSeekOffset(timeSeek:Number):void {
+    private function setSeekOffset(timeSeek:Number):void {
         debug("Set seek offset", this);
         _seek_offset = timeSeek;
 
         //_buffered = timeSeek*1000000;
         //_buffered_audio = timeSeek*1000000;
-        
+
         // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
         _hlsSegmentValidator.setIsSeeking(true);
 
@@ -206,7 +206,7 @@ public class StreamrootMSE {
     private function addSourceBuffer(type:String):void {
         var key:String = TrackTypeHelper.getType(type);
         if(key){
-            _streamBuffer.addSourceBuffer(key);            
+            _streamBuffer.addSourceBuffer(key);
         }else{
             error("Error: Type not supported: " + type);
         }
@@ -278,7 +278,7 @@ public class StreamrootMSE {
     private function sendWorkerMessage():void {
         _mainToWorker.send(arguments[0]);
     }
-    
+
     /*private function asyncAppend(data:String, type:String, isInit:Boolean, timestamp:Number = 0, buffered:uint = 0):void {
         //var bytes_event:ByteArray = Base64.decode(data);
 
@@ -533,21 +533,21 @@ public class StreamrootMSE {
         var min_pts:Number = message.min_pts;//second
         var max_pts:Number = message.max_pts;//second
         var startTime:Number = message.startTime;
-        
+
         var segment:Segment = new Segment(message.segmentBytes, message.type, message.startTime, message.endTime);
-        
+
         _isWorkerBusy = false;
 
         if (!_discardAppend) {
 
             if (!isInit) {
-                // CLIEN-19: check if it's the right hls segment before appending it. 
-                
+                // CLIEN-19: check if it's the right hls segment before appending it.
+
                 if (TrackTypeHelper.isHLS(segment.type)) {
                     var previousPTS:Number = _streamBuffer.getBufferEndTime();
                     var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
                 }
-                
+
                 if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPTSError(segmentChecked)) {
                     // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
                     debug("Timestamp and min_pts don't match", this)
@@ -648,64 +648,73 @@ public class StreamrootMSE {
     public function appendNetStream(bytes:ByteArray):void {
         _streamrootInterface.appendBytes(bytes);
     }
-    
+
     public function remove(start:Number, end:Number, type:String):Number {
         return _streamBuffer.removeDataFromSourceBuffer(start, end, TrackTypeHelper.getType(type));
     }
-    
+
     public function getBufferLength():Number{
         return _streamrootInterface.getBufferLength();
     }
-        
-    //StreamrootInterface function   
+
+    //StreamrootInterface function
     private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
         _streamBuffer.setDuration(duration);
         _streamrootInterface.onMetaData(duration, width, height);
     }
-    
+
     private function play():void {
         _streamrootInterface.play();
     }
-    
+
     private function pause():void {
         _streamrootInterface.pause();
     }
-    
+
     private function stop():void {
         _streamrootInterface.stop();
     }
-    
+
     private function seek(time:Number):void {
+        setSeekOffset(time);
         _streamrootInterface.seek(time);
     }
-    
+
     public function currentTime():Number {
         return _streamrootInterface.currentTime();
     }
-        
+
     private function paused():Boolean {
         return _streamrootInterface.paused();
     }
-    
+
+    public function requestSeek(time:Number):void {
+        ExternalInterface.call("sr_request_seek", time);
+    }
+
+    public function requestQualityChange(quality:Number):void {
+        ExternalInterface.call('sr_request_quality_change', quality);
+    }
+
     public function bufferEmpty():void {
         _streamrootInterface.bufferEmpty();
         triggerWaiting();
     }
-    
+
     public function bufferFull():void {
         _streamrootInterface.bufferFull();
         triggerPlaying();
     }
-    
+
     private function onTrackList(trackList:String):void {
         _streamrootInterface.onTrackList(trackList);
     }
-    
+
     public function loaded():void {
         //append the FLV Header to the provider, using appendBytesAction
         _streamrootInterface.appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
         _streamrootInterface.appendBytes(getFileHeader());
-        
+
         if (!_loaded) {
             //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
             //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
@@ -713,26 +722,26 @@ public class StreamrootMSE {
             ExternalInterface.call('sr_flash_ready');
             _loaded = true;
         }
-        
+
         //Tell our Javascript library to start loading video segments
         triggerLoadStart();
     }
-    
+
     //StreamrootInterface events
     public function triggerSeeked():void {
         //Trigger event when seek is done
         ExternalInterface.call("sr_flash_seeked");
     }
-    
+
     public function triggerLoadStart():void {
         //Trigger event when we want to start loading data (at the beginning of the video or on replay)
         ExternalInterface.call("sr_flash_loadstart");
     }
-    
+
     public function triggerPlay():void {
         _ended = false;
 
-        if(_jsReady){            
+        if(_jsReady){
             //Trigger event when video starts playing.
             ExternalInterface.call("sr_flash_play");
             if (_streamBuffer.isBufferReady() /*&& _firstPlayEventSent*/) {
@@ -740,7 +749,7 @@ public class StreamrootMSE {
             }
             //_firstPlayEventSent = true;
         }else{
-            setTimeout(triggerPlay, 10);        
+            setTimeout(triggerPlay, 10);
         }
     }
 
@@ -748,7 +757,7 @@ public class StreamrootMSE {
         //Trigger event when video starts playing. Not used for now
         ExternalInterface.call("sr_flash_pause");
     }
-    
+
     public function triggerPlaying():void {
         _ended = false;
 
@@ -759,7 +768,7 @@ public class StreamrootMSE {
             setTimeout(triggerPlaying, 10);
         }
     }
-    
+
     public function triggerWaiting():void {
         //Trigger event when video has been paused but is expected to resume (ie on buffering or manual paused)
         if(_jsReady){
@@ -768,7 +777,7 @@ public class StreamrootMSE {
             setTimeout(triggerWaiting, 10);
         }
     }
-    
+
     public function triggerStopped():void {
         //Trigger event when video ends.
         if (!_ended) {
@@ -777,7 +786,7 @@ public class StreamrootMSE {
             _ended = true;
         }
     }
-    
+
     public function error(message:Object, obj:Object = null):void {
         if(_jsReady){
             if (Conf.LOG_ERROR) {
@@ -792,7 +801,7 @@ public class StreamrootMSE {
             setTimeout(error, 10, message, obj);
         }
     }
-    
+
     public function transcodeError(message:Object):void{
         if(_jsReady){
             ExternalInterface.call("sr_flash_transcodeError", String(message));
@@ -800,7 +809,7 @@ public class StreamrootMSE {
             setTimeout(transcodeError, 10, message);
         }
     }
-    
+
     public function debug(message:Object, obj:Object = null):void {
         if(_jsReady){
             if (Conf.LOG_DEBUG) {
@@ -814,8 +823,8 @@ public class StreamrootMSE {
         }else{
             setTimeout(debug, 10, message, obj);
         }
-    } 
-    
+    }
+
     public function flush(message:Object):void{
         if(message.type){
             //If worker sent back an attribute "type", we want to set _isWorkerBusy to false and trigger
@@ -825,6 +834,6 @@ public class StreamrootMSE {
             debug("Error type: " + message.type, this);
             sendSegmentFlushedMessage(message.type);
         }
-    }  
+    }
 }
 }
