@@ -1,13 +1,13 @@
 package com.streamroot {
 
-  import flash.net.NetStreamAppendBytesAction;
+import flash.net.NetStreamAppendBytesAction;
 
-  import flash.utils.ByteArray;
+import flash.utils.ByteArray;
 
-  import com.streamroot.StreamrootMSE;
-  import com.streamroot.IStreamrootInterface;
+import com.streamroot.StreamrootMSE;
+import com.streamroot.IStreamrootInterface;
 
-  public class StreamrootInterfaceBase implements IStreamrootInterface{
+public class StreamrootInterfaceBase implements IStreamrootInterface{
 
     protected var _provider:Object;//your provider - must be an IProvider implementation;
     protected var _streamrootMSE:StreamrootMSE;
@@ -59,9 +59,9 @@ package com.streamroot {
     * onMetaData
     * Call method in provider that uses the metaData
     *
-    * @param  {Number} duration - Duraiton of your video
-    * @param  {Number} width - Optional : width of your video, or 0 if not specify
-    * @param  {Number} height - Optional : height of your video, or 0 if not specify
+    * @param  {Number} duration - Duration of your video
+    * @param  {Number} width - Optional : width of your video (default: 0)
+    * @param  {Number} height - Optional : height of your video (default: 0)
     */
     public function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
         throw new Error("Method onMetaData isn't implemented");
@@ -69,7 +69,7 @@ package com.streamroot {
 
     /**
     * bufferEmpty
-    * Replace "NetStream.Buffer.Empty" event
+    * Use this method instead of "NetStream.Buffer.Empty"
     */
     public function bufferEmpty():void {
         throw new Error("Method bufferEmpty isn't implemented");
@@ -79,8 +79,8 @@ package com.streamroot {
     * bufferFull
     * Replace the event "NetStream.Buffer.Full"
     * Please note that "NetStream.Buffer.Full" event will be triggered when AT LEAST ONE buffer (ie video/audio) has data,
-    * where as this method will be executed when ALL buffers have data
-    * As a consequence, on the event "NetStream.Buffer.Full" you should called NetStream.pause(),
+    * whereas this method will be executed when ALL buffers have data
+    * As a consequence, on the event "NetStream.Buffer.Full" you should call NetStream.pause(),
     * and play the video only when this method is executed
     */
     public function bufferFull():void {
@@ -284,5 +284,5 @@ package com.streamroot {
       _streamrootMSE.error(message);
     }
 
-  }
+}
 }
