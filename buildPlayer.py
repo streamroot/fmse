@@ -188,7 +188,7 @@ if jwp:
                               "-compiler.optimize=true",
                               "-compiler.omit-trace-statements=true",
                               "-warnings=false",
-                              "-define+=JWPLAYER::version,'6.11.20141118195350280'",
+                              "-define+=JWPLAYER::version,'6.12.49561118195350280'",
                               "-define+=CONFIG::debugging,"+debug+""], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     popenPrint(jwpResult)
     if not os.path.exists(JWP_OUTPUT):
