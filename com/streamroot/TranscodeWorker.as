@@ -87,14 +87,14 @@ public class TranscodeWorker extends Sprite {
 	 * min_pts and max_pts are in millisecond
 	 * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
 	 */
-    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0):void {
+    public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0, width = 0, height = 0):void {
         /** If type is HLS we return PTS as well as segment bytes, startTime and endTime to be able to check if it's the right segment in HlsSegmentValidator **/
         CONFIG::LOGGING_PTS {
             debug("asyncTranscodeCB");
         }
 		var answer:Object;
         if(type.indexOf("apple") >= 0) {
-            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, startTime:_startTime, endTime: _endTime, min_pts: min_pts / 1000, max_pts: max_pts / 1000};
+            answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, startTime:_startTime, endTime: _endTime, min_pts: min_pts / 1000, max_pts: max_pts / 1000, width: width, height: height};
         } else {
             answer = {type: type, isInit: isInit, segmentBytes: segmentBytes, startTime:_startTime, endTime: _endTime};
         }

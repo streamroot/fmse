@@ -28,6 +28,9 @@ package com.hls.model {
         public var tags_video_found : Boolean;
         public var tags : Vector.<FLVTag>;
 
+        public var video_width : Number = 0;
+        public var video_height : Number = 0;
+
         /** Fragment Metrics **/
         public function FragmentData(input:IDataInput) {
             this.pts_start = NaN;

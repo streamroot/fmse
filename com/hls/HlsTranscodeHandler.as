@@ -65,14 +65,13 @@ package com.hls
 
         /** triggered by demux, it should return video width/height */
         private function _fragParsingVideoMetadataHandler(width : uint, height : uint) : void {
-            /** We don't care about video width and height so we just empty this CB function to avoid changing TSDemuxer code **/
 
-            /*var fragData : FragmentData = _frag_current.data;
+            var fragData : FragmentData = _frag_current.data;
             if (fragData.video_width == 0) {
                 _transcodeWorker.debug("AVC: width/height:" + width + "/" + height);
                 fragData.video_width = width;
                 fragData.video_height = height;
-            }*/
+            }
         }
 
         /** triggered when demux has retrieved some tags from fragment **/
@@ -274,7 +273,7 @@ package com.hls
                     for each (tag in fragData.tags) {
                         segmentBytes.writeBytes(tag.data);
                     }
-                    _asyncTranscodeCB("apple", false, segmentBytes, fragData.tag_pts_min, fragData.tag_pts_max);
+                    _asyncTranscodeCB("apple", false, segmentBytes, fragData.tag_pts_min, fragData.tag_pts_max, fragData.video_width, fragData.video_height);
                     //_hls.dispatchEvent(new HLSEvent(HLSEvent.TAGS_LOADED, tagsMetrics));
                     CONFIG::LOGGING {
                         _transcodeWorker.debug("FLASH HLSEvent.TAGS_LOADED");

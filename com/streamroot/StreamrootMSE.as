@@ -56,6 +56,10 @@ public class StreamrootMSE {
 
     private var _ended:Boolean = false;
 
+    private var _lastWidth:Number = 0;
+    private var _lastHeight:Number = 0;
+    private var _lastDuration:Number = 0;
+
     //private var _buffered:uint = 0;
     //private var _buffered_audio:uint = 0;
 
@@ -533,6 +537,8 @@ public class StreamrootMSE {
         var min_pts:Number = message.min_pts;//second
         var max_pts:Number = message.max_pts;//second
         var startTime:Number = message.startTime;
+        var width:Number = message.width;
+        var height:Number = message.height;
 
         var segment:Segment = new Segment(message.segmentBytes, message.type, message.startTime, message.endTime);
 
@@ -563,6 +569,11 @@ public class StreamrootMSE {
                     CONFIG::LOGGING_PTS {
                         debug("Appending segment in StreamBuffer", this);
                     }
+                    if (_lastHeight === 0 && width > 0 && height > 0) {
+                        debug("setting video size: " + width + " - " + height);
+                        onMetaData(0, width, height);
+                    }
+
                     _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
                 }
             }
@@ -659,7 +670,18 @@ public class StreamrootMSE {
 
     //StreamrootInterface function
     private function onMetaData(duration:Number, width:Number=0, height:Number=0):void {
-        _streamBuffer.setDuration(duration);
+        if (_lastDuration === 0) {
+            if (duration >0) {
+                _lastDuration = duration;
+                _streamBuffer.setDuration(duration);
+            }
+        } else if (duration === 0) {
+            duration = _lastDuration;
+        }
+        if (_lastHeight === 0) {
+            _lastWidth = width;
+            _lastHeight = height;
+        }
         _streamrootInterface.onMetaData(duration, width, height);
     }
 
