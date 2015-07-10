@@ -681,8 +681,8 @@ public class StreamrootMSE {
         if (_lastHeight === 0) {
             _lastWidth = width;
             _lastHeight = height;
+            _streamrootInterface.onMetaData(duration, width, height);
         }
-        _streamrootInterface.onMetaData(duration, width, height);
     }
 
     private function play():void {
