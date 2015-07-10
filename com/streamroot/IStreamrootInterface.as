@@ -14,8 +14,6 @@ public interface IStreamrootInterface {
 
     function pause():void;
 
-    function stop():void;
-
     function seek(time:Number):void;
 
     function onTrackList(trackList:String):void;

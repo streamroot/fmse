@@ -106,14 +106,6 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     }
 
     /**
-    * stop
-    * Not used for now
-    */
-    public function stop():void {
-        throw new Error("Method stop isn't implemented");
-    }
-
-    /**
     * seek
     * Call provider's seek method that wrapps NetStream's seek method.
     * Is needed even if controls are in flash. Indeed, before you seek you need to get the first keyframe after the time you want to seek on.
