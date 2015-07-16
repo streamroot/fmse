@@ -147,7 +147,6 @@ public class StreamrootMSE {
         ExternalInterface.addCallback("onMetaData", onMetaData);
         ExternalInterface.addCallback("play", play);
         ExternalInterface.addCallback("pause", pause);
-        ExternalInterface.addCallback("stop", stop);
         ExternalInterface.addCallback("seek", seek);
         ExternalInterface.addCallback("bufferEmpty", bufferEmpty);
         ExternalInterface.addCallback("onTrackList", onTrackList);
@@ -691,10 +690,6 @@ public class StreamrootMSE {
 
     private function pause():void {
         _streamrootInterface.pause();
-    }
-
-    private function stop():void {
-        _streamrootInterface.stop();
     }
 
     private function seek(time:Number):void {
