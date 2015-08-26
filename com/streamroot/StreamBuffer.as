@@ -81,6 +81,7 @@ package com.streamroot {
         public function appendSegment(segment:Segment, type:String):void {
             var sb:SourceBuffer = getSourceBufferByType(type);
             if(sb != null) {
+                _streamrootMSE.appendedSegment(segment.startTime, segment.endTime)
                 sb.appendSegment(segment);
             }else{
                 _streamrootMSE.error("BufferSource for type " + type + " not found");                    

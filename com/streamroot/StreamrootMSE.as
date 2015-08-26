@@ -517,9 +517,15 @@ public class StreamrootMSE {
     }
     
     public function triggerVolumeChange(volume:Number):void {
-        //trigger event xhen there is enough stat in buffer to play
+        //trigger event when there is enough stat in buffer to play
         ExternalInterface.call("sr_flash_volumeChange", volume);
     }
+
+    public function appendedSegment(startTime:Number, endTime:Number):void {
+        //trigger event when there is enough stat in buffer to play
+        ExternalInterface.call("sr_flash_appended_segment", startTime, endTime);
+    }
+
 
     public function error(message:Object, obj:Object = null):void {
         if(_jsReady){
