@@ -147,8 +147,8 @@ else:
 if os.path.exists(VJS_OUTPUT):
     os.remove(os.path.normpath(VJS_OUTPUT))
 vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
-                          os.path.normpath("node_modules/streamroot-videojs-flash/src/com/videojs/VideoJS.as"),
-                          "-compiler.source-path=node_modules/streamroot-videojs-flash/src",
+                          os.path.normpath("com/videojs/VideoJS.as"),
+                          "-compiler.source-path=.",
                           "-compiler.library-path="+flex+"/frameworks/libs",
                           os.path.normpath("-library-path="+MAIN_OUTPUT),
                           "-default-background-color=0x000000",

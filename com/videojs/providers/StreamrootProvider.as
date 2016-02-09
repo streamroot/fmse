@@ -1,0 +1,736 @@
+package com.videojs.providers{
+
+    import com.videojs.VideoJSModel;
+    import com.videojs.events.VideoPlaybackEvent;
+    import com.videojs.structs.ExternalErrorEventName;
+    import com.videojs.structs.ExternalEventName;
+    import flash.events.EventDispatcher;
+    import flash.events.NetStatusEvent;
+    import flash.events.TimerEvent;
+    import flash.media.Video;
+    import flash.net.NetConnection;
+    import flash.net.NetStream;
+    import flash.net.NetStreamAppendBytesAction;
+    import flash.utils.ByteArray;
+    import flash.utils.Timer;
+    import flash.utils.getTimer;
+
+    import com.streamroot.StreamrootInterfaceVJS;
+
+    //import com.videojs.providers.Adapter;
+
+    public class StreamrootProvider extends EventDispatcher implements IProvider{
+
+        private var _nc:NetConnection;
+        private var _ns:NetStream;
+        private var _throughputTimer:Timer;
+        private var _currentThroughput:int = 0; // in B/sec
+        private var _loadStartTimestamp:int;
+        private var _loadStarted:Boolean = false;
+        private var _loadCompleted:Boolean = false;
+        private var _loadErrored:Boolean = false;
+        private var _pauseOnStart:Boolean = false;
+        private var _pausePending:Boolean = false;
+        /**
+         * The number of seconds between the logical start of the stream and the current zero
+         * playhead position of the NetStream. During normal, file-based playback this value should
+         * always be zero. When the NetStream is in data generation mode, seeking during playback
+         * resets the zero point of the stream to the seek target. To recover the playhead position
+         * in the logical stream, this value can be added to the NetStream reported time.
+         *
+         * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/net/NetStream.html#play()
+         */
+        private var _startOffset:Number = 0;
+        /**
+         * If true, an empty NetStream buffer should be interpreted as the end of the video. This
+         * is probably the case because the video data is being fed to the NetStream dynamically
+         * through appendBuffer, not for traditional file download video.
+         */
+        private var _ending:Boolean = false;
+        private var _videoReference:Video;
+
+        /**
+         * When the player is paused, and a seek is executed, the NetStream.time property will NOT update until the decoder encounters a new time tag,
+         * which won't happen until playback is resumed. This wrecks havoc with external scrubber logic, so when the player is paused and a seek is requested,
+         * we cache the intended time, and use it IN PLACE OF NetStream's time when the time accessor is hit.
+         */
+        private var _pausedSeekValue:Number = -1;
+
+        private var _src:Object;
+        private var _metadata:Object;
+        private var _isPlaying:Boolean = false;
+        private var _isPaused:Boolean = true;
+        private var _isBuffering:Boolean = true;
+        private var _isSeeking:Boolean = false;
+        private var _isLive:Boolean = false;
+        private var _canSeekAhead:Boolean = false;
+        private var _hasEnded:Boolean = false;
+        private var _canPlayThrough:Boolean = false;
+        private var _loop:Boolean = false;
+        private var _durationOverride:Number;
+
+        private var _model:VideoJSModel;
+        //private var _adapter:Adapter;
+
+        private var _streamrootInterfaceVJS:StreamrootInterfaceVJS;
+
+        public function StreamrootProvider(){
+            _model = VideoJSModel.getInstance();
+            _metadata = {};
+            _throughputTimer = new Timer(250, 0);
+            _throughputTimer.addEventListener(TimerEvent.TIMER, onThroughputTimerTick);
+
+            //_adapter = new Adapter();
+
+            _streamrootInterfaceVJS = new StreamrootInterfaceVJS(this);
+        }
+
+        public function get loop():Boolean{
+            return _loop;
+        }
+
+        public function set loop(pLoop:Boolean):void{
+            _loop = pLoop;
+        }
+
+        public function get time():Number{
+            if(_ns != null){
+                if(_pausedSeekValue != -1){
+                    return _pausedSeekValue;
+                }
+                else{
+                    return _startOffset + _ns.time;
+                }
+            }
+            else{
+                return 0;
+            }
+        }
+
+        public function getQoSMetrics():Object {
+            var result = {
+                droppedFrames: 0
+            };
+            if(_ns && _ns.info) {
+                result.droppedFrames = _ns.info.droppedFrames;
+            }
+            return result;
+        }
+
+        public function getBufferLength():Number{
+            if(_ns){
+                return _ns.bufferLength;
+            }else{
+                return -1;
+            }
+        }
+
+        public function get duration():Number{
+            if(_metadata != null && _metadata.duration != undefined){
+                return Number(_metadata.duration);
+            } else if( _durationOverride && _durationOverride > 0 ) {
+                return _durationOverride;
+            }
+            else{
+                return 0;
+            }
+        }
+
+        public function set duration(value:Number):void {
+            _durationOverride = value;
+        }
+
+        public function get readyState():int{
+            // if we have metadata and a known duration
+            if(_metadata != null && _metadata.duration != undefined){
+                // if playback has begun
+                if(_isPlaying){
+                    // if the asset can play through without rebuffering
+                    if(_canPlayThrough){
+                        return 4;
+                    }
+                    // if we don't know if the asset can play through without buffering
+                    else{
+                        // if the buffer is full, we assume we can seek a head at least a keyframe
+                        if(_ns.bufferLength >= _ns.bufferTime){
+                            return 3;
+                        }
+                        // otherwise, we can't be certain that seeking ahead will work
+                        else{
+                            return 2;
+                        }
+                    }
+                }
+                // if playback has not begun
+                else{
+                    return 1;
+                }
+            }
+            // if we have no metadata
+            else{
+                return 0;
+            }
+        }
+
+        public function get networkState():int{
+            if(!_loadStarted){
+                return 0;
+            }
+            else{
+                if(_loadCompleted){
+                    return 1;
+                }
+                else if(_loadErrored){
+                    return 3;
+                }
+                else{
+                    return 2;
+                }
+            }
+        }
+
+        public function appendBytesAction(action:String):void {
+            if(_ns) {
+                _ns.appendBytesAction(action);
+            }
+        }
+
+        public function appendBuffer(bytes:ByteArray):void{
+            if(_ns) {
+                _ns.appendBytes(bytes);
+            } else {
+                _streamrootInterfaceVJS.error("Error: netStream not ready")
+            }
+
+            /*
+            //implement differentiation audio video
+            if (!_initDone){
+                _adapter.parseDataInit(bytes);
+                _initDone 	= true;
+
+            }else{
+                _adapter.parseData(bytes);
+                bytes = _adapter.data_parsed;
+                //Don't append flv header or do reset begin (timestamp issue)
+                //var flv_header:ByteArray = _adapter.appendFileHeader()
+                //appendBytesAction(NetStreamAppendBytesAction.RESET_BEGIN);
+                //_ns.appendBytes(flv_header);
+                _ns.appendBytes(bytes);
+            }
+            */
+        }
+
+        public function endOfStream():void{
+            _ending = true;
+        }
+
+        public function abort():void{
+            // flush the netstream buffers
+            _ns.seek(time);
+        }
+
+        public function get buffered():Number{
+            // _src.path == null when in data generation mode
+            if(_ns && _src.path == null)
+            {
+                return _startOffset + _ns.bufferLength + _ns.time;
+            } else if(duration > 0){
+                return (_ns.bytesLoaded / _ns.bytesTotal) * duration;
+            } else {
+                 return 0;
+            }
+        }
+
+        public function get bufferedBytesEnd():int{
+            if(_loadStarted){
+                return _ns.bytesLoaded;
+            }
+            else{
+                return 0;
+            }
+        }
+
+        public function get bytesLoaded():int{
+
+            return 0;
+        }
+
+        public function get bytesTotal():int{
+
+            return 0;
+        }
+
+        public function get playing():Boolean{
+            return _isPlaying;
+        }
+
+        public function get paused():Boolean{
+            return _isPaused;
+        }
+
+        public function get ended():Boolean{
+            return _hasEnded;
+        }
+
+        public function get seeking():Boolean{
+            return _isSeeking;
+        }
+
+        public function get usesNetStream():Boolean{
+            return true;
+        }
+
+        public function get metadata():Object{
+            return _metadata;
+        }
+
+        public function set src(pSrc:Object):void{
+            init(pSrc, false);
+        }
+
+        public function get srcAsString():String{
+            if(_src != null){
+                return _src.url;
+            }
+            return "";
+        }
+
+        public function init(pSrc:Object, pAutoplay:Boolean):void{
+            _src = pSrc;
+            _loadErrored = false;
+            _loadStarted = false;
+            _loadCompleted = false;
+            if(pAutoplay){
+                initNetConnection();
+                _streamrootInterfaceVJS.triggerPlay();
+            }
+        }
+
+        public function load():void{
+            _pauseOnStart = true;
+            _isPlaying = false;
+            _isPaused = true;
+            initNetConnection();
+        }
+
+        public function play():void{
+            // if this is a fresh playback request
+            _streamrootInterfaceVJS.debug("entering play");
+            if(!_loadStarted){
+                _pauseOnStart = false;
+                _isPlaying = false;
+                _isPaused = false;
+                _metadata = {};
+                initNetConnection();
+                _streamrootInterfaceVJS.triggerPlay();
+                _streamrootInterfaceVJS.loaded();
+            }
+            // if the asset is already loading
+            else{
+                _streamrootInterfaceVJS.loaded();
+                if (_hasEnded) {
+                  _hasEnded = false;
+                  _ns.seek(0);
+                }
+                _pausePending = false;
+                _ns.resume();
+                _isPaused = false;
+            }
+            _model.broadcastEventExternally(ExternalEventName.ON_RESUME);
+            if (!_isBuffering) {
+                _model.broadcastEventExternally(ExternalEventName.ON_START);
+            }
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_START, {}));
+        }
+
+        public function pause():void{
+            _ns.pause();
+            _streamrootInterfaceVJS.triggerPause();
+
+            if(_isPlaying && !_isPaused){
+                _isPaused = true;
+                _model.broadcastEventExternally(ExternalEventName.ON_PAUSE);
+                if(_isBuffering){
+                    _pausePending = true;
+                }
+            } else if (_hasEnded) {
+                _streamrootInterfaceVJS.debug("pause: hasEnded");
+              _hasEnded = false;
+              _ns.seek(0);
+            }
+        }
+
+        public function resume():void{
+            if(_ns){
+                _streamrootInterfaceVJS.debug("entering resume");
+                if(_isPlaying && _isPaused){
+                    _streamrootInterfaceVJS.debug("resume");
+                    _ns.resume();
+                    _isPaused = false;
+                    _model.broadcastEventExternally(ExternalEventName.ON_RESUME);
+                    if (!_isBuffering) {
+                        _model.broadcastEventExternally(ExternalEventName.ON_START);
+                    }
+                    _streamrootInterfaceVJS.triggerPlay();
+                }
+            }else{
+                play();
+            }
+        }
+
+        public function seekBySeconds(pTime:Number):void{
+            _streamrootInterfaceVJS.debug('seek (flash)');
+            _streamrootInterfaceVJS.debug(pTime);
+
+            if(_isPlaying)
+            {
+                _isSeeking = true;
+                _throughputTimer.stop();
+                if(_isPaused)
+                {
+                    _pausedSeekValue = pTime;
+                }
+            }
+            else if(_hasEnded)
+            {
+                _isPlaying = true;
+                _hasEnded = false;
+            }
+
+            _isBuffering = true;
+
+            /*
+            if(_src.path === null)
+            {
+                _startOffset = pTime;
+                //return;
+            }
+            */
+            _startOffset = pTime;
+            _streamrootInterfaceVJS.debug(_startOffset);
+            _streamrootInterfaceVJS.debug(pTime);
+            _ns.seek(pTime);
+            _ns.appendBytesAction(NetStreamAppendBytesAction.RESET_SEEK);
+
+        }
+
+        public function seekByPercent(pPercent:Number):void{
+            if(_isPlaying && _metadata.duration != undefined){
+                _isSeeking = true;
+                if(pPercent < 0){
+                    _ns.seek(0);
+                }
+                else if(pPercent > 1){
+                    _throughputTimer.stop();
+                    _ns.seek((pPercent / 100) * _metadata.duration);
+                }
+                else{
+                    _throughputTimer.stop();
+                    _ns.seek(pPercent * _metadata.duration);
+
+                }
+            }
+        }
+
+        public function stop():void{
+            if(_isPlaying){
+                _ns.close();
+                _isPlaying = false;
+                _hasEnded = true;
+                _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_CLOSE, {}));
+                _throughputTimer.stop();
+                _throughputTimer.reset();
+            }
+        }
+
+        public function attachVideo(pVideo:Video):void{
+            _videoReference = pVideo;
+        }
+
+        public function die():void{
+            if(_videoReference)
+            {
+                _videoReference.attachNetStream(null);
+            }
+
+            if( _ns )
+            {
+                try {
+                    _ns.close();
+                    _ns = null;
+                } catch( err: Error ) {
+
+                }
+            }
+
+            if( _nc )
+            {
+                try {
+                    _nc.close();
+                    _nc = null;
+                } catch( err: Error ) {
+
+                }
+            }
+
+            if(_throughputTimer)
+            {
+                try {
+                    _throughputTimer.stop();
+                    _throughputTimer = null;
+                } catch( err: Error ) {
+
+                }
+            }
+        }
+
+        private function initNetConnection():void{
+            // the video element triggers loadstart as soon as the resource selection algorithm selects a source
+            // this is somewhat later than that moment but relatively close
+            _loadStarted = true;
+            _model.broadcastEventExternally(ExternalEventName.ON_LOAD_START);
+
+            if(_nc != null) {
+                try {
+                    _nc.close();
+                } catch( err: Error ) {
+
+                }
+                _nc.removeEventListener(NetStatusEvent.NET_STATUS, onNetConnectionStatus);
+                _nc = null;
+            }
+
+            _nc = new NetConnection();
+            _nc.client = this;
+            _nc.addEventListener(NetStatusEvent.NET_STATUS, onNetConnectionStatus);
+            _nc.connect(null);
+        }
+
+        private function initNetStream():void{
+            if(_ns != null){
+                _ns.close();
+                _ns.removeEventListener(NetStatusEvent.NET_STATUS, onNetStreamStatus);
+                _ns = null;
+            }
+            _ns = new NetStream(_nc);
+            _ns.inBufferSeek = true;
+            _ns.addEventListener(NetStatusEvent.NET_STATUS, onNetStreamStatus);
+            _ns.client = this;
+            _ns.bufferTime = .5;
+
+            _ns.play(null); //TODO: should make sure _src.path is null with wrapper instead of hardcoding it as null
+
+            _videoReference.attachNetStream(_ns);
+
+            if (_src.path === null) {
+              _pausePending = true;
+            }
+
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_READY, {ns:_ns}));
+        }
+
+        private function calculateThroughput():void{
+            // if it's finished loading, we can kill the calculations and assume it can play through
+            if(_ns.bytesLoaded == _ns.bytesTotal){
+                _canPlayThrough = true;
+                _loadCompleted = true;
+                _throughputTimer.stop();
+                _throughputTimer.reset();
+                _model.broadcastEventExternally(ExternalEventName.ON_CAN_PLAY_THROUGH);
+            }
+            // if it's still loading, but we know its duration, we can check to see if the current transfer rate
+            // will sustain uninterrupted playback - this requires the duration to be known, which is currently
+            // only accessible via metadata, which isn't parsed until the Flash Player encounters the metadata atom
+            // in the file itself, which means that this logic will only work if the asset is playing - preload
+            // won't ever cause this logic to run :(
+            else if(_ns.bytesTotal > 0 && _metadata != null && _metadata.duration != undefined){
+                _currentThroughput = _ns.bytesLoaded / ((getTimer() - _loadStartTimestamp) / 1000);
+                var __estimatedTimeToLoad:Number = (_ns.bytesTotal - _ns.bytesLoaded) * _currentThroughput;
+                if(__estimatedTimeToLoad <= _metadata.duration){
+                    _throughputTimer.stop();
+                    _throughputTimer.reset();
+                    _canPlayThrough = true;
+                    _model.broadcastEventExternally(ExternalEventName.ON_CAN_PLAY_THROUGH);
+                }
+            }
+        }
+
+        private function onNetConnectionStatus(e:NetStatusEvent):void{
+            switch(e.info.code){
+                case "NetConnection.Connect.Success":
+                    initNetStream();
+                    break;
+                case "NetConnection.Connect.Failed":
+
+                    break;
+            }
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_NETCONNECTION_STATUS, {info:e.info}));
+        }
+
+        private function onNetStreamStatus(e:NetStatusEvent):void{
+            switch(e.info.code){
+                case "NetStream.Play.Start":
+                    _streamrootInterfaceVJS.debug("NetStream.Play.Start");
+                    _pausedSeekValue = -1;
+                    _metadata = null;
+                    _canPlayThrough = false;
+                    _hasEnded = false;
+                    _isBuffering = true;
+                    _currentThroughput = 0;
+                    _loadStartTimestamp = getTimer();
+                    _throughputTimer.reset();
+                    _throughputTimer.start();
+                    if(_pauseOnStart && _loadStarted == false){
+                        _ns.pause();
+                        _isPaused = true;
+                    }
+                    else{
+                        _model.broadcastEventExternally(ExternalEventName.ON_RESUME);
+                        _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_START, {info:e.info}));
+                    }
+                    break;
+
+                case "NetStream.SeekStart.Notify":
+                    if(_src.path === null) {
+                        appendBytesAction(NetStreamAppendBytesAction.RESET_SEEK);
+                    }
+                    _model.broadcastEventExternally(ExternalEventName.ON_SEEK_START);
+                    break;
+
+                case "NetStream.Buffer.Full":
+                    //Now handled by function onBuffersReady, called by StreamrootInterface. NetStream would trigger this as soon as
+                    //audio OR video had been appended
+                    if (_isBuffering) {
+                        _ns.pause();
+                    }
+                    break;
+
+                case "NetStream.Buffer.Empty":
+                    // should not fire if ended/paused. issue #38
+                    onBufferEmpty(false);
+                    break;
+
+                case "NetStream.Play.Stop":
+                    if(!_loop){
+                        _isPlaying = false;
+                        _isPaused = true;
+                        _hasEnded = true;
+                        _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_CLOSE, {info:e.info}));
+                        _model.broadcastEventExternally(ExternalEventName.ON_PAUSE);
+                        _model.broadcastEventExternally(ExternalEventName.ON_PLAYBACK_COMPLETE);
+                    }
+                    else{
+                        _ns.seek(0);
+                    }
+
+                    _throughputTimer.stop();
+                    _throughputTimer.reset();
+                    break;
+
+                case "NetStream.Seek.Notify":
+                    _isPlaying = true;
+                    _isSeeking = false;
+                    _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_SEEK_COMPLETE, {info:e.info}));
+                    _model.broadcastEventExternally(ExternalEventName.ON_SEEK_COMPLETE);
+                    _streamrootInterfaceVJS.triggerSeeked();
+                    _model.broadcastEventExternally(ExternalEventName.ON_BUFFER_EMPTY);
+                    _currentThroughput = 0;
+                    _loadStartTimestamp = getTimer();
+                    _throughputTimer.reset();
+                    _throughputTimer.start();
+                    break;
+
+                case "NetStream.Play.StreamNotFound":
+                    _loadErrored = true;
+                    _model.broadcastErrorEventExternally(ExternalErrorEventName.SRC_404);
+                    break;
+
+                case "NetStream.Video.DimensionChange":
+                    _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_VIDEO_DIMENSION_UPDATE, {videoWidth: _videoReference.videoWidth, videoHeight: _videoReference.videoHeight}));
+                    if(_model.metadata && _videoReference)
+                    {
+                        _model.metadata.width = _videoReference.videoWidth;
+                        _model.metadata.height = _videoReference.videoHeight;
+                    }
+                    break;
+            }
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_NETSTREAM_STATUS, {info:e.info}));
+        }
+
+        private function onThroughputTimerTick(e:TimerEvent):void{
+            calculateThroughput();
+        }
+
+        public function onMetaData(pMetaData:Object):void{
+
+            _metadata = pMetaData;
+            if(pMetaData.duration != undefined){
+                _isLive = false;
+                _canSeekAhead = true;
+                _model.broadcastEventExternally(ExternalEventName.ON_DURATION_CHANGE, _metadata.duration);
+            }
+            else{
+                _isLive = true;
+                _canSeekAhead = false;
+            }
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_META_DATA, {metadata:_metadata}));
+            _model.broadcastEventExternally(ExternalEventName.ON_METADATA, _metadata);
+        }
+
+        public function onCuePoint(pInfo:Object):void{
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_CUE_POINT, {cuepoint:pInfo}));
+        }
+
+        public function onXMPData(pInfo:Object):void{
+            _model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_XMP_DATA, {cuepoint:pInfo}));
+        }
+
+        public function onPlayStatus(e:Object):void{
+
+        }
+
+        //ADDED METHODS
+        public function onBuffersReady():void {
+            _model.broadcastEventExternally(ExternalEventName.ON_BUFFER_FULL);
+            _model.broadcastEventExternally(ExternalEventName.ON_CAN_PLAY);
+            _pausedSeekValue = -1;
+            _isPlaying = true;
+            if(_pausePending){
+                _pausePending = false;
+                _ns.pause();
+                _isPaused = true;
+            } else if (/*_isBuffering &&*/ !_isPaused) {
+                _ns.resume();
+            }
+            _isBuffering = false;
+        }
+
+        public function onBufferEmpty(fromJS:Boolean):void {
+            if(!_isPlaying){ return; }
+
+            // reaching the end of the buffer after endOfStream has been called means we've
+            // hit the end of the video
+            if (_ending) {
+                _ending = false;
+                _isPlaying = false;
+                _isPaused = true;
+                _hasEnded = true;
+                //TODO: commented next line because of argument e. Will probably cause issue at the end of video. Pass e
+                //_model.broadcastEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_CLOSE, {info: e.info}));
+                _model.broadcastEventExternally(ExternalEventName.ON_PAUSE);
+                _model.broadcastEventExternally(ExternalEventName.ON_PLAYBACK_COMPLETE);
+
+                _startOffset = 0;
+                _pausedSeekValue = 0;
+                return;
+            }
+
+            _isBuffering = true;
+            _model.broadcastEventExternally(ExternalEventName.ON_BUFFER_EMPTY);
+
+            if (fromJS) {
+                _ns.pause();
+            }
+        }
+    }
+}
