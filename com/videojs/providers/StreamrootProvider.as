@@ -206,7 +206,7 @@ package com.videojs.providers{
             //implement differentiation audio video
             if (!_initDone){
                 _adapter.parseDataInit(bytes);
-                _initDone 	= true;
+                _initDone     = true;
 
             }else{
                 _adapter.parseData(bytes);

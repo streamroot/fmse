@@ -34,12 +34,12 @@ package com.videojs.providers{
 
         public function parseDataInit(bytes:ByteArray):void{
             ExternalInterface.call("console.log", "InitializationVideoSegmentHandler");
-            handler 	= new InitializationVideoSegmentHandler(bytes);
+            handler     = new InitializationVideoSegmentHandler(bytes);
         }
 
         public function appendFileHeader():ByteArray {
         var output:ByteArray = new ByteArray();
-        output.writeByte(0x46);	// 'F'
+        output.writeByte(0x46);    // 'F'
         output.writeByte(0x4c); // 'L'
         output.writeByte(0x56); // 'V'
         output.writeByte(0x01); // version 0x01

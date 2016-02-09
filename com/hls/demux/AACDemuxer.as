@@ -10,7 +10,7 @@
     CONFIG::LOGGING {
         import org.mangui.hls.utils.Log;
     }
-    /** Constants and utilities for the AAC audio format, refer to 
+    /** Constants and utilities for the AAC audio format, refer to
      *  http://wiki.multimedia.cx/index.php?title=ADTS
      **/
     public class AACDemuxer implements Demuxer {
@@ -209,7 +209,7 @@
             } else if (frames.length == 0) {
                 null;
                 CONFIG::LOGGING {
-                    Log.warn("No ADTS headers found in this stream.");  
+                    Log.warn("No ADTS headers found in this stream.");
                 }
             }
             adts.position = position;

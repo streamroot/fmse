@@ -19,7 +19,7 @@ public class FLVTag {
     public var data:ByteArray;
     public var setup:Boolean = false;
 
-	public var duration:uint;
+    public var duration:uint;
 
     private var _type:uint;
 

@@ -33,19 +33,19 @@ def helpParam():
     print "\t-h : display this menu"
     print ""
     sys.exit(0)
-    
+
 def printRed(text):
     if color:
         print "\033[31m" + text + "\033[0m"
     else:
         print text
-    
+
 def printPurple(text):
     if color:
         print "\033[35m" + text + "\033[0m"
     else:
         print text
-        
+
 def printGreen(text):
     if color:
         print "\033[32m" + text + "\033[0m"
@@ -75,9 +75,9 @@ if (len(sys.argv)>1):
         else:
             print "incorrect argument"
             helpParam()
-if verbose:            
+if verbose:
     print "Debug flag = " + debug
-    print "LOGGING_PTS = " + log_pts 
+    print "LOGGING_PTS = " + log_pts
     print "-swf-version="+swfversion
     print "-target-player="+targetPlayer
 
@@ -86,7 +86,7 @@ def popenPrint(result):
     if verbose:
         for line in result.stdout:
             print(line)
-            
+
     for line in result.stderr:
         while line.endswith("\n"):
             line = line[:-1]

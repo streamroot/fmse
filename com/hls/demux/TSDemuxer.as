@@ -27,7 +27,7 @@
     public class TSDemuxer extends EventDispatcher /*implements Demuxer*/ {
         /** read position **/
         private var _read_position : uint;
-        
+
         /** is bytearray full ? Used for fragment AES decryption **/
         //private var _data_complete : Boolean;
         /** TS Sync byte. **/
@@ -408,7 +408,7 @@
             }
 
             /* first loop : look for AUD/SPS/PPS NAL unit :
-             * AUD (Access Unit Delimiter) are used to detect switch to new video tag 
+             * AUD (Access Unit Delimiter) are used to detect switch to new video tag
              * SPS/PPS are used to generate AVC HEADER
              */
 
@@ -464,7 +464,7 @@
                 }
             }
 
-            /* 
+            /*
              * second loop, handle other NAL units and push them in tags accordingly
              */
             for each (frame in frames) {
@@ -483,9 +483,9 @@
                         // +1 to skip NAL unit type
                         ba.position = frame.start + 1;
                         var eg : ExpGolomb = new ExpGolomb(ba);
-                        /* add a try/catch, 
-                         * as NALu might be partial here (in case NALu/slice header is splitted accross several PES packet ... we might end up 
-                         * with buffer overflow. prevent this and in case of overflow assume it is not a keyframe. should be fixed later on 
+                        /* add a try/catch,
+                         * as NALu might be partial here (in case NALu/slice header is splitted accross several PES packet ... we might end up
+                         * with buffer overflow. prevent this and in case of overflow assume it is not a keyframe. should be fixed later on
                          */
                         try {
                             // discard first_mb_in_slice

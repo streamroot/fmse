@@ -237,7 +237,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     public function triggerStopped():void {
         _streamrootMSE.triggerStopped();
     }
-    
+
     /**
     * triggerStopped
     * Trigger this event when video ends.
@@ -245,7 +245,7 @@ public class StreamrootInterfaceBase implements IStreamrootInterface{
     public function triggerDurationChange(duration:Number):void {
         _streamrootMSE.triggerDurationChange(duration);
     }
-    
+
     /**
     * triggerStopped
     * Trigger this event when video ends.

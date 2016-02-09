@@ -39,7 +39,7 @@ public class MediaSegmentHandler extends SegmentHandler {
         return _bytes;
     }
 
-	public function get duration():uint {
+    public function get duration():uint {
         return _duration;
     }
 
@@ -63,7 +63,7 @@ public class MediaSegmentHandler extends SegmentHandler {
 
         _bytes = _muxer.mux(_messages);
         _bytes.position = 0; // reset
-		_duration = _muxer.duration;
+        _duration = _muxer.duration;
     }
 
     public function processTrackBox(ba:ByteArray):void {

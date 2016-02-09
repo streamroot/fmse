@@ -6,7 +6,7 @@ public class TrackTypeHelper{
         private static const hls:String = "apple";
         private static const audio:String = "audio";
         private static const video:String = "video";
-        
+
         public static function getType(type:String):String {
             if(type.indexOf(hls) >= 0){
                 return VIDEO;
@@ -18,7 +18,7 @@ public class TrackTypeHelper{
                 return null;
             }
         }
-        
+
         public static function isHLS(type:String):Boolean{
             if(type.indexOf(hls) >= 0){
                 return true;
@@ -26,7 +26,7 @@ public class TrackTypeHelper{
                 return false;
             }
         }
-        
+
         public static function isVideo(type:String):Boolean{
             if(type.indexOf(video) >= 0){
                 return true;
@@ -34,7 +34,7 @@ public class TrackTypeHelper{
                 return false;
             }
         }
-        
+
         public static function isAudio(type:String):Boolean{
             if(type.indexOf(audio) >= 0){
                 return true;
@@ -43,5 +43,5 @@ public class TrackTypeHelper{
             }
         }
     }
-    
+
 }

@@ -26,8 +26,8 @@ public class VideoSegmentHandler extends MediaSegmentHandler {
 
         message.timestamp = _timestamp;
         _timestamp = message.timestamp + sampleDuration * 1000 / _timescale;
-		
-		message.duration 	= sampleDuration *1000*1000  / _timescale;
+
+        message.duration     = sampleDuration *1000*1000  / _timescale;
 
         message.length = sampleSize;
 

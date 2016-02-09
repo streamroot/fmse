@@ -450,7 +450,7 @@ public class StreamrootMSE {
         }else{
             setTimeout(triggerLoadStart, 10);
         }
-        
+
     }
 
     public function triggerPlay():void {
@@ -505,17 +505,17 @@ public class StreamrootMSE {
             _ended = true;
         }
     }
-    
+
     public function triggerCanplay():void {
         //trigger event xhen there is enough stat in buffer to play
         ExternalInterface.call("sr_flash_canplay");
     }
-    
+
     public function triggerDurationChange(duration:Number):void {
         //trigger event xhen there is enough stat in buffer to play
         ExternalInterface.call("sr_flash_durationChange", duration);
     }
-    
+
     public function triggerVolumeChange(volume:Number):void {
         //trigger event when there is enough stat in buffer to play
         ExternalInterface.call("sr_flash_volumeChange", volume);

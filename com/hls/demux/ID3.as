@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
  package com.hls.demux {
     import flash.utils.ByteArray;
-    
+
     CONFIG::LOGGING {
     import org.mangui.hls.utils.Log;
     }

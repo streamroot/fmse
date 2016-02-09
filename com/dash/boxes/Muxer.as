@@ -4,21 +4,21 @@ package com.dash.boxes {
 import flash.utils.ByteArray;
 
 public class Muxer {
-	private var _duration:uint;
+    private var _duration:uint;
 
     public function Muxer() {
     }
-	public function get duration():uint {
+    public function get duration():uint {
         return _duration;
-    }	
+    }
 
     public function mux(messages:Vector.<FLVTag>):ByteArray {
         var ba:ByteArray = new ByteArray();
-		_duration 	= 0;
+        _duration     = 0;
         while (messages.length > 0) {
             var message:FLVTag = messages.shift();
             writeMsg(message, ba);
-			_duration += message.duration;
+            _duration += message.duration;
         }
 
         return ba;

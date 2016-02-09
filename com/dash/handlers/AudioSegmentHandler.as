@@ -21,8 +21,8 @@ public class AudioSegmentHandler extends MediaSegmentHandler {
         message.timestamp = _timestamp;
         _timestamp = message.timestamp + sampleDuration * 1000 / _timescale;
 
-		message.duration 	= sampleDuration * 1000 * 1000 / _timescale; //sampleDuration / _timescale;// * 1000
-		
+        message.duration     = sampleDuration * 1000 * 1000 / _timescale; //sampleDuration / _timescale;// * 1000
+
         message.length = sampleSize;
 
         message.dataOffset = dataOffset;

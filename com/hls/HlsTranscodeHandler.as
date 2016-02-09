@@ -23,9 +23,9 @@ package com.hls
 
         private var _frag_current:Fragment;
 
-        
+
         public function HlsTranscodeHandler(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function)
-        {   
+        {
             _transcodeWorker = transcodeWorker;
             _demux = new TSDemuxer(_fragParsingAudioSelectionHandler, _fragParsingProgressHandler, _fragParsingCompleteHandler, _fragParsingVideoMetadataHandler, asyncTranscodeCB, _transcodeWorker);
             _asyncTranscodeCB = asyncTranscodeCB;
@@ -117,9 +117,9 @@ package com.hls
                 fragData.tags.push(tag);
             }
 
-            /* try to do progressive buffering here. 
+            /* try to do progressive buffering here.
              * only do it in case :
-             * 		first fragment is already loaded 
+             *         first fragment is already loaded
              *      if first fragment is not loaded, we can do it if startlevel is already defined (if startFromLevel is set to -1
              *      we first need to download one fragment to check the dl bw, in order to assess start level ...)
              *      in case startFromLevel is to -1 and there is only one level, then we can do progressive buffering
@@ -132,13 +132,13 @@ package com.hls
             //         */
             //        return;
             //    }
-            //    
+            //
             //    if (fragData.tag_pts_min != Number.POSITIVE_INFINITY && fragData.tag_pts_max != Number.NEGATIVE_INFINITY) {
             //        var min_offset : Number = _frag_current.start_time + fragData.tag_pts_start_offset / 1000;
             //        var max_offset : Number = _frag_current.start_time + fragData.tag_pts_end_offset / 1000;
             //        // in case of cold start/seek use case,
             //        if (!_fragment_first_loaded ) {
-            //            /* ensure buffer max offset is greater than requested seek position. 
+            //            /* ensure buffer max offset is greater than requested seek position.
             //             * this will avoid issues with accurate seeking feature */
             //            if (_seek_pos > max_offset) {
             //                // cannot do progressive buffering until we have enough data to reach requested seek offset
@@ -214,18 +214,18 @@ package com.hls
             if (fragData.audio_found) {
                 null;
                 CONFIG::LOGGING {
-                    _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
-                }
+                _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
+            }
             }
 
             if (fragData.video_found) {
                 CONFIG::LOGGING {
-                    _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
-                    if (!fragData.audio_found) {
-                    } else {
-                        _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
-                    }
+                _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
+                if (!fragData.audio_found) {
+                } else {
+                    _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
                 }
+            }
             }
 
             // Calculate bandwidth
