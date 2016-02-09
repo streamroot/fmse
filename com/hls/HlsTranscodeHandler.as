@@ -211,21 +211,16 @@ package com.hls
                 //_hls.dispatchEvent(new HLSEvent(HLSEvent.ERROR, hlsError));
                 //_transcodeWorker.error("error parsing fragment, no tag found",FRAGMENT_PARSING_ERROR)
             }
-            if (fragData.audio_found) {
-                null;
-                CONFIG::LOGGING {
+            if (CONFIG::LOGGING && fragData.audio_found) {
                 _transcodeWorker.debug("m/M audio PTS:" + fragData.pts_min_audio + "/" + fragData.pts_max_audio);
             }
-            }
 
-            if (fragData.video_found) {
-                CONFIG::LOGGING {
+            if (CONFIG::LOGGING && fragData.video_found) {
                 _transcodeWorker.debug("m/M video PTS:" + fragData.pts_min_video + "/" + fragData.pts_max_video);
                 if (!fragData.audio_found) {
                 } else {
                     _transcodeWorker.debug("Delta audio/video m/M PTS:" + (fragData.pts_min_video - fragData.pts_min_audio) + "/" + (fragData.pts_max_video - fragData.pts_max_audio));
                 }
-            }
             }
 
             // Calculate bandwidth
