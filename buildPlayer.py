@@ -10,6 +10,9 @@ if (os.path.exists("/opt/flex")):
 elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
     flex = ("C:/flex_sdk_4.6")
     exe = ".exe"
+elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
+    flex = os.path.expanduser("~/SDKs/Flex/4.14")
+    exe = ""
 
 MAIN_OUTPUT = "polyfill_core.swc"
 VJS_OUTPUT = "demo/polyfillMSE.swf"
