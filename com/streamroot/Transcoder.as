@@ -8,9 +8,6 @@ import com.dash.handlers.InitializationVideoSegmentHandler;
 import com.dash.handlers.VideoSegmentHandler;
 import com.dash.handlers.AudioSegmentHandler;
 
-import com.streamroot.TranscodeWorker;
-import com.hls.HlsTranscodeHandler;
-
 import com.dash.boxes.Muxer;
 
 public class Transcoder {
@@ -21,14 +18,12 @@ public class Transcoder {
     private var _muxer:Muxer;
 
     private var _transcodeWorker:TranscodeWorker;
-    private var _hlsTranscodeHandler:HlsTranscodeHandler;
     private var _asyncTranscodeCB:Function;
 
     public function Transcoder(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function) {
         _muxer = new Muxer();
         _transcodeWorker = transcodeWorker;
         _asyncTranscodeCB = asyncTranscodeCB;
-        _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker,_asyncTranscodeCB);
     }
 
     //TODO: transcode init in separate method (problem with return type?), return bytes to worker, that will send message back to MSE.
@@ -52,53 +47,33 @@ public class Transcoder {
             _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
         }
 
-        if (isHls(type)) {
-            if (!_hlsTranscodeHandler) {
-                _hlsTranscodeHandler = new HlsTranscodeHandler(_transcodeWorker, _asyncTranscodeCB);
-            }
-                    bytes_event.position = 0;
-                    CONFIG::LOGGING {
-                        _transcodeWorker.debug('FLASH transcoder.asyncTranscode case hls');
-                    }
-                    _hlsTranscodeHandler.toTranscoding(bytes_event);
-
-        } else if(isAudio(type)) {
+        if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
             var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             _asyncTranscodeCB(type, isInit, bytes_append_audio);
-        } else /*if (isVideo(type))*/ {
+        } else if (isVideo(type)) {
             var bytes_append:ByteArray = new ByteArray();
             var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, timestamp - offset + 100, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
             _asyncTranscodeCB(type, isInit, bytes_append);
+        } else {
+            //TODO: switch for HLS + send error if no matching type
         }
-        //TODO: switch for HLS + send error if no matching type
     }
 
     public function seeking():void {
-        //_httpstreamingMP2TSFileHandler = undefined;
-        _hlsTranscodeHandler = undefined;
     }
 
-    private function isAudio(type:String):Boolean {
+    private static function isAudio(type:String):Boolean {
         return type.indexOf("audio") >= 0;
     }
 
-    private function isVideo(type:String):Boolean {
+    private static function isVideo(type:String):Boolean {
         return type.indexOf("video") >= 0;
     }
 
-    private function isHls(type:String):Boolean {
-            return type.indexOf("apple") >= 0;
-    }
-
-
-
-
 }
-
-
 }

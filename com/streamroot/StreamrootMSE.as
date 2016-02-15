@@ -25,10 +25,8 @@ import com.streamroot.StreamrootInterfaceBase;
 import com.streamroot.StreamBuffer;
 import com.streamroot.Segment;
 import com.streamroot.Transcoder;
-import com.streamroot.HlsSegmentValidator;
 
 import com.streamroot.util.TrackTypeHelper;
-import com.streamroot.util.TranscoderHelper;
 import com.streamroot.util.Conf;
 
 public class StreamrootMSE {
@@ -73,16 +71,10 @@ public class StreamrootMSE {
     private var _pendingAppend:Object;
     private var _discardAppend:Boolean = false; //Used to discard data from worker in case we were seeking during transcoding
 
-    private var _hlsSegmentValidator:HlsSegmentValidator;
-
-
-
-
     public function StreamrootMSE(streamrootInterface:IStreamrootInterface) {
         _streamrootInterface = streamrootInterface;
 
         _muxer = new Muxer();
-        _hlsSegmentValidator = new HlsSegmentValidator(this);
 
         //StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
@@ -138,9 +130,6 @@ public class StreamrootMSE {
 
         //_buffered = timeSeek*1000000;
         //_buffered_audio = timeSeek*1000000;
-
-        // Set isSeeking to skip _previousPTS check in HlsSegmentValidator.as
-        _hlsSegmentValidator.setIsSeeking(true);
 
         if (_pendingAppend) {
             //remove pending append job to avoid appending it after seek
@@ -239,35 +228,16 @@ public class StreamrootMSE {
         if (!_discardAppend) {
 
             if (!isInit) {
-                // CLIEN-19: check if it's the right hls segment before appending it.
-
-                if (TrackTypeHelper.isHLS(segment.type)) {
-                    var previousPTS:Number = _streamBuffer.getBufferEndTime();
-                    var segmentChecked:String = _hlsSegmentValidator.checkSegmentPTS(min_pts, max_pts, startTime, previousPTS);
+                // Append DASH || Smooth
+                CONFIG::LOGGING_PTS {
+                    debug("Appending segment in StreamBuffer", this);
+                }
+                if (_lastHeight === 0 && width > 0 && height > 0) {
+                    debug("setting video size: " + width + " - " + height);
+                    onMetaData(0, width, height);
                 }
 
-                if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPTSError(segmentChecked)) {
-                    // We just call an error that will discard the segment and send an updateend with error:true and min_pts to download the right segment
-                    debug("Timestamp and min_pts don't match", this)
-                    sendSegmentFlushedMessage(TranscoderHelper.PTS_ERROR, min_pts, max_pts);
-                    return;
-                } else if (TrackTypeHelper.isHLS(segment.type) && TranscoderHelper.isPreviousPTSError(segmentChecked)) {
-                    // No need to send back min and max pts in this case since media map doesn't need to be updated
-                    debug("previousPTS and min_pts don't match", this)
-                    sendSegmentFlushedMessage(TranscoderHelper.PREVIOUS_PTS_ERROR);
-                    return;
-                } else {
-                    // Append DASH || Smooth || Validated HLS segment
-                    CONFIG::LOGGING_PTS {
-                        debug("Appending segment in StreamBuffer", this);
-                    }
-                    if (_lastHeight === 0 && width > 0 && height > 0) {
-                        debug("setting video size: " + width + " - " + height);
-                        onMetaData(0, width, height);
-                    }
-
-                    _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
-                }
+                _streamBuffer.appendSegment(segment, TrackTypeHelper.getType(segment.type));
             }
 
             if (_pendingAppend) {
@@ -276,11 +246,7 @@ public class StreamrootMSE {
                 _pendingAppend = null;
             }
 
-
-            if (TrackTypeHelper.isHLS(type)) {
-                _hlsSegmentValidator.setIsSeeking(false);
-                setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts);
-            } else if (TrackTypeHelper.isAudio(type)) {
+            if (TrackTypeHelper.isAudio(type)) {
                 setTimeout(updateendAudio, TIMEOUT_LENGTH);
             } else if (TrackTypeHelper.isVideo(type)) {
                 setTimeout(updateendVideo, TIMEOUT_LENGTH);
@@ -297,30 +263,12 @@ public class StreamrootMSE {
         CONFIG::LOGGING {
             debug("Discarding segment    " + type, this);
         }
-        if(TranscoderHelper.isPTSError(type)) {
-            CONFIG::LOGGING_PTS {
-                debug("sendSegmentFlushedMessage min_pts: " + min_pts, this);
-                debug("sendSegmentFlushedMessage max_pts: " + max_pts, this);
-            }
-            setTimeout(updateendVideoHls, TIMEOUT_LENGTH, min_pts, max_pts, true);
-        } else if (TrackTypeHelper.isHLS(type)) {    // This case includes PREVIOUS_PTS_ERROR case
-            CONFIG::LOGGING_PTS {
-                debug("Inside case discarding but no min/max pts returned to js", this);
-            }
-            setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
-        } else if (TrackTypeHelper.isAudio(type)) {
+
+        if (TrackTypeHelper.isAudio(type)) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
         } else if (TrackTypeHelper.isVideo(type)) {
             setTimeout(updateendVideo, TIMEOUT_LENGTH, true);
         }
-    }
-
-    private function updateendVideoHls(min_pts:Number, max_pts:Number, error:Boolean = false):void {
-        CONFIG::LOGGING_PTS {
-            debug("updateendVideoHls min_pts: " + min_pts, this);
-            debug("updateendVideoHls max_pts: " + max_pts, this);
-        }
-        ExternalInterface.call("sr_flash_updateend_video", error, min_pts, max_pts);
     }
 
     private function updateendAudio(error:Boolean = false):void {
