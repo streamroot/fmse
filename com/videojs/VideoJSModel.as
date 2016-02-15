@@ -2,10 +2,8 @@ package com.videojs{
 
     import com.videojs.events.VideoJSEvent;
     import com.videojs.events.VideoPlaybackEvent;
-    import com.videojs.providers.HTTPAudioProvider;
     import com.videojs.providers.StreamrootProvider;
     import com.videojs.providers.IProvider;
-    import com.videojs.providers.RTMPVideoProvider;
     import com.videojs.structs.ExternalErrorEventName;
     import com.videojs.structs.ExternalEventName;
     import com.videojs.structs.PlaybackType;
@@ -40,8 +38,6 @@ package com.videojs{
         private var _preload:Boolean = false;
         private var _loop:Boolean = false;
         private var _src:String = "";
-        private var _rtmpConnectionURL:String = "";
-        private var _rtmpStream:String = "";
         private var _poster:String = "";
 
         private static var _instance:VideoJSModel;
@@ -140,9 +136,6 @@ package com.videojs{
             }
         }
 
-        public function get videoReference():Video{
-            return _videoReference;
-        }
         public function set videoReference(pVideo:Video):void {
             _videoReference = pVideo;
         }
@@ -198,8 +191,6 @@ package com.videojs{
         }
         public function set src(pValue:String):void {
             _src = pValue;
-            _rtmpConnectionURL = "";
-            _rtmpStream = "";
             _currentPlaybackType = PlaybackType.HTTP;
             broadcastEventExternally(ExternalEventName.ON_SRC_CHANGE, _src);
             initProvider();
@@ -208,38 +199,6 @@ package com.videojs{
             }
             else if(_preload){
                 _provider.load();
-            }
-        }
-
-        public function get rtmpConnectionURL():String{
-            return _rtmpConnectionURL;
-        }
-        public function set rtmpConnectionURL(pURL:String):void {
-            _src = "";
-            _rtmpConnectionURL = pURL;
-        }
-
-        public function get rtmpStream():String{
-            return _rtmpStream;
-        }
-        public function set rtmpStream(pValue:String):void {
-            _src = "";
-            _rtmpStream = pValue;
-            broadcastEventExternally(ExternalEventName.ON_SRC_CHANGE, _src);
-            if (_provider != null && _currentPlaybackType == PlaybackType.RTMP) {
-                var __src:Object = {
-                    connectionURL: _rtmpConnectionURL,
-                    streamURL: _rtmpStream
-                };
-                _provider.src = __src;
-            }
-            else {
-                _currentPlaybackType = PlaybackType.RTMP;
-                initProvider();
-            }
-
-            if(_autoplay){
-                play();
             }
         }
 
@@ -563,7 +522,6 @@ package com.videojs{
             // We need to determine which provider to load, based on the values of our exposed properties.
             switch(_mode){
                 case PlayerMode.VIDEO:
-
                     if(_currentPlaybackType == PlaybackType.HTTP){
                         __src = {
                             path: _src
@@ -572,23 +530,6 @@ package com.videojs{
                         _provider.attachVideo(_videoReference);
                         _provider.init(__src, _autoplay);
                     }
-                    else if(_currentPlaybackType == PlaybackType.RTMP){
-                        __src = {
-                            connectionURL: _rtmpConnectionURL,
-                            streamURL: _rtmpStream
-                        };
-                        _provider = new RTMPVideoProvider();
-                        _provider.attachVideo(_videoReference);
-                        _provider.init(__src, _autoplay);
-                    }
-
-                    break;
-                case PlayerMode.AUDIO:
-                    __src = {
-                        path:_src
-                    };
-                    _provider = new HTTPAudioProvider();
-                    _provider.init(__src, _autoplay);
                     break;
                 default:
                     broadcastEventExternally(ExternalErrorEventName.UNSUPPORTED_MODE);
