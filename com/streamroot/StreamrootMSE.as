@@ -426,10 +426,6 @@ public class StreamrootMSE {
         _streamrootInterface.appendBytes(getFileHeader());
 
         if (!_loaded) {
-            //Call javascript callback (implement window.sr_flash_ready that will initialize our JS library)
-            //Do not call on replay, as it would initialize a second instance of our JS library (that's why the
-            //_loaded Boolean is for here)
-            ExternalInterface.call('sr_flash_ready');
             _loaded = true;
         }
 
