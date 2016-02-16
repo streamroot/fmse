@@ -163,7 +163,7 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-static-link-runtime-shared-libraries=true",
                           os.path.normpath("-output=" + VJS_OUTPUT),
                           "-compiler.optimize=true",
-                          "-compiler.omit-trace-statements=true",
+                          "-compiler.omit-trace-statements=false",
                           "-warnings=false",
                           "-define+=CONFIG::version,\"'4.2.2'\""], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 popenPrint(vjsResult)
