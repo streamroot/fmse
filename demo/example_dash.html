@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>fMSE Polyfill - dash.js test page</title>
+    <meta charset="UTF-8">
+    <script src="demoBundle.js"></script>
+    <script src="dash.all.debug.js"></script>
+</head>
+<body>
+    <div>
+        <video id="videoPlayer" width="480" height="360"></video>
+    </div>
+
+    <div>
+        <button onclick="v_resume()">Resume</button>
+        <button onclick="v_pause()">Pause</button>
+    </div>
+
+    <script>
+        var videoElementId = "videoPlayer";
+        var videoElement = document.getElementById(videoElementId);
+        window.polyfill(swfUrl, videoElement, initDashJS, true);
+
+        function initDashJS(video) {
+            videoElement = video;
+            console.log("initDashJS()", video);
+
+            var url = "http://media.streamroot.io/dash/examples/snow15/snowboard1_720p_dash.mpd";
+            var url = "http://dash.edgesuite.net/envivio/Envivio-dash2/manifest.mpd";
+            var player = MediaPlayer().create();
+            player.initialize(video, url, true);
+        }
+
+        function v_resume() {
+            videoElement.play();
+        }
+
+        function v_pause() {
+            videoElement.pause();
+        }
+
+
+    </script>
+</body>
+</html>
