@@ -56,7 +56,7 @@ public class TranscodeWorker extends Sprite {
         _endTime = message.endTime;
 
         var answer:Object = {type: type, isInit: isInit}; //Need to initialize answer here (didn't work if I only declared it)
-
+        debug("transcoding type=" + type + " isInit=" + isInit + " timestamp=" + timestamp + " offset=" + offset);
         if (isInit) {
             debug("transcoding init");
             debug("CHECK MODIFS");
@@ -77,7 +77,7 @@ public class TranscodeWorker extends Sprite {
             try {
                 _transcoder.asyncTranscode(data, type, timestamp, offset, isInit);
             } catch (e:Error) {
-                error(e.toString(), type);
+                error(e.toString() + "\n" + e.getStackTrace(), type);
                 return;
             }
         }
