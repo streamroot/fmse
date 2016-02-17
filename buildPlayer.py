@@ -14,7 +14,6 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     flex = os.path.expanduser("~/SDKs/Flex/4.14")
     exe = ""
 
-MAIN_OUTPUT = "polyfill_core.swc"
 VJS_OUTPUT = "demo/polyfillMSE.swf"
 
 debug = "false"
@@ -123,28 +122,8 @@ workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 popenPrint(workerResult)
-#Remove the old library before compiling the new as mxmlc doesn't support compling into non empty folder
-if (os.path.exists(MAIN_OUTPUT)):
-    os.remove(MAIN_OUTPUT)
-#compile the library
-libResult = subprocess.Popen([os.path.normpath(flex + "/bin/compc" + exe),
-                          os.path.normpath("-compiler.source-path=."),
-                          "-target-player="+targetPlayer+"",
-                          "-swf-version="+swfversion+"",
-                          "-include-classes=com.streamroot.StreamrootInterfaceBase",
-                          "-debug="+debug+"",
-                          "-define+=CONFIG::LOGGING,"+debug,
-                          "-define+=CONFIG::LOGGING_PTS," + log_pts,
-                          "-directory=false",
-                          "-include-sources",
-                          os.path.normpath("com/streamroot/StreamrootMSE.as"),
-                          "-output=" + MAIN_OUTPUT], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-popenPrint(libResult)
-if not os.path.exists(MAIN_OUTPUT):
-    printRed("\nBuild failed")
     sys.exit(0)
 else:
-    printPurple(">> " + MAIN_OUTPUT + " has been generated, polyfill_core is built")
 
 #compiling videojs
 if os.path.exists(VJS_OUTPUT):
@@ -153,7 +132,6 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("com/videojs/VideoJS.as"),
                           "-compiler.source-path=.",
                           "-compiler.library-path="+flex+"/frameworks/libs",
-                          os.path.normpath("-library-path="+MAIN_OUTPUT),
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
                           "-target-player="+targetPlayer+"",
