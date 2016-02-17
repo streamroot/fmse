@@ -14,7 +14,7 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     flex = os.path.expanduser("~/SDKs/Flex/4.14")
     exe = ""
 
-VJS_OUTPUT = "demo/polyfillMSE.swf"
+POLYFILL_OUTPUT = "demo/fMSE.swf"
 
 debug = "false"
 verbose = False
@@ -124,10 +124,10 @@ popenPrint(workerResult)
     sys.exit(0)
 else:
 
-#compiling videojs
-if os.path.exists(VJS_OUTPUT):
-    os.remove(os.path.normpath(VJS_OUTPUT))
-vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
+#compiling polyfill
+if os.path.exists(POLYFILL_OUTPUT):
+    os.remove(os.path.normpath(POLYFILL_OUTPUT))
+polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("com/videojs/VideoJS.as"),
                           "-compiler.source-path=.",
                           "-default-background-color=0x000000",
@@ -136,16 +136,16 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-swf-version="+swfversion+"",
                           "-debug="+debug+"",
                           "-use-network=false",
-                          os.path.normpath("-output=" + VJS_OUTPUT),
+                          os.path.normpath("-output=" + POLYFILL_OUTPUT),
                           "-compiler.optimize=true",
                           "-compiler.omit-trace-statements=false",
                           "-warnings=false",
-popenPrint(vjsResult)
-if not os.path.exists(VJS_OUTPUT):
-    printRed("Build failed")
+popenPrint(polyfillResult)
+if not os.path.exists(POLYFILL_OUTPUT):
+    printRed("Polyfill build failed")
     sys.exit(0)
 else:
-    printPurple(">> " + VJS_OUTPUT + " has been generated, polyfillMSE is built")
+    printPurple(">> " + POLYFILL_OUTPUT + " has been generated, polyfillMSE is built")
 
 printGreen("Build successful")
 time = time.time() - startTime
