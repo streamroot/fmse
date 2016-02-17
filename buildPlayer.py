@@ -14,7 +14,9 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     flex = os.path.expanduser("~/SDKs/Flex/4.14")
     exe = ""
 
+TRANSCODER_MAIN_CLASS = "com/streamroot/TranscodeWorker.as"
 TRANSCODER_OUTPUT = "com/streamroot/TranscodeWorker.swf"
+POLYFILL_MAIN_CLASS = "com/videojs/VideoJS.as"
 POLYFILL_OUTPUT = "build/fMSE.swf"
 
 debug = "false"
@@ -119,7 +121,7 @@ workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-target-player="+targetPlayer+"",
                           "-swf-version="+swfversion+"",
                           "-debug="+debug+"",
-                          os.path.normpath("com/streamroot/TranscodeWorker.as"),
+                          os.path.normpath(TRANSCODER_MAIN_CLASS),
                           os.path.normpath("-output=" + TRANSCODER_OUTPUT),
                           "-define+=CONFIG::LOG_DEBUG," + log_debug,
                           "-define+=CONFIG::LOG_ERROR," + log_error],
@@ -136,7 +138,7 @@ else:
 if os.path.exists(POLYFILL_OUTPUT):
     os.remove(os.path.normpath(POLYFILL_OUTPUT))
 polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
-                          os.path.normpath("com/videojs/VideoJS.as"),
+                          os.path.normpath(POLYFILL_MAIN_CLASS),
                           "-compiler.source-path=.",
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
