@@ -140,7 +140,6 @@ vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-compiler.optimize=true",
                           "-compiler.omit-trace-statements=false",
                           "-warnings=false",
-                          "-define+=CONFIG::version,\"'4.2.2'\""], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 popenPrint(vjsResult)
 if not os.path.exists(VJS_OUTPUT):
     printRed("Build failed")
