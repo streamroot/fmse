@@ -14,6 +14,7 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     flex = os.path.expanduser("~/SDKs/Flex/4.14")
     exe = ""
 
+TRANSCODER_OUTPUT = "com/streamroot/TranscodeWorker.swf"
 POLYFILL_OUTPUT = "demo/fMSE.swf"
 
 debug = "false"
@@ -108,21 +109,26 @@ def popenPrint(result):
             print(line)
 
 #Compile worker
+if os.path.exists(TRANSCODER_OUTPUT):
+    os.remove(os.path.normpath(TRANSCODER_OUTPUT))
 workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-compiler.source-path=.",
                           "-target-player="+targetPlayer+"",
                           "-swf-version="+swfversion+"",
                           "-debug="+debug+"",
                           os.path.normpath("com/streamroot/TranscodeWorker.as"),
-                          os.path.normpath("-output=com/streamroot/TranscodeWorker.swf"),
+                          os.path.normpath("-output=" + TRANSCODER_OUTPUT),
                           "-define+=CONFIG::LOGGING,"+debug,
                           "-define+=CONFIG::LOGGING_PTS,true"],
 
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 popenPrint(workerResult)
+if not os.path.exists(TRANSCODER_OUTPUT):
+    printRed("Transcoder build failed")
     sys.exit(0)
 else:
+    printPurple(">> " + TRANSCODER_OUTPUT + " has been generated, transcoder is built")
 
 #compiling polyfill
 if os.path.exists(POLYFILL_OUTPUT):
