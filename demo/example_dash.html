@@ -17,9 +17,10 @@
     </div>
 
     <script>
+        var polyfillSwfUrl = "../build/fMSE.swf";
         var videoElementId = "videoPlayer";
         var videoElement = document.getElementById(videoElementId);
-        window.polyfill(swfUrl, videoElement, initDashJS, true);
+        window.polyfill(polyfillSwfUrl, videoElement, initDashJS, true);
 
         function initDashJS(video) {
             videoElement = video;
