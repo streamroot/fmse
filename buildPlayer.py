@@ -130,7 +130,6 @@ if os.path.exists(VJS_OUTPUT):
 vjsResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("com/videojs/VideoJS.as"),
                           "-compiler.source-path=.",
-                          "-compiler.library-path="+flex+"/frameworks/libs",
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
                           "-target-player="+targetPlayer+"",
