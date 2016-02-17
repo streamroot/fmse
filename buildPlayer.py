@@ -15,7 +15,7 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     exe = ""
 
 TRANSCODER_OUTPUT = "com/streamroot/TranscodeWorker.swf"
-POLYFILL_OUTPUT = "demo/fMSE.swf"
+POLYFILL_OUTPUT = "build/fMSE.swf"
 
 debug = "false"
 log_debug = "false"
