@@ -229,9 +229,7 @@ public class StreamrootMSE {
 
             if (!isInit) {
                 // Append DASH || Smooth
-                CONFIG::LOGGING_PTS {
-                    debug("Appending segment in StreamBuffer", this);
-                }
+                debug("Appending segment in StreamBuffer", this);
                 if (_lastHeight === 0 && width > 0 && height > 0) {
                     debug("setting video size: " + width + " - " + height);
                     onMetaData(0, width, height);
@@ -260,9 +258,7 @@ public class StreamrootMSE {
     }
 
     private function sendSegmentFlushedMessage(type:String, min_pts:Number = 0, max_pts:Number = 0):void {
-        CONFIG::LOGGING {
-            debug("Discarding segment    " + type, this);
-        }
+        debug("Discarding segment    " + type, this);
 
         if (TrackTypeHelper.isAudio(type)) {
             setTimeout(updateendAudio, TIMEOUT_LENGTH, true);
@@ -472,14 +468,12 @@ public class StreamrootMSE {
 
 
     public function error(message:Object, obj:Object = null):void {
-        if(_jsReady){
-            if (Conf.LOG_ERROR) {
-                if(obj != null){
-                    var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-                    ExternalInterface.call("console.error", textMessage);
-                }else{
-                    ExternalInterface.call("console.error", String(message));
-                }
+        if(_jsReady && CONFIG::LOG_ERROR){
+            if(obj != null){
+                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                ExternalInterface.call("console.error", textMessage);
+            }else{
+                ExternalInterface.call("console.error", String(message));
             }
         }else{
             setTimeout(error, 10, message, obj);
@@ -487,7 +481,7 @@ public class StreamrootMSE {
     }
 
     public function transcodeError(message:Object):void{
-        if(_jsReady){
+        if(_jsReady && CONFIG::LOG_ERROR){
             ExternalInterface.call("sr_flash_transcodeError", String(message));
         }else{
             setTimeout(transcodeError, 10, message);
@@ -495,14 +489,13 @@ public class StreamrootMSE {
     }
 
     public function debug(message:Object, obj:Object = null):void {
-        if(_jsReady){
-            if (Conf.LOG_DEBUG) {
-                if(obj != null){
-                    var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
-                    ExternalInterface.call("console.debug", textMessage);
-                }else{
-                    ExternalInterface.call("console.debug", String(message));
-                }
+
+        if(_jsReady && CONFIG::LOG_DEBUG){
+            if(obj != null){
+                var textMessage:String = getQualifiedClassName(obj) + ".as : " + String(message);
+                ExternalInterface.call("console.debug", textMessage);
+            }else{
+                ExternalInterface.call("console.debug", String(message));
             }
         }else{
             setTimeout(debug, 10, message, obj);

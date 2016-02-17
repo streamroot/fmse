@@ -42,11 +42,9 @@ public class Transcoder {
     }
 
     public function asyncTranscode(data:String, type:String, timestamp:Number, offset:Number, isInit:Boolean):void {
-        var bytes_event:ByteArray = Base64.decode(data);
-        CONFIG::LOGGING {
-            _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
-        }
+        _transcodeWorker.debug('FLASH transcoder.asyncTranscode');
 
+        var bytes_event:ByteArray = Base64.decode(data);
         if(isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
             var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);

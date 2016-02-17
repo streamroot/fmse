@@ -18,8 +18,9 @@ TRANSCODER_OUTPUT = "com/streamroot/TranscodeWorker.swf"
 POLYFILL_OUTPUT = "demo/fMSE.swf"
 
 debug = "false"
+log_debug = "false"
+log_error = "false"
 verbose = False
-log_pts = "false"
 swfversion = "17"
 targetPlayer = "11.4.0"
 color = True
@@ -30,7 +31,8 @@ def helpParam():
     print "\npython buildPlayer.py [options]"
     print "options:"
     print "\t--debug : set debug flag to true"
-    print "\t--log-pts : activate PTS log"
+    print "\t--log-debug : enables debug messages logging to browser console"
+    print "\t--log-error : enables error messages logging to browser console"
     print "\t--no-color : disable color"
     print "\t-v : verbose mode"
     print "\t-h : display this menu"
@@ -67,8 +69,10 @@ if (len(sys.argv)>1):
             debug = "true"
             swfversion = "18"
             targetPlayer = "11.5.0"
-        elif sys.argv[i] == "--log-pts":
-            log_pts = "true"
+        elif sys.argv[i] == "--log-debug":
+            log_debug = "true"
+        elif sys.argv[i] == "--log-error":
+            log_error = "true"
         elif sys.argv[i] == "-v":
             verbose = True
         elif sys.argv[i] in ["--help","-h"]:
@@ -80,7 +84,6 @@ if (len(sys.argv)>1):
             helpParam()
 if verbose:
     print "Debug flag = " + debug
-    print "LOGGING_PTS = " + log_pts
     print "-swf-version="+swfversion
     print "-target-player="+targetPlayer
 
@@ -118,9 +121,8 @@ workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
                           "-debug="+debug+"",
                           os.path.normpath("com/streamroot/TranscodeWorker.as"),
                           os.path.normpath("-output=" + TRANSCODER_OUTPUT),
-                          "-define+=CONFIG::LOGGING,"+debug,
-                          "-define+=CONFIG::LOGGING_PTS,true"],
-
+                          "-define+=CONFIG::LOG_DEBUG," + log_debug,
+                          "-define+=CONFIG::LOG_ERROR," + log_error],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 popenPrint(workerResult)
@@ -146,6 +148,8 @@ polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-compiler.optimize=true",
                           "-compiler.omit-trace-statements=false",
                           "-warnings=false",
+                          "-define+=CONFIG::LOG_DEBUG," + log_debug,
+                          "-define+=CONFIG::LOG_ERROR," + log_error], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 popenPrint(polyfillResult)
 if not os.path.exists(POLYFILL_OUTPUT):
     printRed("Polyfill build failed")

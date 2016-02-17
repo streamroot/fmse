@@ -88,9 +88,7 @@ public class TranscodeWorker extends Sprite {
      * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
      */
     public function asyncTranscodeCB(type:String, isInit:Boolean, segmentBytes:ByteArray, min_pts:Number = 0, max_pts:Number = 0, width:Number = 0, height:Number = 0):void {
-        CONFIG::LOGGING_PTS {
-            debug("asyncTranscodeCB");
-        }
+        debug("asyncTranscodeCB");
         var answer:Object ={
             type: type,
             isInit: isInit,
@@ -105,8 +103,10 @@ public class TranscodeWorker extends Sprite {
     }
 
     public function debug(message:String):void {
-        var object:Object = {command:'debug', message: message};
-        _commChannel.send(object);
+        if (CONFIG::LOG_DEBUG) {
+            var object:Object = {command:'debug', message: message};
+            _commChannel.send(object);
+        }
     }
 
     /**
@@ -114,8 +114,10 @@ public class TranscodeWorker extends Sprite {
      * Make sure everything that goes out from Transcoder to StreamrootMSE is in second
       */
     public function error(message:String, type:String):void {
-        var object:Object = {command:'error', message: message, type: type};
-        _commChannel.send(object);
+        if (CONFIG::LOG_ERROR) {
+            var object:Object = {command:'error', message: message, type: type};
+            _commChannel.send(object);
+        }
     }
 }
 
