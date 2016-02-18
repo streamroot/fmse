@@ -118,12 +118,12 @@ def popenPrint(result):
 if os.path.exists(TRANSCODER_OUTPUT):
     os.remove(os.path.normpath(TRANSCODER_OUTPUT))
 workerResult = subprocess.Popen([os.path.normpath(flex + "/bin/mxmlc" + exe),
+                          os.path.normpath(TRANSCODER_MAIN_CLASS),
+                          os.path.normpath("-output=" + TRANSCODER_OUTPUT),
                           "-compiler.source-path=" + SOURCE_PATH,
                           "-target-player="+targetPlayer+"",
                           "-swf-version="+swfversion+"",
                           "-debug="+debug+"",
-                          os.path.normpath(TRANSCODER_MAIN_CLASS),
-                          os.path.normpath("-output=" + TRANSCODER_OUTPUT),
                           "-define+=CONFIG::LOG_DEBUG," + log_debug,
                           "-define+=CONFIG::LOG_ERROR," + log_error],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -140,16 +140,16 @@ if os.path.exists(POLYFILL_OUTPUT):
     os.remove(os.path.normpath(POLYFILL_OUTPUT))
 polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath(POLYFILL_MAIN_CLASS),
+                          os.path.normpath("-output=" + POLYFILL_OUTPUT),
                           "-compiler.source-path=" + SOURCE_PATH,
-                          "-default-background-color=0x000000",
-                          "-default-frame-rate=30",
                           "-target-player="+targetPlayer+"",
                           "-swf-version="+swfversion+"",
                           "-debug="+debug+"",
                           "-use-network=false",
-                          os.path.normpath("-output=" + POLYFILL_OUTPUT),
                           "-compiler.optimize=true",
                           "-compiler.omit-trace-statements=false",
+                          "-default-background-color=0x000000",
+                          "-default-frame-rate=30",
                           "-define+=CONFIG::LOG_DEBUG," + log_debug,
                           "-define+=CONFIG::LOG_ERROR," + log_error], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 popenPrint(polyfillResult)
