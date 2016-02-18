@@ -150,7 +150,6 @@ polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           os.path.normpath("-output=" + POLYFILL_OUTPUT),
                           "-compiler.optimize=true",
                           "-compiler.omit-trace-statements=false",
-                          "-warnings=false",
                           "-define+=CONFIG::LOG_DEBUG," + log_debug,
                           "-define+=CONFIG::LOG_ERROR," + log_error], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 popenPrint(polyfillResult)
