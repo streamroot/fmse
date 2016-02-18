@@ -133,7 +133,7 @@ if not os.path.exists(TRANSCODER_OUTPUT):
     printRed("Transcoder build failed")
     sys.exit(0)
 else:
-    printPurple(">> " + TRANSCODER_OUTPUT + " has been generated, transcoder is built")
+    printPurple(">> " + TRANSCODER_OUTPUT + " has been generated, build successful")
 
 #compiling polyfill
 if os.path.exists(POLYFILL_OUTPUT):
@@ -147,7 +147,6 @@ polyfillResult = subprocess.Popen([os.path.normpath(flex +"/bin/mxmlc" + exe),
                           "-debug="+debug+"",
                           "-use-network=false",
                           "-compiler.optimize=true",
-                          "-compiler.omit-trace-statements=false",
                           "-default-background-color=0x000000",
                           "-default-frame-rate=30",
                           "-define+=CONFIG::LOG_DEBUG," + log_debug,
@@ -157,7 +156,7 @@ if not os.path.exists(POLYFILL_OUTPUT):
     printRed("Polyfill build failed")
     sys.exit(0)
 else:
-    printPurple(">> " + POLYFILL_OUTPUT + " has been generated, polyfillMSE is built")
+    printPurple(">> " + POLYFILL_OUTPUT + " has been generated, build successful")
 
 printGreen("Build successful")
 time = time.time() - startTime
