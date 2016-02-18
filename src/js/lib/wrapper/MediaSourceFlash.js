@@ -6,91 +6,91 @@ var B64Encoder = require('./B64Encoder');
 var MediaSourceFlash = function() {
     var self = this,
 
-        _videoExtension,
+    _videoExtension,
 
-        _swfobj,
+    _swfobj,
 
-        _b64Encoder = new B64Encoder(),
+    _b64Encoder = new B64Encoder(),
 
-        _READY_STATE = {
-            OPEN: 'open',
-            CLOSED: 'closed'
-        },
+    _READY_STATE = {
+        OPEN: 'open',
+        CLOSED: 'closed'
+    },
 
-        _readyState = _READY_STATE.CLOSED,
+    _readyState = _READY_STATE.CLOSED,
 
-        //TODO: is duration realy an attribute of MSE, or of video?
-        _duration = 0,
+    //TODO: is duration realy an attribute of MSE, or of video?
+    _duration = 0,
 
-        _listeners = [],
+    _listeners = [],
 
-        _sourceBuffers = [],
+    _sourceBuffers = [],
 
-        _addEventListener = function(type, listener) {
-            if (!_listeners[type]) {
-                _listeners[type] = [];
+    _addEventListener = function(type, listener) {
+        if (!_listeners[type]) {
+            _listeners[type] = [];
+        }
+        _listeners[type].unshift(listener);
+    },
+
+    _removeEventListener = function(type, listener) {
+        //TODO: I don't think that works. Why return? Should transform _listeners property of this class. UPDATE: see comment in SourceBuffer. Shouldn't the event bus be a class on its own?
+        var listeners = _listeners[type],
+            i = listeners.length;
+        while (i--) {
+            if (listeners[i] === listener) {
+                return listeners.splice(i, 1);
             }
-            _listeners[type].unshift(listener);
-        },
+        }
+    },
 
-        _removeEventListener = function(type, listener) {
-            //TODO: I don't think that works. Why return? Should transform _listeners property of this class. UPDATE: see comment in SourceBuffer. Shouldn't the event bus be a class on its own?
-            var listeners = _listeners[type],
-                i = listeners.length;
-            while (i--) {
-                if (listeners[i] === listener) {
-                    return listeners.splice(i, 1);
+    _trigger = function(event) {
+        //updateend, updatestart
+        var listeners = _listeners[event.type] || [],
+            i = listeners.length;
+        while (i--) {
+            listeners[i](event);
+        }
+    },
+
+    _addSourceBuffer = function(type) {
+        var sourceBuffer;
+        sourceBuffer = new SourceBuffer(type, _videoExtension, _b64Encoder);
+        _sourceBuffers.push(sourceBuffer);
+        _videoExtension.registerSourceBuffer(sourceBuffer);
+        _swfobj.addSourceBuffer(type);
+        return sourceBuffer;
+    },
+
+    _removeSourceBuffer = function() {
+
+    },
+
+    _endOfStream = function() {
+
+    },
+
+    _initialize = function(videoExtension) {
+
+        _videoExtension = videoExtension;
+        _swfobj = _videoExtension.getSwf();
+
+        _videoExtension.createSrc(self);
+
+        _readyState = _READY_STATE.OPEN;
+        _trigger({type: "sourceopen"});
+
+        window.sr_flash_transcodeError = function(message) {
+            console.error(message);
+            // if (conf.REPORT_ERROR) {
+                if (window.onPlayerError) {
+                    window.onPlayerError(message);
                 }
-            }
-        },
-
-        _trigger = function(event) {
-            //updateend, updatestart
-            var listeners = _listeners[event.type] || [],
-                i = listeners.length;
-            while (i--) {
-                listeners[i](event);
-            }
-        },
-
-        _addSourceBuffer = function(type) {
-            var sourceBuffer;
-            sourceBuffer = new SourceBuffer(type, _videoExtension, _b64Encoder);
-            _sourceBuffers.push(sourceBuffer);
-            _videoExtension.registerSourceBuffer(sourceBuffer);
-            _swfobj.addSourceBuffer(type);
-            return sourceBuffer;
-        },
-
-        _removeSourceBuffer = function() {
-
-        },
-
-        _endOfStream = function() {
-
-        },
-
-        _initialize = function(videoExtension) {
-
-            _videoExtension = videoExtension;
-            _swfobj = _videoExtension.getSwf();
-
-            _videoExtension.createSrc(self);
-
-            _readyState = _READY_STATE.OPEN;
-            _trigger({type: "sourceopen"});
-
-            window.sr_flash_transcodeError = function(message) {
-                console.error(message);
-                // if (conf.REPORT_ERROR) {
-                    if (window.onPlayerError) {
-                        window.onPlayerError(message);
-                    }
-                // }
-            };
-
-            _swfobj.jsReady();
+            // }
         };
+
+        _swfobj.jsReady();
+    };
 
     this.addSourceBuffer = _addSourceBuffer;
     this.addEventListener = _addEventListener;
