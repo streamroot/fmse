@@ -7,9 +7,6 @@ var VideoExtension = function(swfObj) {
 
     var self = this,
 
-    //TODO: remove _currentTime property stuff
-    //_currentTime = 0,
-
     _swfObj = swfObj,
 
     _mediaSource,
@@ -22,10 +19,6 @@ var VideoExtension = function(swfObj) {
     _seekTarget, // Using another variable for seeking, because seekTarget can be set to undefined by "playing" event (TODO: triggered during seek, which is a separate issue)
     _lastCurrentTimeTimestamp,
     _REFRESH_INTERVAL = 2000, //Max interval until we look up flash to get real value of currentTime
-
-    //_playbackRate = 1,
-
-    //_lastTimeUpdateTimestamp,
 
     _listeners = [],
 
@@ -261,54 +254,24 @@ var VideoExtension = function(swfObj) {
         });
     },
 
-    // _onAbort = function() {
-    //     self.trigger({
-    //         type: 'abort'
-    //     });
-    // },
-
-    // _onEmptied = function() {
-    //     self.trigger({
-    //         type: 'emptied'
-    //     });
-    // },
-
     _onCanplay = function() {
         self.trigger({
             type: 'canplay'
         });
     },
 
-    // _onCanplaythrough = function() {
-    //     self.trigger({
-    //         type: 'canplaythrough'
-    //     });
-    // },
-
     _onDurationchange = function() {
         self.trigger({
             type: 'durationchange'
         });
     },
-    /*
-    _onTimeupdate = function() {
-        self.trigger({
-            type: 'timeupdate'
-        });
-    },*/
 
     _onVolumechange = function() {
         self.trigger({
             type: 'volumechange'
         });
     },
-    /*
-    _onRatechange = function() {
-        self.trigger({
-            type: 'ratechange'
-        });
-    },
-    */
+
     _onFlashReady = function() {
         _setPropertiesFromCache();
         _executeActionsFromCache();
@@ -491,8 +454,6 @@ var VideoExtension = function(swfObj) {
     this.createSrc = function(mediaSourceFlash) {
         _mediaSource = mediaSourceFlash;
     };
-
-    this.dispatchEvent = _trigger;
 
     this.registerSourceBuffer = function(sourceBuffer) {
         _sourceBuffers.push(sourceBuffer);

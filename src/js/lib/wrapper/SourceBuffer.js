@@ -89,40 +89,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
             console.info('timestamp not consistent. First segment after seek: ' + firstSegmentBool + ".   " + (startTime));
             _onUpdateend(true); //trigger updateend with error bool to true
         }
-
-            /*
-        var isInit = (typeof endTime !== 'undefined') ? 0 : 1,
-            data = _arrayBufferToBase64( arraybuffer_data );
-
-        console.info('IS INIT: ' + isInit);
-
-        _trigger({type:'updatestart'});
-
-        setTimeout(function() {
-            _swfobj.appendBuffer(data, _type, isInit, startTimeMs, Math.floor(endTime*1000000));
-            _endTime = endTime;
-        }, 50);
-        */
-
-            //HACK: can't get event updateend from flash
-            /*
-            setTimeout(function () {
-                _trigger({type:'updateend'});
-                if (isInit) {
-                    _endTime = endTime;
-                }
-            }, 200);
-            */
-    },
-        /*
-    _arrayBufferToBase64 	= function(buffer){
-        var binary = '';
-        var bytes = new Uint8Array( buffer );
-        var len = bytes.byteLength;
-        for (var i = 0; i < len; i++) {
-            binary += String.fromCharCode( bytes[ i ] )
-        }
-        return window.btoa(binary);
     },
 
     /**
@@ -166,12 +132,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     },
 
     _buffered = function() {
-        //TODO: remove endTime hack
-        /*
-        var endTime = parseInt(_swfobj.buffered(_type)),
-            bufferedArray = [{start: 0, end: endTime}];
-        */
-        //var endTime = _swfobj.buffered(_type) / 1000000;
         var bufferedArray = [];
         if (_endTime > _startTime) {
             bufferedArray.push({
@@ -256,7 +216,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         videoExtension.addEventListener('trackSwitch', _onTrackSwitch);
     };
 
-    //TODO: remove endTime hack
     this.appendBuffer = _appendBuffer;
     this.remove = _remove;
     this.addEventListener = _addEventListener;
@@ -302,26 +261,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     });
 
     _initialize();
-
-    if (_TEST_) {
-
-        //This let us spy private method
-        this._triggerUpdateend  = _triggerUpdateend ;
-        _triggerUpdateend = function(){
-            return self._triggerUpdateend.apply(self, arguments);
-        };
-
-        this._updateMapPTS  = _updateMapPTS ;
-        _updateMapPTS = function(){
-            return self._updateMapPTS.apply(self, arguments);
-        };
-
-        this.getPendingEndTime = function(){
-            return _pendingEndTime;
-        };
-
-        this._segmentAppender = _segmentAppender;
-    }
 };
 
 module.exports = SourceBuffer;
