@@ -479,4 +479,7 @@ var VideoExtension = function(swfObj) {
     _initialize();
 };
 
+VideoExtension.prototype = Object.create(window.HTMLMediaElement.prototype);
+VideoExtension.prototype.constructor = VideoExtension;
+
 module.exports = VideoExtension;
