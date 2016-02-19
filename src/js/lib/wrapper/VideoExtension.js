@@ -103,7 +103,7 @@ var VideoExtension = function(swfObj) {
 
     _pause = function() {
         if (!_isFlashReady) {
-            _saveActionToCache(_play);
+            _saveActionToCache(_pause);
             return;
         }
 
