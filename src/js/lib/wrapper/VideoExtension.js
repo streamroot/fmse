@@ -451,6 +451,33 @@ var VideoExtension = function(swfObj) {
         set: undefined
     });
 
+    Object.defineProperty(this, "preload", {
+        get: undefined,
+        set: function() {
+        }
+    });
+
+    Object.defineProperty(this, "onencrypted", {
+        get: undefined,
+        set: undefined
+    });
+
+    Object.defineProperty(this, "autoplay", {
+        get: undefined,
+        set: function() {
+        }
+    });
+
+    Object.defineProperty(this, "ended", {
+        get: undefined,
+        set: undefined
+    });
+
+    Object.defineProperty(this, "readyState", {
+        get: _swfObj.readyState,
+        set: undefined
+    });
+
     this.createSrc = function(mediaSourceFlash) {
         _mediaSource = mediaSourceFlash;
     };
