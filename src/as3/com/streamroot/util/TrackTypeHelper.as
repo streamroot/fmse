@@ -17,19 +17,11 @@ public class TrackTypeHelper{
         }
 
         public static function isVideo(type:String):Boolean{
-            if(type.indexOf(video) >= 0){
-                return true;
-            }else{
-                return false;
-            }
+            return type.indexOf(video) >= 0;
         }
 
         public static function isAudio(type:String):Boolean{
-            if(type.indexOf(audio) >= 0){
-                return true;
-            }else{
-                return false;
-            }
+            return type.indexOf(audio) >= 0;
         }
     }
 
