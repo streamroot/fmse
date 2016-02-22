@@ -15,9 +15,9 @@ elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     exe = ""
 
 SOURCE_PATH = "./src/as3/"
-TRANSCODER_MAIN_CLASS = SOURCE_PATH + "com/streamroot/TranscodeWorker.as"
-TRANSCODER_OUTPUT = SOURCE_PATH + "com/streamroot/TranscodeWorker.swf"
-POLYFILL_MAIN_CLASS = SOURCE_PATH + "com/videojs/VideoJS.as"
+TRANSCODER_MAIN_CLASS = SOURCE_PATH + "com/streamroot/transcoder/TranscodeWorker.as"
+TRANSCODER_OUTPUT = SOURCE_PATH + "com/streamroot/transcoder/TranscodeWorker.swf"
+POLYFILL_MAIN_CLASS = SOURCE_PATH + "com/streamroot/Main.as"
 POLYFILL_OUTPUT = "build/fMSE.swf"
 
 debug = "false"
