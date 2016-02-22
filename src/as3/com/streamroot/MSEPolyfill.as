@@ -16,7 +16,7 @@ public class MSEPolyfill {
 
     private static const TIMEOUT_LENGTH:uint = 5;
 
-    [Embed(source="TranscodeWorker.swf", mimeType="application/octet-stream")]
+    [Embed(source="transcoder/TranscodeWorker.swf", mimeType="application/octet-stream")]
     private static var WORKER_SWF:Class;
 
     private var _netStreamWrapper:NetStreamWrapper;
