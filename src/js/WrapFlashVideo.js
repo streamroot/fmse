@@ -13,16 +13,7 @@ function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault, a
         onReady(new VideoExtension(swfObj));
     };
 
-    window.tapEvent = function(){
-        console.log(arguments);
-    };
-    window.tapError = function(){
-        console.log(arguments);
-    };
-
     var readyFunctionString = "window.go";
-    var eventProxyFunctionString = "window.tapEvent";
-    var errorEventProxyFunctionString = "window.tapError";
 
     var height = videoElement.height || 150;
     var width = videoElement.width || 300;
@@ -34,8 +25,6 @@ function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault, a
     ' data="'+ polyfillSwfUrl +'" width="'+ width +'" height="'+ height +'" name="'+oldId+'" class="'+oldIdClasses+'" style="display: block;">'+
     '        <param name="movie" value="'+ polyfillSwfUrl +'">'+
     '        <param name="flashvars" value="readyFunction='+readyFunctionString+
-                                            '&amp;eventProxyFunction='+eventProxyFunctionString+
-                                            '&amp;errorEventProxyFunction='+errorEventProxyFunctionString+
                                             '&amp;muted=undefined;'+
     '        <param name="allowScriptAccess" value="always">'+
     '        <param name="allowNetworking" value="all">'+
