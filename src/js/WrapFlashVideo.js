@@ -36,9 +36,6 @@ function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault, a
     '        <param name="flashvars" value="readyFunction='+readyFunctionString+
                                             '&amp;eventProxyFunction='+eventProxyFunctionString+
                                             '&amp;errorEventProxyFunction='+errorEventProxyFunctionString+
-                                            '&amp;autoplay='+autoplay+
-                                            '&amp;preload=undefined'+
-                                            '&amp;loop=undefined'+
                                             '&amp;muted=undefined;'+
     '        <param name="allowScriptAccess" value="always">'+
     '        <param name="allowNetworking" value="all">'+
