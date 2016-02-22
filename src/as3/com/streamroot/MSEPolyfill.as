@@ -23,7 +23,6 @@ public class MSEPolyfill {
 
     private var _netStreamWrapper:NetStreamWrapper;
     private var _streamBuffer:StreamBuffer;
-    private var _muxer:Muxer;
     private var _jsReady:Boolean = false;
     private var _loaded:Boolean = false;
 
@@ -48,8 +47,6 @@ public class MSEPolyfill {
 
     public function MSEPolyfill(netStreamWrapper:NetStreamWrapper) {
         _netStreamWrapper = netStreamWrapper;
-
-        _muxer = new Muxer();
 
         //StreamrootMSE callbacks
         ExternalInterface.addCallback("addSourceBuffer", addSourceBuffer);
@@ -348,7 +345,6 @@ public class MSEPolyfill {
         } else {
             setTimeout(triggerLoadStart, 10);
         }
-
     }
 
     public function triggerPlay():void {
