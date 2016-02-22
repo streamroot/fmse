@@ -1,6 +1,6 @@
 package com.streamroot {
 
-import com.streamroot.events.VideoPlaybackEvent;
+import com.streamroot.events.PlaybackEvent;
 
 import flash.events.EventDispatcher;
 import flash.events.NetStatusEvent;
@@ -221,7 +221,7 @@ public class NetStreamWrapper extends EventDispatcher {
             _isPaused = false;
         }
 
-        dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_START, {}));
+        dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_START, {}));
     }
 
     public function pause():void {
@@ -289,7 +289,7 @@ public class NetStreamWrapper extends EventDispatcher {
             _ns.close();
             _isPlaying = false;
             _hasEnded = true;
-            dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_CLOSE, {}));
+            dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_CLOSE, {}));
             _throughputTimer.stop();
             _throughputTimer.reset();
         }
@@ -371,7 +371,7 @@ public class NetStreamWrapper extends EventDispatcher {
 
 //        _pausePending = true;
 
-        dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_READY, {ns: _ns}));
+        dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_READY, {ns: _ns}));
     }
 
     private function calculateThroughput():void {
@@ -407,7 +407,7 @@ public class NetStreamWrapper extends EventDispatcher {
 
                 break;
         }
-        dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_NETCONNECTION_STATUS, {info: e.info}));
+        dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_NETCONNECTION_STATUS, {info: e.info}));
     }
 
     private function onNetStreamStatus(e:NetStatusEvent):void {
@@ -428,7 +428,7 @@ public class NetStreamWrapper extends EventDispatcher {
                     _isPaused = true;
                 }
                 else {
-                    dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_START, {info: e.info}));
+                    dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_START, {info: e.info}));
                 }
                 break;
 
@@ -453,7 +453,7 @@ public class NetStreamWrapper extends EventDispatcher {
                 _isPlaying = false;
                 _isPaused = true;
                 _hasEnded = true;
-                dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_CLOSE, {info: e.info}));
+                dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_CLOSE, {info: e.info}));
 
                 _throughputTimer.stop();
                 _throughputTimer.reset();
@@ -462,7 +462,7 @@ public class NetStreamWrapper extends EventDispatcher {
             case "NetStream.Seek.Notify":
                 _isPlaying = true;
                 _isSeeking = false;
-                dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_STREAM_SEEK_COMPLETE, {info: e.info}));
+                dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_SEEK_COMPLETE, {info: e.info}));
                 _fMSE.triggerSeeked();
                 _currentThroughput = 0;
                 _loadStartTimestamp = getTimer();
@@ -475,14 +475,14 @@ public class NetStreamWrapper extends EventDispatcher {
                 break;
 
             case "NetStream.Video.DimensionChange":
-                dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_VIDEO_DIMENSION_UPDATE, {videoWidth: _videoReference.videoWidth, videoHeight: _videoReference.videoHeight}));
+                dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_VIDEO_DIMENSION_UPDATE, {videoWidth: _videoReference.videoWidth, videoHeight: _videoReference.videoHeight}));
                 if (_metadata && _videoReference) {
                     _metadata.width = _videoReference.videoWidth;
                     _metadata.height = _videoReference.videoHeight;
                 }
                 break;
         }
-        dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_NETSTREAM_STATUS, {info: e.info}));
+        dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_NETSTREAM_STATUS, {info: e.info}));
     }
 
     private function onThroughputTimerTick(e:TimerEvent):void {
@@ -505,7 +505,7 @@ public class NetStreamWrapper extends EventDispatcher {
             _isLive = true;
             _canSeekAhead = false;
         }
-        dispatchEvent(new VideoPlaybackEvent(VideoPlaybackEvent.ON_META_DATA, {metadata: _metadata}));
+        dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_META_DATA, {metadata: _metadata}));
     }
 
     //ADDED METHODS
