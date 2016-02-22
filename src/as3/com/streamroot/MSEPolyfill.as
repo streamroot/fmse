@@ -1,5 +1,7 @@
 package com.streamroot {
 
+import com.streamroot.buffer.Segment;
+import com.streamroot.buffer.StreamBuffer;
 import com.streamroot.util.TrackTypeHelper;
 
 import flash.events.Event;
