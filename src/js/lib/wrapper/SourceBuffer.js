@@ -18,8 +18,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     _startTime = 0, //TODO: Remove startTime hack
     _endTime = 0,
     _pendingEndTime = -1,
-    /** Keep in memory the id of the segment we're currently appending into the flash **/
-    _appendingSeqnum,
     /** _switchingTrack is set to true when we change rep and until the first segment of the new rep is appended in the Flash. It avoids fatal blocking at _isTimestampConsistent **/
     _switchingTrack = false,
 
@@ -64,8 +62,7 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         return isNaN(startTime) || (Math.abs(startTime - _endTime) < 1);
     },
 
-    //NOTE: starting from here in the chain seqnum will only be defined in the case of hls
-    _appendBuffer = function(arraybuffer_data, startTime, endTime, seqnum) {
+    _appendBuffer = function(arraybuffer_data, startTime, endTime) {
         _updating = true; //Do this at the very first
         _trigger({
             type: 'updatestart'
@@ -80,7 +77,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         }
 
         if (_isTimestampConsistent(startTime) || _switchingTrack || typeof startTime === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTime unefined)
-            _appendingSeqnum = seqnum;
             _segmentAppender.appendBuffer(arraybuffer_data, _type, startTime, endTime, segmentType);
             _pendingEndTime = endTime;
         } else {
@@ -142,7 +138,7 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         return new CustomTimeRange(bufferedArray);
     },
 
-    _triggerUpdateend = function(error, min_pts, max_pts) {
+    _triggerUpdateend = function(error) {
         _updating = false;
         if (!error) {
             console.info("updateend, appended segment: " + _appendingSeqnum);
@@ -158,17 +154,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
             _switchingTrack = false;
         } else if (error) {
             console.info("Wrong segment. Update map then bufferize OR discontinuity at sourceBuffer.appendBuffer");
-
-            if (min_pts > 0 && max_pts > 0) { // Check that we are not in an apple_error_previousPTS (in which case 0 and 0 are returned but map mustn't be updated)
-                //If min_pts and max_pts are returned, we need to update the ;ap's timestamp
-                _updateMapPTS(_appendingSeqnum, min_pts, max_pts);
-                if (!_switchingTrack) {
-                    console.info("Timestamps updated. Seeking");
-                    //If we updated the map timestamp but are not switching track, seek to the beggining of the target segment
-                    //(it will append it again, and the player will expect the right timestamp)
-                    videoExtension.currentTime = min_pts / 1000;
-                }
-            }
         }
 
         _trigger({
@@ -176,10 +161,10 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         });
     },
 
-    _onUpdateend = function(error, min_pts, max_pts) {
+    _onUpdateend = function(error) {
         console.info("_onUpdateend js: " + min_pts + " / " + max_pts);
         setTimeout(function() {
-            _triggerUpdateend(error, min_pts, max_pts);
+            _triggerUpdateend(error);
         }, 5);
     },
 
@@ -191,18 +176,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         //set _pendingEndTime to -1, because update end is triggered 20ms after end of append in NetStream, so if a seek happens in the meantime we would set _endTime to _pendingEndTime wrongly.
         //This won't happen if we set _pendingEndTime to -1, since we need _pendingEndTime > _endTime.
         _pendingEndTime = -1;
-    },
-
-    _updateMapPTS = function(appendingSeqnum, minPts, maxPts) {
-        var event = {
-            type: 'updateMapPTS',
-            param: {
-                appendingSeqnum: appendingSeqnum,
-                minPts: minPts,
-                maxPts: maxPts,
-            }
-        };
-        videoExtension.dispatchEvent(event);
     },
 
     _initialize = function() {
