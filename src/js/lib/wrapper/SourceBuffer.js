@@ -53,12 +53,10 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     },
 
     _isTimestampConsistent = function(startTime) {
-        console.info("_isTimestampConsistent _switchingTrack: " + _switchingTrack);
         if (Math.abs(startTime - _endTime) >= 1 /*|| Math.abs(startTime - _endTime) > 60*/ ) {
-            console.info("_isTimestampConsistent FALSE");
-            console.info("_isTimestampConsistent startTime: " + startTime);
-            console.info("_isTimestampConsistent _endTime: " + _endTime);
+            console.info("_isTimestampConsistent FALSE. startTime=", startTime, "_endTime=", _endTime);
         }
+
         return isNaN(startTime) || (Math.abs(startTime - _endTime) < 1);
     },
 
@@ -140,9 +138,7 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
 
     _triggerUpdateend = function(error) {
         _updating = false;
-        if (!error) {
-            console.info("updateend, appended segment: " + _appendingSeqnum);
-        }
+
         //If _pendingEndTime < _endTime, it means a segment has arrived late (MBR?), and we don't want to reduce our buffered.end
         //(that would trigger other late downloads and we would add everything to flash in double, which is not good for
         //performance)
@@ -162,7 +158,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     },
 
     _onUpdateend = function(error) {
-        console.info("_onUpdateend js: " + min_pts + " / " + max_pts);
         setTimeout(function() {
             _triggerUpdateend(error);
         }, 5);
