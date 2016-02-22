@@ -1,7 +1,6 @@
 package com.streamroot {
 
 import com.streamroot.util.TrackTypeHelper;
-import com.videojs.providers.NetStreamWrapper;
 
 import flash.events.Event;
 import flash.external.ExternalInterface;
