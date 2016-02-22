@@ -1,10 +1,10 @@
 var MediaSourceFlash = require('./lib/wrapper/MediaSourceFlash');
 var VideoExtension = require('./lib/wrapper/VideoExtension');
 
-function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault, autoplay){
-    var isMSESupported = true;
+function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault){
+    var isMSESupported = !!window.MediaSource;
     if(isMSESupported && !flashByDefault){
-        return videoElement;
+        return onReady(videoElement);
     }
 
     window.MediaSource = MediaSourceFlash;
