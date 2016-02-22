@@ -39,8 +39,7 @@ function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault, a
                                             '&amp;autoplay='+autoplay+
                                             '&amp;preload=undefined'+
                                             '&amp;loop=undefined'+
-                                            '&amp;muted=undefined'+
-                                            '&amp;src=null&amp;">'+
+                                            '&amp;muted=undefined;'+
     '        <param name="allowScriptAccess" value="always">'+
     '        <param name="allowNetworking" value="all">'+
     '        <param name="wmode" value="opaque">'+
