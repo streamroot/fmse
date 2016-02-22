@@ -20,7 +20,8 @@
         var polyfillSwfUrl = "../build/fMSE.swf";
         var videoElementId = "videoPlayer";
         var videoElement = document.getElementById(videoElementId);
-        window.polyfill(polyfillSwfUrl, videoElement, initDashJS, true);
+        var forceFlashUsage = true;
+        window.polyfill(polyfillSwfUrl, videoElement, initDashJS, forceFlashUsage);
 
         function initDashJS(video) {
             videoElement = video;
@@ -28,8 +29,9 @@
 
             var url = "http://media.streamroot.io/dash/examples/snow15/snowboard1_720p_dash.mpd";
             var url = "http://dash.edgesuite.net/envivio/Envivio-dash2/manifest.mpd";
-            var player = MediaPlayer().create();
-            player.initialize(video, url, true);
+            var player = dashjs.MediaPlayer().create();
+            var autoStart = true;
+            player.initialize(video, url, autoStart);
         }
 
         function v_play() {
