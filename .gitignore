@@ -1,0 +1,5 @@
+**/*.swf
+**/*.swc
+node_modules/
+npm-debug.log
+build/
