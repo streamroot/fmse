@@ -1,6 +1,6 @@
 "use strict";
 
-var CustomTimeRange = require('../utils/CustomTimeRange');
+var CustomTimeRange = require('./utils/CustomTimeRange');
 var SegmentAppender = require('./SegmentAppender');
 
 var SourceBuffer = function(type, videoExtension, b64Encoder) {

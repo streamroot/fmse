@@ -1,6 +1,6 @@
 "use strict";
 
-var CustomTimeRange = require('../utils/CustomTimeRange');
+var CustomTimeRange = require('./utils/CustomTimeRange');
 var MediaSourceFlash = require('./MediaSourceFlash');
 
 var VideoExtension = function(swfObj) {
