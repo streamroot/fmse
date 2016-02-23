@@ -70,8 +70,6 @@ if (len(sys.argv)>1):
     for i in range(1, len(sys.argv)):
         if sys.argv[i] == "--debug":
             debug = "true"
-            swfversion = "18"
-            targetPlayer = "11.5.0"
         elif sys.argv[i] == "--log-debug":
             log_debug = "true"
         elif sys.argv[i] == "--log-error":
