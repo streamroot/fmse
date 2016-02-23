@@ -305,10 +305,6 @@ public class MSEPolyfill {
         return _netStreamWrapper.readyState;
     }
 
-    public function requestSeek(time:Number):void {
-        ExternalInterface.call("sr_request_seek", time);
-    }
-
     public function bufferEmpty():void {
         _netStreamWrapper.onBufferEmpty(true);
         triggerWaiting();

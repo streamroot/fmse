@@ -290,10 +290,6 @@ var VideoExtension = function(swfObj) {
 
     _initialize = function() {
 
-        window.sr_request_seek = function(time) {
-            _seek(time);
-        };
-
         window.sr_flash_seeked = function() {
           //Trigger event when seek is done
             _onSeeked();
