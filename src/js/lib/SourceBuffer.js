@@ -175,11 +175,11 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
 
     _initialize = function() {
         if (_type.match(/video/)) {
-            window.sr_flash_updateend_video = _onUpdateend;
+            window.fMSE.callbacks.updateend_video = _onUpdateend;
         } else if (_type.match(/audio/)) {
-            window.sr_flash_updateend_audio = _onUpdateend;
+            window.fMSE.callbacks.updateend_audio = _onUpdateend;
         } else if (_type.match(/vnd/)) {
-            window.sr_flash_updateend_video = _onUpdateend;
+            window.fMSE.callbacks.updateend_video = _onUpdateend;
         }
         videoExtension.addEventListener('trackSwitch', _onTrackSwitch);
     };

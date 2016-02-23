@@ -290,54 +290,54 @@ var VideoExtension = function(swfObj) {
 
     _initialize = function() {
 
-        window.sr_flash_seeked = function() {
+        window.fMSE.callbacks.seeked = function() {
           //Trigger event when seek is done
             _onSeeked();
         };
 
-        window.sr_flash_loadstart = function() {
+        window.fMSE.callbacks.loadstart = function() {
           //Trigger event when we want to start loading data (at the beginning of the video or on replay)
             _onLoadStart();
         };
 
-        window.sr_flash_play = function() {
+        window.fMSE.callbacks.play = function() {
           //Trigger event when media is ready to play
           _onPlay();
         };
 
-        window.sr_flash_pause = function () {
+        window.fMSE.callbacks.pause = function () {
             _onPause();
         };
 
-        window.sr_flash_canplay = function() {
+        window.fMSE.callbacks.canplay = function() {
             _onCanplay();
         };
 
-        window.sr_flash_playing = function() {
+        window.fMSE.callbacks.playing = function() {
           //Trigger event when the media is playing
             _onPlaying();
         };
 
-        window.sr_flash_waiting = function() {
+        window.fMSE.callbacks.waiting = function() {
           //Trigger event when video has been paused but is expected to resume (ie on buffering or manual paused)
           _onWaiting();
         };
 
-        window.sr_flash_stopped = function() {
+        window.fMSE.callbacks.stopped = function() {
           //Trigger event when video ends.
           _onStopped();
         };
 
-        window.sr_flash_durationChange = function(duration) {
+        window.fMSE.callbacks.durationChange = function(duration) {
             _onDurationchange(duration);
         }
 
-        window.sr_flash_appended_segment = function(startTime, endTime) {
+        window.fMSE.callbacks.appended_segment = function(startTime, endTime) {
           //Trigger event when video ends.
           _updateTimeRange(startTime, endTime);
         };
 
-        window.sr_flash_volumeChange = function(volume) {
+        window.fMSE.callbacks.volumeChange = function(volume) {
             _onVolumechange(volume);
         };
 

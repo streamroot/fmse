@@ -80,7 +80,7 @@ var MediaSourceFlash = function() {
         _readyState = _READY_STATE.OPEN;
         _trigger({type: "sourceopen"});
 
-        window.sr_flash_transcodeError = function(message) {
+        window.fMSE.callbacks.transcodeError = function(message) {
             console.error(message);
             // if (conf.REPORT_ERROR) {
                 if (window.onPlayerError) {

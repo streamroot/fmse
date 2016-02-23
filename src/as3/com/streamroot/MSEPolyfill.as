@@ -227,11 +227,11 @@ public class MSEPolyfill {
     }
 
     private function updateendAudio(error:Boolean = false):void {
-        ExternalInterface.call("sr_flash_updateend_audio", error);
+        ExternalInterface.call("fMSE.callbacks.updateend_audio", error);
     }
 
     private function updateendVideo(error:Boolean = false):void {
-        ExternalInterface.call("sr_flash_updateend_video", error);
+        ExternalInterface.call("fMSE.callbacks.updateend_video", error);
     }
 
     private function onCommChannel(event:Event):void {
@@ -331,13 +331,13 @@ public class MSEPolyfill {
     //StreamrootInterface events
     public function triggerSeeked():void {
         //Trigger event when seek is done
-        ExternalInterface.call("sr_flash_seeked");
+        ExternalInterface.call("fMSE.callbacks.seeked");
     }
 
     public function triggerLoadStart():void {
         //Trigger event when we want to start loading data (at the beginning of the video or on replay)
         if (_jsReady) {
-            ExternalInterface.call("sr_flash_loadstart");
+            ExternalInterface.call("fMSE.callbacks.loadstart");
         } else {
             setTimeout(triggerLoadStart, 10);
         }
@@ -348,7 +348,7 @@ public class MSEPolyfill {
 
         if (_jsReady) {
             //Trigger event when video starts playing.
-            ExternalInterface.call("sr_flash_play");
+            ExternalInterface.call("fMSE.callbacks.play");
             if (_streamBuffer.isBufferReady()) {
                 triggerPlaying();
             }
@@ -361,7 +361,7 @@ public class MSEPolyfill {
     public function triggerPause():void {
         //Trigger event when video starts playing. Not used for now
         if (_jsReady) {
-            ExternalInterface.call("sr_flash_pause");
+            ExternalInterface.call("fMSE.callbacks.pause");
         } else {
             setTimeout(triggerPause, 10);
         }
@@ -372,7 +372,7 @@ public class MSEPolyfill {
 
         //Trigger event when media is playing
         if (_jsReady) {
-            ExternalInterface.call("sr_flash_playing");
+            ExternalInterface.call("fMSE.callbacks.playing");
         } else {
             setTimeout(triggerPlaying, 10);
         }
@@ -381,7 +381,7 @@ public class MSEPolyfill {
     public function triggerWaiting():void {
         //Trigger event when video has been paused but is expected to resume (ie on buffering or manual paused)
         if (_jsReady) {
-            ExternalInterface.call("sr_flash_waiting");
+            ExternalInterface.call("fMSE.callbacks.waiting");
         } else {
             setTimeout(triggerWaiting, 10);
         }
@@ -391,29 +391,29 @@ public class MSEPolyfill {
         //Trigger event when video ends.
         if (!_ended) {
             _netStreamWrapper.onStop();
-            ExternalInterface.call("sr_flash_stopped");
+            ExternalInterface.call("fMSE.callbacks.stopped");
             _ended = true;
         }
     }
 
     public function triggerCanplay():void {
         //trigger event xhen there is enough stat in buffer to play
-        ExternalInterface.call("sr_flash_canplay");
+        ExternalInterface.call("fMSE.callbacks.canplay");
     }
 
     public function triggerDurationChange(duration:Number):void {
         //trigger event xhen there is enough stat in buffer to play
-        ExternalInterface.call("sr_flash_durationChange", duration);
+        ExternalInterface.call("fMSE.callbacks.durationChange", duration);
     }
 
     public function triggerVolumeChange(volume:Number):void {
         //trigger event when there is enough stat in buffer to play
-        ExternalInterface.call("sr_flash_volumeChange", volume);
+        ExternalInterface.call("fMSE.callbacks.volumeChange", volume);
     }
 
     public function appendedSegment(startTime:Number, endTime:Number):void {
         //trigger event when there is enough stat in buffer to play
-        ExternalInterface.call("sr_flash_appended_segment", startTime, endTime);
+        ExternalInterface.call("fMSE.callbacks.appended_segment", startTime, endTime);
     }
 
     public function error(message:Object, obj:Object = null):void {
@@ -431,7 +431,7 @@ public class MSEPolyfill {
 
     public function transcodeError(message:Object):void {
         if (_jsReady && CONFIG::LOG_ERROR) {
-            ExternalInterface.call("sr_flash_transcodeError", String(message));
+            ExternalInterface.call("fMSE.callbacks.transcodeError", String(message));
         } else {
             setTimeout(transcodeError, 10, message);
         }

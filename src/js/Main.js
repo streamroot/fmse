@@ -9,11 +9,12 @@ function init(polyfillSwfUrl, videoElement, onReady, flashByDefault){
 
     window.MediaSource = MediaSourceFlash;
 
-    window.fMSE.onFlashReady = function(){
+    window.fMSE.callbacks = window.fMSE.callbacks || {};
+    window.fMSE.callbacks.onFlashReady = function(){
         onReady(new VideoExtension(swfObj));
     };
 
-    var readyFunctionString = "window.fMSE.onFlashReady";
+    var readyFunctionString = "window.fMSE.callbacks.onFlashReady";
 
     var height = videoElement.height || 150;
     var width = videoElement.width || 300;
