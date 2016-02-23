@@ -1,8 +1,10 @@
 # Flash Media Source Extensions polyfill
 
-fMSE is a library that emulates MSE in browsers that do not support them.
-It allows the playback of modern video formats such as MPEG-DASH or HLS in web browsers that are not able to do it otherwise.
-Adobe Flash is used to emulate MSE API and JavaScript as a bridge between browser and Flash.
+fMSE is a library that emulates MSE in browsers that do not support it.
+
+It allows transparent fallback for players supporting modern video formats such as MPEG-DASH or HLS when MSE is not available.
+
+Adobe Flash is used to do the actual playback, and communicates with a small JS polyfill that implements the MSE API.
 
 ## Building
 
@@ -38,6 +40,10 @@ $ python buildPlayer.py -h
 ```
 
 to get list of supported options. Successful build will create `fMSE.swf` in the `build` directory.
+
+##### NOTE:
+
+We're targeting flash versions 11.4+, so you should make sure you have playerglobal.swc v11.4 at `$FLEX_PATH/frameworks/libs/player/11.4/playerglobal.swc`
 
 ## Example
 
