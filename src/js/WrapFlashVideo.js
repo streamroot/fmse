@@ -1,5 +1,5 @@
-var MediaSourceFlash = require('./lib/wrapper/MediaSourceFlash');
-var VideoExtension = require('./lib/wrapper/VideoExtension');
+var MediaSourceFlash = require('./lib/MediaSourceFlash');
+var VideoExtension = require('./lib/VideoExtension');
 
 function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault){
     var isMSESupported = !!window.MediaSource;
