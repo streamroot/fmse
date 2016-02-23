@@ -24,10 +24,6 @@ var VideoExtension = function(swfObj) {
         _seeking = false,
         _seekedTimeout,
 
-        // atm we don't handle the case when Flash is not ready yet
-        _isFlashReady = true,
-        _propertyCache = {}, // the values from the setters
-        _actionsCache = [], // the callbacks to execute (in order)
         _buffered = new CustomTimeRange(),
 
         _ee = new EventEmitter(),
@@ -48,33 +44,7 @@ var VideoExtension = function(swfObj) {
             _ee.emit(event.type, event);
         },
 
-        _savePropertyValueToCache = function(property, value) {
-            _propertyCache[property] = value;
-        },
-
-        _setPropertiesFromCache = function() {
-            Object.keys(_propertyCache).forEach(function(key) {
-                key.set(_propertyCache[key]);
-            });
-        },
-
-        _saveActionToCache = function(callback) {
-            _actionsCache.push(callback);
-        },
-
-        _executeActionsFromCache = function() {
-            for(var i = 0; i < _actionsCache.length; i++) {
-                var action = _actionsCache[i];
-                action();
-            }
-        },
-
         _play = function() {
-            if (!_isFlashReady) {
-                _saveActionToCache(_play);
-                return;
-            }
-
             if (_isInitialized()) {
                 _fixedCurrentTime = undefined;
                 _swfObj.play();
@@ -85,11 +55,6 @@ var VideoExtension = function(swfObj) {
         },
 
         _pause = function() {
-            if (!_isFlashReady) {
-                _saveActionToCache(_pause);
-                return;
-            }
-
             if (_isInitialized()) {
                 if (typeof _fixedCurrentTime === "undefined") { //Don't override _fixedCurrentTime if it already exists (case of a seek for example);
                     _fixedCurrentTime = _getCurrentTimeFromFlash();
@@ -134,10 +99,6 @@ var VideoExtension = function(swfObj) {
         },
 
         _getCurrentTime = function() {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             var now = new Date().getTime();
 
             if (_ended) {
@@ -163,10 +124,6 @@ var VideoExtension = function(swfObj) {
         },
 
         _getPaused = function() {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             if (_isInitialized()) {
                 return _swfObj.paused();
             } else {
@@ -255,11 +212,6 @@ var VideoExtension = function(swfObj) {
             });
         },
 
-        _onFlashReady = function() {
-            _setPropertiesFromCache();
-            _executeActionsFromCache();
-        },
-
         _updateTimeRange = function(startTime, endTime) {
             _buffered.add({
                 start: startTime,
@@ -338,17 +290,12 @@ var VideoExtension = function(swfObj) {
     Object.defineProperty(this, "currentTime", {
         get: _getCurrentTime,
         set: function(time) {
-            _savePropertyValueToCache("currentTime", time);
             _seek(time);
         }
     });
 
     Object.defineProperty(this, "seeking", {
         get: function() {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             return _seeking;
         },
         set: undefined
@@ -361,10 +308,6 @@ var VideoExtension = function(swfObj) {
 
     Object.defineProperty(this, "duration", {
         get: function () {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             return _mediaSource.duration;
         },
         set: undefined
@@ -372,10 +315,6 @@ var VideoExtension = function(swfObj) {
 
     Object.defineProperty(this, "playbackRate", {
         get: function () {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             return 1; //Always return 1, as we don't support changing playback rate
         },
         set: function () {
@@ -387,10 +326,6 @@ var VideoExtension = function(swfObj) {
 
     Object.defineProperty(this, "isFlash", {
         get: function() {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
             return true;
         },
         set: undefined
