@@ -1,0 +1,8 @@
+# Issues
+
+1. Base64 encoding doesn't work in Safari's web workers, following error is in the console `ReferenceError: Can't find variable: btoa`
+1. Player stucks for some time and then playback continues. Looks like buffer control problem -- segments are not fetch during playback to compensate buffer depletion.
+1. No playback controls
+1. Not sure if volume control works
+1. Not sure if seeking works(very likely that it doesn't)
+1. Add support of multiple polyfill instances
