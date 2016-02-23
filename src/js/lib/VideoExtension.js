@@ -396,13 +396,6 @@ var VideoExtension = function(swfObj) {
         set: undefined
     });
 
-    Object.defineProperty(this, "flashDimension", {
-        get: undefined,
-        set: function(dimension){
-            _swfObj.onMetaData(0, dimension.width, dimension.height);
-        },
-    });
-
     Object.defineProperty(this, "buffered", {
         get: _getBuffered,
         set: undefined
