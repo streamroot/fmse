@@ -36,7 +36,7 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
         },
 
         _trigger = function(event) {
-            _ee.on(event.type, event);
+            _ee.emit(event.type, event);
         },
 
         _isTimestampConsistent = function(startTime) {
