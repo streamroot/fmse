@@ -1,7 +1,7 @@
 var MediaSourceFlash = require('./lib/MediaSourceFlash');
 var VideoExtension = require('./lib/VideoExtension');
 
-function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault){
+function init(polyfillSwfUrl, videoElement, onReady, flashByDefault){
     var isMSESupported = !!window.MediaSource;
     if(isMSESupported && !flashByDefault){
         return onReady(videoElement);
@@ -36,4 +36,4 @@ function WrapFlashVideo(polyfillSwfUrl, videoElement, onReady, flashByDefault){
     var swfObj = parentElement.firstChild;
 }
 
-module.exports = WrapFlashVideo;
+module.exports = init;
