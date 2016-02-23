@@ -7,76 +7,76 @@ var EventEmitter = require('eventemitter3');
 var MediaSourceFlash = function() {
     var self = this,
 
-    _videoExtension,
+        _videoExtension,
 
-    _swfobj,
+        _swfobj,
 
-    _b64Encoder = new B64Encoder(),
+        _b64Encoder = new B64Encoder(),
 
-    _READY_STATE = {
-        OPEN: 'open',
-        CLOSED: 'closed'
-    },
+        _READY_STATE = {
+            OPEN: 'open',
+            CLOSED: 'closed'
+        },
 
-    _readyState = _READY_STATE.CLOSED,
+        _readyState = _READY_STATE.CLOSED,
 
-    //TODO: is duration realy an attribute of MSE, or of video?
-    _duration = 0,
+        //TODO: is duration realy an attribute of MSE, or of video?
+        _duration = 0,
 
-    _ee = new EventEmitter(),
+        _ee = new EventEmitter(),
 
-    _sourceBuffers = [],
+        _sourceBuffers = [],
 
-    _addEventListener = function(type, listener) {
-        _ee.on(type, listener);
-    },
+        _addEventListener = function(type, listener) {
+            _ee.on(type, listener);
+        },
 
-    _removeEventListener = function(type, listener) {
-        _ee.off(type, listener);
-    },
+        _removeEventListener = function(type, listener) {
+            _ee.off(type, listener);
+        },
 
-    _trigger = function(event) {
-        _ee.emit(event.type, event);
-    },
-        
-    _addSourceBuffer = function(type) {
-        var sourceBuffer;
-        sourceBuffer = new SourceBuffer(type, _videoExtension, _b64Encoder);
-        _sourceBuffers.push(sourceBuffer);
-        _videoExtension.registerSourceBuffer(sourceBuffer);
-        _swfobj.addSourceBuffer(type);
-        return sourceBuffer;
-    },
+        _trigger = function(event) {
+            _ee.emit(event.type, event);
+        },
 
-    _removeSourceBuffer = function() {
+        _addSourceBuffer = function(type) {
+            var sourceBuffer;
+            sourceBuffer = new SourceBuffer(type, _videoExtension, _b64Encoder);
+            _sourceBuffers.push(sourceBuffer);
+            _videoExtension.registerSourceBuffer(sourceBuffer);
+            _swfobj.addSourceBuffer(type);
+            return sourceBuffer;
+        },
 
-    },
+        _removeSourceBuffer = function() {
 
-    _endOfStream = function() {
+        },
 
-    },
+        _endOfStream = function() {
 
-    _initialize = function(videoExtension) {
+        },
 
-        _videoExtension = videoExtension;
-        _swfobj = _videoExtension.getSwf();
+        _initialize = function(videoExtension) {
 
-        _videoExtension.createSrc(self);
+            _videoExtension = videoExtension;
+            _swfobj = _videoExtension.getSwf();
 
-        _readyState = _READY_STATE.OPEN;
-        _trigger({type: "sourceopen"});
+            _videoExtension.createSrc(self);
 
-        window.fMSE.callbacks.transcodeError = function(message) {
-            console.error(message);
-            // if (conf.REPORT_ERROR) {
+            _readyState = _READY_STATE.OPEN;
+            _trigger({type: "sourceopen"});
+
+            window.fMSE.callbacks.transcodeError = function(message) {
+                console.error(message);
+                // if (conf.REPORT_ERROR) {
                 if (window.onPlayerError) {
                     window.onPlayerError(message);
                 }
-            // }
-        };
+                // }
+            };
 
-        _swfobj.jsReady();
-    };
+            _swfobj.jsReady();
+        };
 
     this.addSourceBuffer = _addSourceBuffer;
     this.addEventListener = _addEventListener;

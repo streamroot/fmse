@@ -23,14 +23,14 @@ function init(polyfillSwfUrl, videoElement, onReady, flashByDefault){
     var oldIdClasses = videoElement.className;
 
     var swfObjString = '<object id="'+oldId+'" type="application/x-shockwave-flash"'+
-    ' data="'+ polyfillSwfUrl +'" width="'+ width +'" height="'+ height +'" name="'+oldId+'" class="'+oldIdClasses+'" style="display: block;">'+
-    '        <param name="movie" value="'+ polyfillSwfUrl +'">'+
-    '        <param name="flashvars" value="readyFunction='+readyFunctionString+'">'+
-    '        <param name="allowScriptAccess" value="always">'+
-    '        <param name="allowNetworking" value="all">'+
-    '        <param name="wmode" value="opaque">'+
-    '        <param name="bgcolor" value="#000000">'+
-    '    </object>';
+        ' data="'+ polyfillSwfUrl +'" width="'+ width +'" height="'+ height +'" name="'+oldId+'" class="'+oldIdClasses+'" style="display: block;">'+
+        '        <param name="movie" value="'+ polyfillSwfUrl +'">'+
+        '        <param name="flashvars" value="readyFunction='+readyFunctionString+'">'+
+        '        <param name="allowScriptAccess" value="always">'+
+        '        <param name="allowNetworking" value="all">'+
+        '        <param name="wmode" value="opaque">'+
+        '        <param name="bgcolor" value="#000000">'+
+        '    </object>';
 
     var parentElement = videoElement.parentElement;
     parentElement.innerHTML = swfObjString;

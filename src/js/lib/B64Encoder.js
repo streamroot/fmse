@@ -11,41 +11,41 @@ var B64Worker = require("./B64Worker.js");
 var B64Encoder = function() {
 
     var self = this,
-    _b64w,
-    _jobQueue = [],
+        _b64w,
+        _jobQueue = [],
 
-    _createWorker = function() {
-        //Build an inline worker that can be used with browserify
-        var blobURL = URL.createObjectURL(new Blob(
-            [ '(' + B64Worker.toString() + ')()' ],
-            {type: 'application/javascript'}
-        ));
-        var worker = new Worker(blobURL);
-        URL.revokeObjectURL(blobURL);
-        return worker;
-    },
+        _createWorker = function() {
+            //Build an inline worker that can be used with browserify
+            var blobURL = URL.createObjectURL(new Blob(
+                [ '(' + B64Worker.toString() + ')()' ],
+                {type: 'application/javascript'}
+            ));
+            var worker = new Worker(blobURL);
+            URL.revokeObjectURL(blobURL);
+            return worker;
+        },
 
-    _encodeData = function (data, cb) {
-        var jobIndex = _jobQueue.push({
-            cb: cb
-        }) -1;
-        _b64w.postMessage({
-            data: data,
-            jobIndex: jobIndex
-        });
-    },
+        _encodeData = function (data, cb) {
+            var jobIndex = _jobQueue.push({
+                cb: cb
+            }) -1;
+            _b64w.postMessage({
+                data: data,
+                jobIndex: jobIndex
+            });
+        },
 
-    _onWorkerMessage = function(e) {
-        var jobIndex = e.data.jobIndex,
-        job = _jobQueue[jobIndex];
-        delete(_jobQueue[jobIndex]); //delete and not splice to avoid offsetting index
-        job.cb(e.data.b64data);
-    },
+        _onWorkerMessage = function(e) {
+            var jobIndex = e.data.jobIndex,
+                job = _jobQueue[jobIndex];
+            delete(_jobQueue[jobIndex]); //delete and not splice to avoid offsetting index
+            job.cb(e.data.b64data);
+        },
 
-    _initialize = function(){
-        _b64w = _createWorker();
-        _b64w.onmessage = _onWorkerMessage;
-    };
+        _initialize = function(){
+            _b64w = _createWorker();
+            _b64w.onmessage = _onWorkerMessage;
+        };
 
     _initialize();
 
