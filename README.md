@@ -135,6 +135,7 @@ This demo page is here `demo/example_dash.html`. You can go to `demo` directory 
         </script>
     </body>
     ```
+    
 ## Requirements & Compatibilities
 
 This library requires Flah 11.4 or more.
@@ -143,7 +144,7 @@ This library also needs [Service workers support](http://caniuse.com/#feat=servi
 fMSE has been tested with the following media libraries:
 - [dash.js](https://github.com/Dash-Industry-Forum/dash.js)
 
-Media engines to we want to proide support with:
+Media engines to we want to provide support with:
 - [shakapayer](https://github.com/google/shaka-player)
 - [hls.js](https://github.com/dailymotion/hls.js)
 
