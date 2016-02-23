@@ -12,8 +12,6 @@ var VideoExtension = function(swfObj) {
         _mediaSource,
         _sourceBuffers = [],
 
-        _eventHandlers, //Event handlers for wrappers
-
         _currentTime = 0,
         _fixedCurrentTime = 0, //In case of video paused or buffering
         _seekTarget, // Using another variable for seeking, because seekTarget can be set to undefined by "playing" event (TODO: triggered during seek, which is a separate issue)
@@ -384,23 +382,6 @@ var VideoExtension = function(swfObj) {
             //The only time we'll set playback rate for now is to pause video on rebuffering (workaround in HTML5 only).
             //Added warning if we ever wanted to use it for other purposes.
             console.error("Changing playback rate is not supported for now with Streamroot Flash playback.");
-        }
-    });
-
-    //Did this weird structure because event_handlers is set in mediaController.js after VideoExtension is created. But we need both to send metaData to flash player (from inside this class), and to
-    //call the wrapper's event_handler. Then we need to combine both steps into the video.event_handlers.onMetaData method, and do everything from inside this class in order not to impact the rest
-    //of the code with the switch HTML5 / Flash
-    Object.defineProperty(this, "event_handlers", {
-        get: function() {
-            if (!_isFlashReady) {
-                return undefined;
-            }
-
-            return _eventHandlers;
-        },
-        set: function(eventHandlers) {
-            _savePropertyValueToCache("event_handlers", eventHandlers);
-            _eventHandlers = eventHandlers;
         }
     });
 
