@@ -7,11 +7,12 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     browserify: {
       main: {
-        src: 'src/js/main.js',
+        src: 'src/js/Main.js',
         dest: 'build/fMSE.js',
         options:  {
           transform: ['babelify'],
           browserifyOptions: {
+            standalone: 'fMSE.init',
             debug: true
           },
           watch: true,

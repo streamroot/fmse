@@ -21,7 +21,7 @@
         var videoElementId = "videoPlayer";
         var videoElement = document.getElementById(videoElementId);
         var forceFlashUsage = true;
-        window.polyfill(polyfillSwfUrl, videoElement, initDashJS, forceFlashUsage);
+        window.fMSE.init(polyfillSwfUrl, videoElement, initDashJS, forceFlashUsage);
 
         function initDashJS(video) {
             videoElement = video;
