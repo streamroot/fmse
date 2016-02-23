@@ -13,5 +13,6 @@
     "browserify":true,
     "mocha":true,
     "devel":true,
-    "predef": []
+    "predef": [],
+    "esnext": true
 }
