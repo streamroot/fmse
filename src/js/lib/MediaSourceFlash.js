@@ -82,7 +82,6 @@ var MediaSourceFlash = function() {
     this.addEventListener = _addEventListener;
     this.removeEventListener = _removeEventListener;
     this.endOfStream = _endOfStream;
-    this.trigger = _trigger;
     this.initialize = _initialize;
 
     Object.defineProperty(this, "readyState", {

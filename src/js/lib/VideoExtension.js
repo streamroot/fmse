@@ -109,7 +109,7 @@ var VideoExtension = function(swfObj) {
                 if (_isInitialized()) {
 
                     console.info("seeking");
-                    self.trigger({
+                    _trigger({
                         type: 'seeking'
                     });
                     _seeking = true;
@@ -193,7 +193,7 @@ var VideoExtension = function(swfObj) {
             _ended = false;
             _seekTarget = undefined;
             clearTimeout(_seekedTimeout);
-            self.trigger({
+            _trigger({
                 type: 'seeked'
             }); //trigger with value _fixedCurrentTime
             for (var i = 0; i < _sourceBuffers.length; i++) {
@@ -203,7 +203,7 @@ var VideoExtension = function(swfObj) {
 
         _onLoadStart = function() {
             _ended = false;
-            self.trigger({
+            _trigger({
                 type: 'loadstart'
             });
         },
@@ -213,18 +213,18 @@ var VideoExtension = function(swfObj) {
             _fixedCurrentTime = undefined;
 
             _ended = false;
-            self.trigger({type: 'play'});
+            _trigger({type: 'play'});
         },
 
         //TODO: seems not be used anymore see CLIEN-268
         _onPause = function() {
             _fixedCurrentTime = _fixedCurrentTime !== undefined ? _fixedCurrentTime : _getCurrentTimeFromFlash(); // Do not erase value if already set
-            self.trigger({type: 'pause'});
+            _trigger({type: 'pause'});
         },
 
         _onPlaying = function() {
             _fixedCurrentTime = undefined;
-            self.trigger({type: 'playing'});
+            _trigger({type: 'playing'});
         },
 
         _onWaiting = function() {
@@ -234,25 +234,25 @@ var VideoExtension = function(swfObj) {
         _onStopped = function() {
             _ended = true;
 
-            self.trigger({
+            _trigger({
                 type: 'ended'
             });
         },
 
         _onCanplay = function() {
-            self.trigger({
+            _trigger({
                 type: 'canplay'
             });
         },
 
         _onDurationchange = function() {
-            self.trigger({
+            _trigger({
                 type: 'durationchange'
             });
         },
 
         _onVolumechange = function() {
-            self.trigger({
+            _trigger({
                 type: 'volumechange'
             });
         },
@@ -476,7 +476,6 @@ var VideoExtension = function(swfObj) {
     this.pause = _pause;
     this.addEventListener = _addEventListener;
     this.removeEventListener = _removeEventListener;
-    this.trigger = _trigger;
     this.dispatchEvent = _trigger;
     this.canPlayType = _canPlayType;
 

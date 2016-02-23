@@ -175,7 +175,6 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     this.remove = _remove;
     this.addEventListener = _addEventListener;
     this.removeEventListener = _removeEventListener;
-    this.trigger = _trigger;
 
     Object.defineProperty(this, "updating", {
         get: function() {
