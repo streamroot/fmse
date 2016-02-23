@@ -2,12 +2,12 @@
 
 var CustomTimeRange = require('./utils/CustomTimeRange');
 var SegmentAppender = require('./SegmentAppender');
+var EventEmitter = require('eventemitter3');
 
 var SourceBuffer = function(type, videoExtension, b64Encoder) {
 
     var self = this,
 
-    _listeners = [],
     _swfobj = videoExtension.getSwf(),
 
     _segmentAppender = new SegmentAppender(self, _swfobj, b64Encoder),
@@ -24,32 +24,19 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
     _onTrackSwitch = function() {
         _switchingTrack = true;
     },
+        
+    _ee = new EventEmitter(),
 
     _addEventListener = function(type, listener) {
-        if (!_listeners[type]) {
-            _listeners[type] = [];
-        }
-        _listeners[type].unshift(listener);
+        _ee.on(type, listener);
     },
 
     _removeEventListener = function(type, listener) {
-        //Same thing as MediaSourceFlash. Though splice should modify in place, and it should wok. But why return? Get out of the loop?
-        var listeners = _listeners[type],
-            i = listeners.length;
-        while (i--) {
-            if (listeners[i] === listener) {
-                return listeners.splice(i, 1);
-            }
-        }
+        _ee.off(type, listener);
     },
 
     _trigger = function(event) {
-        //updateend, updatestart
-        var listeners = _listeners[event.type] || [],
-            i = listeners.length;
-        while (i--) {
-            listeners[i](event);
-        }
+        _ee.on(event.type, event);
     },
 
     _isTimestampConsistent = function(startTime) {

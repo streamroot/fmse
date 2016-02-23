@@ -2,6 +2,7 @@
 
 var SourceBuffer = require('./SourceBuffer');
 var B64Encoder = require('./B64Encoder');
+var EventEmitter = require('eventemitter3');
 
 var MediaSourceFlash = function() {
     var self = this,
@@ -22,37 +23,22 @@ var MediaSourceFlash = function() {
     //TODO: is duration realy an attribute of MSE, or of video?
     _duration = 0,
 
-    _listeners = [],
+    _ee = new EventEmitter(),
 
     _sourceBuffers = [],
 
     _addEventListener = function(type, listener) {
-        if (!_listeners[type]) {
-            _listeners[type] = [];
-        }
-        _listeners[type].unshift(listener);
+        _ee.on(type, listener);
     },
 
     _removeEventListener = function(type, listener) {
-        //TODO: I don't think that works. Why return? Should transform _listeners property of this class. UPDATE: see comment in SourceBuffer. Shouldn't the event bus be a class on its own?
-        var listeners = _listeners[type],
-            i = listeners.length;
-        while (i--) {
-            if (listeners[i] === listener) {
-                return listeners.splice(i, 1);
-            }
-        }
+        _ee.off(type, listener);
     },
 
     _trigger = function(event) {
-        //updateend, updatestart
-        var listeners = _listeners[event.type] || [],
-            i = listeners.length;
-        while (i--) {
-            listeners[i](event);
-        }
+        _ee.emit(event.type, event);
     },
-
+        
     _addSourceBuffer = function(type) {
         var sourceBuffer;
         sourceBuffer = new SourceBuffer(type, _videoExtension, _b64Encoder);

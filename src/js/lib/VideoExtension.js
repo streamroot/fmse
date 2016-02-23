@@ -1,7 +1,7 @@
 "use strict";
 
 var CustomTimeRange = require('./utils/CustomTimeRange');
-var MediaSourceFlash = require('./MediaSourceFlash');
+var EventEmitter = require('eventemitter3');
 
 var VideoExtension = function(swfObj) {
 
@@ -20,8 +20,6 @@ var VideoExtension = function(swfObj) {
     _lastCurrentTimeTimestamp,
     _REFRESH_INTERVAL = 2000, //Max interval until we look up flash to get real value of currentTime
 
-    _listeners = [],
-
     _ended = false,
     //_buffering = true,
     //_paused = false,
@@ -33,36 +31,23 @@ var VideoExtension = function(swfObj) {
     _propertyCache = {}, // the values from the setters
     _actionsCache = [], // the callbacks to execute (in order)
     _buffered = new CustomTimeRange(),
+        
+    _ee = new EventEmitter(),
 
     _isInitialized = function() {
         return (typeof _swfObj !== 'undefined');
     },
 
     _addEventListener = function(type, listener) {
-        if (!_listeners[type]) {
-            _listeners[type] = [];
-        }
-        _listeners[type].unshift(listener);
+        _ee.on(type, listener);
     },
 
     _removeEventListener = function(type, listener) {
-        //Same thing as MediaSourceFlash. Though splice should modify in place, and it should wok. But why return? Get out of the loop?
-        var listeners = _listeners[type],
-            i = listeners.length;
-        while (i--) {
-            if (listeners[i] === listener) {
-                return listeners.splice(i, 1);
-            }
-        }
+        _ee.off(type, listener);
     },
 
     _trigger = function(event) {
-        //updateend, updatestart
-        var listeners = _listeners[event.type] || [],
-            i = listeners.length;
-        while (i--) {
-            listeners[i](event);
-        }
+        _ee.emit(event.type, event);
     },
 
     _savePropertyValueToCache = function(property, value) {

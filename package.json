@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "homepage": "www.streamroot.io",
   "scripts": {
-      "test":"mocha src/js/videomock/test/"
+    "test": "mocha src/js/videomock/test/"
   },
   "author": {
-      "name": "StreamRoot",
-      "email": "contact@streamroot.io"
+    "name": "StreamRoot",
+    "email": "contact@streamroot.io"
   },
   "devDependencies": {
     "should": "4.0.4",
@@ -15,5 +15,8 @@
     "grunt-browserify": "4.0.1",
     "babelify": "^6.1.0",
     "matchdep": "0.3.0"
+  },
+  "dependencies": {
+    "eventemitter3": "^1.1.1"
   }
 }
