@@ -135,18 +135,35 @@ This demo page is here `demo/example_dash.html`. You can go to `demo` directory 
         </script>
     </body>
     ```
+## Requirements & Compatibilities
 
-## Issues
+This library requires Flah 11.4 or more.
+This library also needs [Service workers support](http://caniuse.com/#feat=serviceworkers), so it might not be working correctly on Safari and Edge.
+
+fMSE has been tested with the following media libraries:
+- [dash.js](https://github.com/Dash-Industry-Forum/dash.js)
+
+Media engines to we want to proide support with:
+- [shakapayer](https://github.com/google/shaka-player)
+- [hls.js](https://github.com/dailymotion/hls.js)
+
+## Known issues (PRs appreciated!)
+
+- seek not working yet
+- Muxed streams not supported
+- EME is not supported (planning to provide EME support with Flash Access DRM)
+
+For more details see our [issues tracker](https://github.com/streamroot/fmse/issues).
 
 ## Contributing
 
-fMSE is a free and open source library. It's a work in progress and we appreciate any help you're willing to give.
+fMSE is a free and open source library. It's a work in progress and we appreciate any help you're willing to give. Don't hesitate add and comment issues on Github, or contact us directly at contact@streamroot.io.
+
+## License
+
+This project is licensed under [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
+If you need a special type of license for this project, you can contact us at contact@streamroot.io.
 
 ## Credits
 
 The project uses [dash.as](https://github.com/castlabs/dashas) for MP4 to FLV transmuxing.
-
-## License
-
-[dash.as](https://github.com/castlabs/dashas) is licensed under [MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
-
