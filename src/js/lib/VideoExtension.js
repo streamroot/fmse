@@ -24,8 +24,6 @@ var VideoExtension = function(swfObj) {
         _seeking = false,
         _seekedTimeout,
 
-        _buffered = new CustomTimeRange(),
-
         _ee = new EventEmitter(),
 
         _isInitialized = function() {
@@ -133,7 +131,25 @@ var VideoExtension = function(swfObj) {
         },
 
         _getBuffered = function() {
-            return _buffered;
+            var sbBuffered,
+                start = Infinity,
+                end = 0;
+            for (var i = 0; i < _sourceBuffers.length; i++) {
+                sbBuffered = _sourceBuffers[i].buffered;
+                if (!sbBuffered.length) {
+                    return new CustomTimeRange([]);
+                } else {
+                    // Compute the intersection of the TimeRanges of each SourceBuffer
+                    // WARNING: we make the assumption that SourceBuffer return a TimeRange with length 0 or 1, because that's how this property is implemented for now.
+                    // This will break if this is no longer the case (if we improve AS3 buffer management to support multiple ranges for example)
+                    start = Math.min(start, sbBuffered.start(0));
+                    end = Math.max(end, sbBuffered.end(0));
+                }
+            }
+            if (start >= end) {
+                return new CustomTimeRange([]);
+            }
+            return new CustomTimeRange([{start, end}]);
         },
 
         _getPlayed = function() {
@@ -212,13 +228,6 @@ var VideoExtension = function(swfObj) {
             });
         },
 
-        _updateTimeRange = function(startTime, endTime) {
-            _buffered.add({
-                start: startTime,
-                end: endTime
-            });
-        },
-
         _canPlayType = function() {
             return 'probably';
         },
@@ -265,11 +274,10 @@ var VideoExtension = function(swfObj) {
 
             window.fMSE.callbacks.durationChange = function(duration) {
                 _onDurationchange(duration);
-            }
+            };
 
             window.fMSE.callbacks.appended_segment = function(startTime, endTime) {
-                //Trigger event when video ends.
-                _updateTimeRange(startTime, endTime);
+                // TODO: not sure what this event was meant for. It duplicates the updateend events, and the comments along this workflow don't reflect what it is really supposed to do
             };
 
             window.fMSE.callbacks.volumeChange = function(volume) {
