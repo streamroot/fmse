@@ -18,7 +18,20 @@ module.exports = function(grunt) {
           watch: true,
           keepAlive: true
         }
-      }
+      },
+      debug: {
+        src: 'debug/BufferDisplay.js',
+        dest: 'debug/build/BufferDisplay.js',
+        options:  {
+          transform: ['babelify'],
+          browserifyOptions: {
+            standalone: 'fMSE.debug.bufferDisplay',
+            debug: true
+          },
+          watch: true,
+          keepAlive: true
+        }
+      },
     }
   });
 };
