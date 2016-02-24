@@ -68,14 +68,16 @@ var MediaSourceFlash = function() {
 
             window.fMSE.callbacks.transcodeError = function(message) {
                 console.error(message);
-                // if (conf.REPORT_ERROR) {
                 if (window.onPlayerError) {
                     window.onPlayerError(message);
                 }
-                // }
             };
 
             _swfobj.jsReady();
+
+            if (window.fMSE.debug.bufferDisplay) {
+                window.fMSE.debug.bufferDisplay.attachMSE(self);
+            }
         };
 
     this.addSourceBuffer = _addSourceBuffer;

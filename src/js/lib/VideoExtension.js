@@ -293,6 +293,10 @@ var VideoExtension = function(swfObj) {
                     return oldCreateObjectURL(mediaSource);
                 }
             };
+
+            if (window.fMSE.debug.bufferDisplay) {
+                window.fMSE.debug.bufferDisplay.attachVideo(self);
+            }
         };
 
     Object.defineProperty(this, "currentTime", {
