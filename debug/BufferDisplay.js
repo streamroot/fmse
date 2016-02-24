@@ -26,7 +26,8 @@ class BufferDisplay {
     }
 
     _startIfReady() {
-        if (this._sourceBuffers.length && this._video) {
+        if (this._sourceBuffers.length && this._video && !this._started) {
+            this._started = true;
             this._canvas = document.createElement('canvas');
 
             this._canvas.width = CANVAS_WIDTH;
