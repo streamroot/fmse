@@ -1,11 +1,14 @@
-const CACHE_HEIGHT = 30;
-const BUFFER_HEIGHT = 10;
+const CACHE_HEIGHT = 40;
+const BUFFER_HEIGHT = 25;
 const TRACK_TOP_MARGIN = 3;
-const BUFFERED_COLOR = "#202429";
+const BUFFERED_COLOR = "#0c1b2e";
+const PENDING_COLOR = "#07659f";
 const CURRENT_TIME_COLOR = "#bf0101";
-const CANVAS_WIDTH = 460;
-const TRACK_NAME_WIDTH = 60;
+const CANVAS_WIDTH = 700;
+const TRACK_TYPE_WIDTH = 60;
 const FONT_STYLE = "12px Arial";
+const TRACK_TYPE_COLOR = "#000824";
+
 
 class BufferDisplay {
     constructor(){
@@ -79,7 +82,7 @@ class BufferDisplay {
             };
             this._drawTimeRanges(context2D, opt, buffered);
             if (debug) {
-                let captionYPosition = yPosition + (CACHE_HEIGHT / 2);
+                let captionYPosition = yPosition + (CACHE_HEIGHT * 1 / 4);
                 this._writeTrackType(context2D, sourceBuffer.type, captionYPosition);
             }
         }
@@ -102,7 +105,7 @@ class BufferDisplay {
         for (let j = 0; j < timeRanges.length; j++) {
 
             if (debug && j===1) {
-                color = "red";
+                color = PENDING_COLOR;
             }
 
 
@@ -128,13 +131,13 @@ class BufferDisplay {
 
     _convertTimeToPixel(scale, time) {
         let {min, max, canvasWidth} = scale;
-        let effectiveCanvasWidth = canvasWidth - TRACK_NAME_WIDTH;
+        let effectiveCanvasWidth = canvasWidth - TRACK_TYPE_WIDTH;
         let divider = Math.max(max - min, 3*60); //trick so we can see the progression of the buffer during the 3 first minutes of a stream.
-        return TRACK_NAME_WIDTH + ((time - min) * effectiveCanvasWidth / divider);
+        return TRACK_TYPE_WIDTH + ((time - min) * effectiveCanvasWidth / divider);
     }
 
     _writeTrackType(context2D, trackType, yPosition){
-        context2D.fillStyle = "green";
+        context2D.fillStyle = TRACK_TYPE_COLOR;
         context2D.font = FONT_STYLE;
         context2D.fillText(trackType, 0, yPosition);
     }
