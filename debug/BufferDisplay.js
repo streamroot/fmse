@@ -69,15 +69,21 @@ class BufferDisplay {
         //for each SourceBuffer, draw TimeRanges.
         for (let i=0, sourceBuffer; sourceBuffer = this._sourceBuffers[i]; i++) {
             let buffered = sourceBuffer.debugBuffered || sourceBuffer.buffered;
+            let debug = !!sourceBuffer.debugBuffered;
+
             let yPosition = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*i;
             let opt = {
                 scale,
                 height: BUFFER_HEIGHT,
                 yPosition: yPosition+(CACHE_HEIGHT - BUFFER_HEIGHT),
                 color: BUFFERED_COLOR,
-                debug: !!sourceBuffer.debugBuffered
+                debug
             };
             this._drawTimeRanges(context2D, opt, buffered);
+            if (debug) {
+                let captionYPosition = yPosition + (CACHE_HEIGHT / 2);
+                this._writeTrackType(context2D, sourceBuffer.type, captionYPosition);
+            }
         }
         let currentTimeLineOptions = {
             height:this._canvas.height,
@@ -127,7 +133,13 @@ class BufferDisplay {
         let effectiveCanvasWidth = canvasWidth - TRACK_NAME_WIDTH;
         let divider = Math.max(max - min, 3*60); //trick so we can see the progression of the buffer during the 3 first minutes of a stream.
         return TRACK_NAME_WIDTH + ((time - min) * effectiveCanvasWidth / divider);
-    };
+    }
+
+    _writeTrackType(context2D, trackType, yPosition){
+        context2D.fillStyle = "green";
+        context2D.font = FONT_STYLE;
+        context2D.fillText(trackType, 0, yPosition);
+    }
 
 }
 
