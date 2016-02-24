@@ -110,8 +110,11 @@ class BufferDisplay {
             }
 
 
-            let startX = this._convertTimeToPixel(scale, timeRanges.start(j));
-            let endX = this._convertTimeToPixel(scale, timeRanges.end(j));
+            let start = timeRanges.start(j);
+            let end = timeRanges.end(j);
+
+            let startX = this._convertTimeToPixel(scale, start);
+            let endX = this._convertTimeToPixel(scale, end);
             let length = endX - startX > 1 ? endX - startX : 1;
             context2D.fillStyle = color;
             context2D.fillRect(startX, yPosition, length, height);
