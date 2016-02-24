@@ -123,6 +123,17 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
             return new CustomTimeRange(bufferedArray);
         },
 
+        _debugBuffered = function() {
+            var buffered = _buffered();
+            if (_pendingEndTime > _endTime) {
+                buffered.add({
+                    start: _endTime,
+                    end: _pendingEndTime
+                });
+            }
+            return buffered;
+        },
+
         _triggerUpdateend = function(error) {
             _updating = false;
 
@@ -169,6 +180,20 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
                 window.fMSE.callbacks.updateend_video = _onUpdateend;
             }
             videoExtension.addEventListener('trackSwitch', _onTrackSwitch);
+
+            if (window.fMSE.debug.bufferDisplay) {
+                var debugSourceBuffer = {
+                    buffered: _buffered,
+                    type: _type
+                };
+
+                Object.defineProperty(debugSourceBuffer, "debugBuffered", {
+                    get: _debugBuffered,
+                    set: undefined
+                });
+
+                window.fMSE.debug.bufferDisplay.attachSourceBuffer(debugSourceBuffer);
+            }
         };
 
     this.appendBuffer = _appendBuffer;

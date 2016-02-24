@@ -9,7 +9,7 @@ const FONT_STYLE = "12px Arial";
 
 class BufferDisplay {
     constructor(){
-
+        this._sourceBuffers = [];
     }
 
     attachVideo(video) {
@@ -17,13 +17,13 @@ class BufferDisplay {
         this._startIfReady();
     }
 
-    attachMSE(mse) {
-        this._mse = mse;
+    attachSourceBuffer(sourceBuffer) {
+        this._sourceBuffers.push(sourceBuffer);
         this._startIfReady();
     }
 
     _startIfReady() {
-        if (this._mse && this._video) {
+        if (this._sourceBuffers.length && this._video) {
             this._canvas = document.createElement('canvas');
 
             this._canvas.width = /*video.clientWidth ||*/ CANVAS_WIDTH;
@@ -45,11 +45,12 @@ class BufferDisplay {
 
         var SOURCE_BUFFER_LENGTH = 1; // TODO: remove this as soon as we use a list of sourceBuffers instead of the video tag
 
-        this._canvas.height = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*this._mse.sourceBuffers.length;
+        this._canvas.height = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*this._sourceBuffers.length;
 
         // calculate the scale of the chart
         let min = Infinity, max = 0;
-        for (let { buffered } of this._mse.sourceBuffers) {
+        for (let sourceBuffer of this._sourceBuffers) {
+            let buffered = sourceBuffer.debugBuffered || sourceBuffer.buffered;
             if(buffered.length){
                 let bufferedMin = buffered.start(0);
                 let bufferedMax = buffered.end(buffered.length-1);
@@ -66,14 +67,15 @@ class BufferDisplay {
         let scale = {min, max, canvasWidth: this._canvas.width};
 
         //for each SourceBuffer, draw TimeRanges.
-        for (let i=0; i < this._mse.sourceBuffers.length; i++) {
-            let buffered = this._mse.sourceBuffers[i].buffered;
+        for (let i=0, sourceBuffer; sourceBuffer = this._sourceBuffers[i]; i++) {
+            let buffered = sourceBuffer.debugBuffered || sourceBuffer.buffered;
             let yPosition = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*i;
             let opt = {
                 scale,
                 height: BUFFER_HEIGHT,
                 yPosition: yPosition+(CACHE_HEIGHT - BUFFER_HEIGHT),
                 color: BUFFERED_COLOR,
+                debug: !!sourceBuffer.debugBuffered
             };
             this._drawTimeRanges(context2D, opt, buffered);
         }
@@ -86,11 +88,22 @@ class BufferDisplay {
     }
 
     //The actual canvas drawing functions
-    _drawTimeRanges(context2D, options, vbm){
-        let {scale, height, yPosition, color} = options;
-        for (let j = 0; j < vbm.length; j++) {
-            let start = this._convertTimeToPixel(scale, vbm.start(j));
-            let end = this._convertTimeToPixel(scale, vbm.end(j));
+    _drawTimeRanges(context2D, options, timeRanges){
+        let {scale, height, yPosition, color, debug} = options;
+
+        if (debug && timeRanges.length > 2) {
+            throw new Error("Expected debug buffered attribute with a buffered time interval and a pending time interval. Got more than 2 time intervals");
+        }
+
+        for (let j = 0; j < timeRanges.length; j++) {
+
+            if (debug && j===1) {
+                color = "red";
+            }
+
+
+            let start = this._convertTimeToPixel(scale, timeRanges.start(j));
+            let end = this._convertTimeToPixel(scale, timeRanges.end(j));
             let length = end - start > 1 ? end - start : 1;
             context2D.fillStyle = color;
             context2D.fillRect(start, yPosition, length, height);

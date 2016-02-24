@@ -74,10 +74,6 @@ var MediaSourceFlash = function() {
             };
 
             _swfobj.jsReady();
-
-            if (window.fMSE.debug.bufferDisplay) {
-                window.fMSE.debug.bufferDisplay.attachMSE(self);
-            }
         };
 
     this.addSourceBuffer = _addSourceBuffer;
