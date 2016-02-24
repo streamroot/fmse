@@ -26,7 +26,7 @@ class BufferDisplay {
         if (this._sourceBuffers.length && this._video) {
             this._canvas = document.createElement('canvas');
 
-            this._canvas.width = /*video.clientWidth ||*/ CANVAS_WIDTH;
+            this._canvas.width = CANVAS_WIDTH;
             let div = document.getElementById("bufferDisplay");
             if(!div){
                 div = document.createElement('div');
@@ -42,8 +42,6 @@ class BufferDisplay {
     _render(){
         let { currentTime } = this._video;
         let context2D = this._canvas.getContext('2d');
-
-        var SOURCE_BUFFER_LENGTH = 1; // TODO: remove this as soon as we use a list of sourceBuffers instead of the video tag
 
         this._canvas.height = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*this._sourceBuffers.length;
 
