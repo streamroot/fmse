@@ -138,7 +138,7 @@ This demo page is here `demo/example_dash.html`. You can go to `demo` directory 
     
 ## Requirements & Compatibilities
 
-This library requires Flah 11.4 or more.
+This library requires Adobe Flash Player 11.4 or higher installed.
 This library also needs [Service workers support](http://caniuse.com/#feat=serviceworkers), so it might not be working correctly on Safari and Edge.
 
 fMSE has been tested with the following media libraries:
