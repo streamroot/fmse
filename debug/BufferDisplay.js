@@ -81,7 +81,7 @@ class BufferDisplay {
                 color: BUFFERED_COLOR,
                 debug
             };
-            this._drawTimeRanges(context2D, opt, buffered);
+            this._drawTimeRanges(context2D, opt, buffered, currentTime);
             if (debug) {
                 let captionYPosition = yPosition + (CACHE_HEIGHT * 1 / 4);
                 this._writeTrackType(context2D, sourceBuffer.type, captionYPosition);
@@ -96,7 +96,7 @@ class BufferDisplay {
     }
 
     //The actual canvas drawing functions
-    _drawTimeRanges(context2D, options, timeRanges){
+    _drawTimeRanges(context2D, options, timeRanges, currentTime){
         let {scale, height, yPosition, color, debug} = options;
 
         if (debug && timeRanges.length > 2) {
@@ -118,6 +118,13 @@ class BufferDisplay {
             let length = endX - startX > 1 ? endX - startX : 1;
             context2D.fillStyle = color;
             context2D.fillRect(startX, yPosition, length, height);
+
+            if (start <= currentTime && currentTime <= end) {
+                context2D.fillStyle = "#868686";
+                context2D.font = "11px Arial";
+                context2D.fillText(start.toFixed(3), startX + 2, yPosition + 10);
+                context2D.fillText(end.toFixed(3), endX - 38, yPosition + height - 2);
+            }
         }
     }
 
