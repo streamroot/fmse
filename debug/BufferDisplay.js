@@ -40,31 +40,34 @@ class BufferDisplay {
     }
 
     _render(){
-        let {buffered, currentTime} = this._video;
+        let { currentTime } = this._video;
         let context2D = this._canvas.getContext('2d');
 
         var SOURCE_BUFFER_LENGTH = 1; // TODO: remove this as soon as we use a list of sourceBuffers instead of the video tag
 
-        this._canvas.height = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*SOURCE_BUFFER_LENGTH;
+        this._canvas.height = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*this._mse.sourceBuffers.length;
 
         // calculate the scale of the chart
         let min = Infinity, max = 0;
-        if(buffered.length){
-            let bufferedMin = buffered.start(0);
-            let bufferedMax = buffered.end(buffered.length-1);
+        for (let { buffered } of this._mse.sourceBuffers) {
+            if(buffered.length){
+                let bufferedMin = buffered.start(0);
+                let bufferedMax = buffered.end(buffered.length-1);
 
-            if( bufferedMin < min ){
-                min = bufferedMin;
-            }
-            if(bufferedMax > max){
-                max = bufferedMax;
+                if( bufferedMin < min ){
+                    min = bufferedMin;
+                }
+                if(bufferedMax > max){
+                    max = bufferedMax;
+                }
             }
         }
 
         let scale = {min, max, canvasWidth: this._canvas.width};
 
         //for each SourceBuffer, draw TimeRanges.
-        for(let i=0; i < SOURCE_BUFFER_LENGTH;i++){
+        for (let i=0; i < this._mse.sourceBuffers.length; i++) {
+            let buffered = this._mse.sourceBuffers[i].buffered;
             let yPosition = (CACHE_HEIGHT + TRACK_TOP_MARGIN)*i;
             let opt = {
                 scale,
