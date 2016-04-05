@@ -13,6 +13,9 @@ elif (os.path.exists(os.path.normpath("C:/flex_sdk_4.6"))):
 elif (os.path.exists(os.path.expanduser("~/SDKs/Flex/4.14"))):
     flex = os.path.expanduser("~/SDKs/Flex/4.14")
     exe = ""
+elif (os.path.exists(os.path.expanduser("/Applications/Adobe Flash Builder 4.7/sdks/4.6.0"))):
+    flex = os.path.expanduser("/Applications/Adobe Flash Builder 4.7/sdks/4.6.0")
+    exe = ""
 
 SOURCE_PATH = "./src/as3/"
 TRANSCODER_MAIN_CLASS = SOURCE_PATH + "com/streamroot/transcoder/TranscodeWorker.as"

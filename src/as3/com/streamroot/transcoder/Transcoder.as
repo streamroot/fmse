@@ -18,6 +18,9 @@ public class Transcoder {
 
     private var _transcodeWorker:TranscodeWorker;
     private var _asyncTranscodeCB:Function;
+	
+	private var _isSeeking:Boolean = false;
+    private var _seekTarget:Number = 0;
 
     public function Transcoder(transcodeWorker:TranscodeWorker, asyncTranscodeCB:Function) {
         _muxer = new Muxer();
@@ -57,9 +60,17 @@ public class Transcoder {
             _asyncTranscodeCB(type, isInit, bytes_append);
         }
     }
+	
+	public function seeking(target:Number):void {
+		_isSeeking =true;
+		_seekTarget = target;
+		_muxer.seekTarget = target;
+	}
 
-    public function seeking():void {
-    }
+	public function seeked(): void {
+		_isSeeking = false;
+        //_seekTarget = 0;
+	}
 
     private static function isAudio(type:String):Boolean {
         return type.indexOf("audio") >= 0;

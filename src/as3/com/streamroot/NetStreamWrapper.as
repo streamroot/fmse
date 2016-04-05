@@ -433,6 +433,7 @@ public class NetStreamWrapper extends EventDispatcher {
                 break;
 
             case "NetStream.SeekStart.Notify":
+				//dispatchEvent(new PlaybackEvent(PlaybackEvent.ON_STREAM_SEEK_START, {info: e.info});
                 appendBytesAction(NetStreamAppendBytesAction.RESET_SEEK);
                 break;
 
@@ -550,7 +551,8 @@ public class NetStreamWrapper extends EventDispatcher {
     }
 
     public function onStop():void {
-        throw new Error("Method onStop isn't implemented");
+        //throw new Error("Method onStop isn't implemented");
+		_ns.close();
     }
 }
 }

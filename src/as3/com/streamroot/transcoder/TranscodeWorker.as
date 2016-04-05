@@ -38,10 +38,17 @@ public class TranscodeWorker extends Sprite {
     private function onMainToWorker(event:Event):void {
         var message:* = _mainToWorker.receive();
 
-        if (message == "seeking") {
-            _transcoder.seeking();
+		if ( message.hasOwnProperty('action') &&
+			 message.hasOwnProperty('target') &&
+			 message['action'] == "seeking") {
+		     _transcoder.seeking(message['target']);
             return;
         }
+		
+		if (message == 'seeked') {
+			_transcoder.seeked();
+			return;
+		}
 
         var data:String = message.data;
         var type:String = message.type;

@@ -113,7 +113,9 @@ public class MSEPolyfill {
             _discardAppend = true
         }
         _streamBuffer.onSeek();
-        _mainToWorker.send('seeking');
+			
+		var seekObject:Object = {'action': 'seeking', 'target': _seek_offset};
+	    _mainToWorker.send(seekObject);
     }
 
     private function addSourceBuffer(type:String):void {
@@ -331,6 +333,8 @@ public class MSEPolyfill {
     //StreamrootInterface events
     public function triggerSeeked():void {
         //Trigger event when seek is done
+		
+		_mainToWorker.send('seeked');
         ExternalInterface.call("fMSE.callbacks.seeked");
     }
 
