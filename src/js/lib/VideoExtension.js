@@ -69,18 +69,19 @@ var VideoExtension = function(swfObj) {
                 _seekedTimeout = setTimeout(_onSeeked, 5000);
                 if (_isInitialized()) {
 
+                    _seekTarget = _fixedCurrentTime = time;
+                    _seeking = true;
+
                     console.info("seeking");
                     _trigger({
                         type: 'seeking'
                     });
-                    _seeking = true;
+
 
                     //Rapid fix. Check if better way
                     for (var i = 0; i < _sourceBuffers.length; i++) {
                         _sourceBuffers[i].seeking(time);
                     }
-
-                    _seekTarget = _fixedCurrentTime = time;
 
                     //The flash is flushed somewhere in this seek function
                     _swfObj.seek(time);
