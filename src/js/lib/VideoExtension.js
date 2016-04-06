@@ -289,6 +289,7 @@ var VideoExtension = function(swfObj) {
                 if (mediaSource.initialize) {
                     _mediaSource = mediaSource;
                     _mediaSource.initialize(self);
+                    return "fakeObjectUrl";
                 } else {
                     return oldCreateObjectURL(mediaSource);
                 }
@@ -406,8 +407,5 @@ var VideoExtension = function(swfObj) {
 
     _initialize();
 };
-
-VideoExtension.prototype = Object.create(window.HTMLMediaElement.prototype);
-VideoExtension.prototype.constructor = VideoExtension;
 
 module.exports = VideoExtension;
