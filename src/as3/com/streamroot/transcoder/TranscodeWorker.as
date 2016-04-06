@@ -44,7 +44,7 @@ public class TranscodeWorker extends Sprite {
 		     _transcoder.seeking(message['target']);
             return;
         }
-		
+
 		if (message == 'seeked') {
 			_transcoder.seeked();
 			return;

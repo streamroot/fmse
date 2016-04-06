@@ -12,10 +12,10 @@ import flash.utils.ByteArray;
 
 public class Muxer {
     private var _duration:uint;
-	private var _seekTarget:Number;
+    private var _seekTarget:Number;
 
     public function Muxer() {
-		_seekTarget = 0;
+        _seekTarget = 0;
     }
     public function get duration():uint {
         return _duration;
@@ -32,16 +32,16 @@ public class Muxer {
 
         return ba;
     }
-	
-	public function set seekTarget(value:Number):void
-	{
-		_seekTarget = value;
-	}
-	
-	public function get seekTarget():Number
-	{
-		return _seekTarget;
-	}
+
+    public function set seekTarget(value:Number):void
+    {
+        _seekTarget = value;
+    }
+
+    public function get seekTarget():Number
+    {
+        return _seekTarget;
+    }
 
     private function writeMsg(message:FLVTag, ba:ByteArray):void {
         var messageSize:uint = calculateSize(message);
