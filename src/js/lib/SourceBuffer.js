@@ -61,7 +61,7 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
                 var segmentType = descriptor.segmentType;
             }
 
-            if (_isTimestampConsistent(startTime) || _switchingTrack || typeof startTime === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTime unefined)
+            if (true || _isTimestampConsistent(startTime) || _switchingTrack || typeof startTime === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTime unefined)
                 _segmentAppender.appendBuffer(arraybuffer_data, _type, startTime, endTime, segmentType);
                 _pendingEndTime = endTime;
             } else {
