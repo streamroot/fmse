@@ -41,6 +41,15 @@ $ python buildPlayer.py -h
 
 to get list of supported options. Successful build will create `fMSE.swf` in the `build` directory.
 
+### Building Debug tool
+
+This repo also contains a visual debug tool for video / source buffer information. To build it, just run:
+```
+$ grunt debug
+```
+
+This will create `debug/build/BufferDisplay.js`, which is already included in `demo/example_dash.html`
+
 ##### NOTE:
 
 We're targeting flash versions 11.4+, so you should make sure you have playerglobal.swc v11.4 at `$FLEX_PATH/frameworks/libs/player/11.4/playerglobal.swc`
@@ -135,7 +144,7 @@ This demo page is here `demo/example_dash.html`. You can go to `demo` directory 
         </script>
     </body>
     ```
-    
+
 ## Requirements & Compatibilities
 
 This library requires Adobe Flash Player 11.4 or higher installed.
