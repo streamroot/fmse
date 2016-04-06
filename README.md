@@ -33,6 +33,11 @@ Edit `buildPlayer.py` and specify path to your Flex SDK directory and run the sc
 $ python buildPlayer.py
 ```
 
+For development, you most certainly want to enable debug and error logging. Build using the following options:
+```
+$ python buildPlayer.py --debug --log-debug --log-error
+```
+
 You can provide additional options to customize the build. Use
 
 ```
