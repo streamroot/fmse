@@ -48,13 +48,13 @@ public class Transcoder {
         var bytes_event:ByteArray = Base64.decode(data);
         if (isAudio(type)) {
             var bytes_append_audio:ByteArray = new ByteArray();
-            var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp - offset + 100, _muxer);
+            var audioSegmentHandler:AudioSegmentHandler = new AudioSegmentHandler(bytes_event, _initHandlerAudio.messages, _initHandlerAudio.defaultSampleDuration, _initHandlerAudio.timescale, timestamp, _muxer);
             bytes_append_audio.writeBytes(audioSegmentHandler.bytes);
 
             _asyncTranscodeCB(type, isInit, bytes_append_audio);
         } else if (isVideo(type)) {
             var bytes_append:ByteArray = new ByteArray();
-            var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, timestamp - offset + 100, _muxer);
+            var videoSegmentHandler:VideoSegmentHandler = new VideoSegmentHandler(bytes_event, _initHandlerVideo.messages, _initHandlerVideo.defaultSampleDuration, _initHandlerVideo.timescale, timestamp, _muxer);
             bytes_append.writeBytes(videoSegmentHandler.bytes);
 
             _asyncTranscodeCB(type, isInit, bytes_append);

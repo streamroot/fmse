@@ -95,7 +95,7 @@ public class Muxer {
     }
 
     private function writeTimestamp(message:FLVTag, ba:ByteArray):void {
-        var timestamp:Number = Math.round(message.timestamp);
+        var timestamp:Number = Math.round(Math.max(message.timestamp - _seekTarget * 1000, 0));
         writeNumber(timestamp, ba);
         ba.writeByte(0);
     }
@@ -149,7 +149,7 @@ public class Muxer {
     }
 
     private function writeCompositionTimestamp(message:FLVTag, ba:ByteArray):void {
-        writeNumber(Math.max(message.compositionTimestamp, _seekTarget), ba);
+        writeNumber(message.compositionTimestamp, ba);
     }
 
     private function writeNumber(number:int, ba:ByteArray):void {
