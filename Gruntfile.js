@@ -1,7 +1,9 @@
 module.exports = function(grunt) {
   require("matchdep").filterDev("grunt-*").forEach(grunt.loadNpmTasks);
 
-  grunt.registerTask('default', ['browserify']);
+  grunt.registerTask('default', ['browserify:main']);
+  grunt.registerTask('debug', ['browserify:debug']);
+
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
