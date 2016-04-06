@@ -35,8 +35,15 @@
 
             var url = "http://media.streamroot.io/dash/examples/snow15/snowboard1_720p_dash.mpd";
             //var url = "http://dash.edgesuite.net/envivio/Envivio-dash2/manifest.mpd";
+            var url = "http://wowza.streamroot.io/vodorigin/tos.mp4/manifest.mpd";
+
             var player = dashjs.MediaPlayer().create();
             var autoStart = true;
+
+            player.setStableBufferTime(15);
+            player.setBufferTimeAtTopQuality(15);
+            player.setBufferTimeAtTopQualityLongForm(15);
+
             player.initialize(video, url, autoStart);
         }
 
