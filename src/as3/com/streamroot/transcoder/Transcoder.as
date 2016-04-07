@@ -67,11 +67,6 @@ public class Transcoder {
         _muxer.seekTarget = target;
     }
 
-    public function seeked(): void {
-        _isSeeking = false;
-        //_seekTarget = 0;
-    }
-
     private static function isAudio(type:String):Boolean {
         return type.indexOf("audio") >= 0;
     }

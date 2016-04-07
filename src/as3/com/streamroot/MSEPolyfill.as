@@ -333,8 +333,6 @@ public class MSEPolyfill {
     //StreamrootInterface events
     public function triggerSeeked():void {
         //Trigger event when seek is done
-		
-		_mainToWorker.send('seeked');
         ExternalInterface.call("fMSE.callbacks.seeked");
     }
 

@@ -45,11 +45,6 @@ public class TranscodeWorker extends Sprite {
             return;
         }
 
-		if (message == 'seeked') {
-			_transcoder.seeked();
-			return;
-		}
-
         var data:String = message.data;
         var type:String = message.type;
         var isInit:Boolean = message.isInit;
