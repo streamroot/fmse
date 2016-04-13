@@ -122,8 +122,8 @@ class BufferDisplay {
             if (start <= currentTime && currentTime <= end) {
                 context2D.fillStyle = "#868686";
                 context2D.font = "11px Arial";
-                context2D.fillText(start.toFixed(3), startX + 2, yPosition + 10);
-                context2D.fillText(end.toFixed(3), endX - 38, yPosition + height - 2);
+                context2D.fillText((parseInt(start, 10)).toFixed(3), startX + 2, yPosition + 10);
+                context2D.fillText((parseInt(end, 10)).toFixed(3), endX - 38, yPosition + height - 2);
             }
         }
     }

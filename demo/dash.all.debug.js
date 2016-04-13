@@ -18677,12 +18677,12 @@ function SourceBufferController() {
 
         try {
             waitForUpdateEnd(buffer, function () {
-                if (acceptsChunk) {
+                //if (acceptsChunk) {
                     // chunk.start is used in calculations by TextSourceBuffer
-                    buffer[appendMethod](bytes, chunk);
-                } else {
+                    //buffer[appendMethod](bytes, chunk);
+                //} else {
                     buffer[appendMethod](bytes);
-                }
+                //}
                 // updating is in progress, we should wait for it to complete before signaling that this operation is done
                 waitForUpdateEnd(buffer, function () {
                     eventBus.trigger(_coreEventsEventsJs2['default'].SOURCEBUFFER_APPEND_COMPLETED, { buffer: buffer, bytes: bytes });

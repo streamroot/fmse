@@ -33,8 +33,8 @@
             videoElement = video;
             console.log("initDashJS()", video);
 
-            var url = "http://media.streamroot.io/dash/examples/snow15/snowboard1_720p_dash.mpd";
-            //var url = "http://dash.edgesuite.net/envivio/Envivio-dash2/manifest.mpd";
+            //var url = "http://media.streamroot.io/dash/examples/snow15/snowboard1_720p_dash.mpd";
+            var url = "http://dash.edgesuite.net/envivio/Envivio-dash2/manifest.mpd";
             var player = dashjs.MediaPlayer().create();
             var autoStart = true;
             player.initialize(video, url, autoStart);

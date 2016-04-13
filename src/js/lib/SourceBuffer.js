@@ -2,6 +2,7 @@
 
 var CustomTimeRange = require('./utils/CustomTimeRange');
 var SegmentAppender = require('./SegmentAppender');
+var SegmentParser = require('./utils/ISOBMFFSegmentParser');
 var EventEmitter = require('eventemitter3');
 
 var SourceBuffer = function(type, videoExtension, b64Encoder) {
@@ -47,19 +48,23 @@ var SourceBuffer = function(type, videoExtension, b64Encoder) {
             return isNaN(startTime) || (Math.abs(startTime - _endTime) < 1);
         },
 
-        _appendBuffer = function(arraybuffer_data, startTime, endTime) {
+        //_appendBuffer = function(arraybuffer_data, startTime, endTime) {
+        _appendBuffer = function(arraybuffer_data) {
             _updating = true; //Do this at the very first
             _trigger({
                 type: 'updatestart'
             });
 
             // that's dash.js segment descriptor
-            if (startTime && startTime.segmentType) {
-                var descriptor = startTime;
-                startTime = descriptor.start;
-                endTime = descriptor.end;
-                var segmentType = descriptor.segmentType;
-            }
+            // if (startTime && startTime.segmentType) {
+            //    var descriptor = startTime;
+            //    startTime = descriptor.start;
+            //    endTime = descriptor.end;
+            //    var segmentType = descriptor.segmentType;
+            // }
+
+            var segParser = new SegmentParser(arraybuffer_data);
+            var [segmentType, startTime, endTime] = segParser.parseBoxes(); 
 
             if (true || _isTimestampConsistent(startTime) || _switchingTrack || typeof startTime === "undefined") { //Test if discontinuity. Always pass test for initSegment (startTime unefined)
                 _segmentAppender.appendBuffer(arraybuffer_data, _type, startTime, endTime, segmentType);
