@@ -229,7 +229,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
                 [_segmentTimeScale, _segmentDuration] = (_mvhdFound) ? _parseTimeScaleFromHeaders(_mvhd, mvhdRegexRes[0].index) : (_mdhdFound) ? _parseTimeScaleFromHeaders(_mdhd, mdhdRegexRes[0].index) : NaN;
 
                 if (_tfhdFound && _tfdtFound && _trunFound) {
-                    _parseTrackBoxesForTimestamps(tfhdRegexRes.index, tfdtRegexRes.index, trunRegexRes.index);
+                    _parseTrackBoxesForTimestamps(tfhdRegexRes[0].index, tfdtRegexRes[0].index, trunRegexRes[0].index);
                 }
             }
 
