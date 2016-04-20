@@ -113,7 +113,18 @@ var ISOBMFFSegmentParser = function(segmentData) {
          * Needed for any regex matches in headers.
          */
     _arrayBufferToString = function(buffer) {
-        return String.fromCharCode.apply(null, new Uint8Array(buffer));
+
+        // Taken from stackoverflow to avoid the call stack exceeding limits during string conversion.
+        // http://stackoverflow.com/questions/9267899/arraybuffer-to-base64-encoded-string
+        
+        var outStr = '';
+        var bytes = new Uint8Array(buffer);
+        var byteLen = bytes.byteLength;
+        for (var i = 0; i < byteLen; i++) {
+            outStr += String.fromCharCode(bytes[i]);
+        }
+
+        return outStr;
     },
 
     /**
