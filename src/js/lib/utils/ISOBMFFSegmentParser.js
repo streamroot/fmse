@@ -276,7 +276,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
             runningIndex += _int32Size;
 
             var _segmentDurationArray = new Uint8Array(hdData.slice(runningIndex, runningIndex + _mvhdValuesBytes));
-            segmentDuration = (_intValueFromHexByteArray(_segmentDurationArray) / segmentTimeScale).toFixed(2);;
+            segmentDuration = _intValueFromHexByteArray(_segmentDurationArray) / segmentTimeScale;
             runningIndex += _mvhdValuesBytes;
 
             return [segmentTimeScale, segmentDuration];
@@ -319,7 +319,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
             _sidxEarliestPresTime = _intValueFromHexByteArray(presTimeArray);
 
             // Get the segment start time.
-            _segmentStartTime = (_sidxEarliestPresTime / _segmentTimeScale).toFixed(2);
+            _segmentStartTime = _sidxEarliestPresTime / _segmentTimeScale;
             console.log("Segment Presentation Start Time: ", _segmentStartTime);
 
             runningIndex += _sidxPresTimeAndOffsetBytes;
@@ -345,7 +345,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
 
             // Get the segment end time.
             _sidxTotalSubSegmentDuration = subSegmentDur;
-            _segmentEndTime = ((_sidxEarliestPresTime + _sidxTotalSubSegmentDuration) / _segmentTimeScale).toFixed(2);
+            _segmentEndTime = (_sidxEarliestPresTime + _sidxTotalSubSegmentDuration) / _segmentTimeScale;
             console.log("Segment Presentation End Time: ", _segmentEndTime);
 
         }
@@ -446,7 +446,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
                 if (!_trunSampleCompositionOffsetPresent)
                 {
                     _trunSampleCompositionOffset = _tfdtBaseMediaDecodeTime;
-                    _segmentStartTime = (_trunSampleCompositionOffset / _segmentTimeScale).toFixed(2);
+                    _segmentStartTime = _trunSampleCompositionOffset / _segmentTimeScale;
                     _segmentEndTime = (!isNaN(_segmentDuration)) ? _segmentStartTime + _segmentDuration : NaN;
                 }
                 // Get the composition offset only for the first frame.
@@ -457,7 +457,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
                         var trunSampleCompositionOffsetArray = new Uint8Array(trunBuffer.slice(runningIndex, runningIndex + _trunSampleCompositionOffsetBytes));
                         _trunSampleCompositionOffset = _intValueFromHexByteArray(trunSampleCompositionOffsetArray);
                         console.log("CTS OFFSET IN FIRST SAMPLE FRAME: ", _trunSampleCompositionOffset);
-                        _segmentStartTime = ((_tfdtBaseMediaDecodeTime + _trunSampleCompositionOffset) / _segmentTimeScale).toFixed(2);
+                        _segmentStartTime = (_tfdtBaseMediaDecodeTime + _trunSampleCompositionOffset) / _segmentTimeScale;
                         console.log("START TIME BASED ON THE FIRST SAMPLE FRAME: ", _segmentStartTime);
                     }
 
@@ -465,7 +465,7 @@ var ISOBMFFSegmentParser = function(segmentData) {
                 }
             }
 
-            _segmentDuration = (totalSampleDur / _segmentTimeScale).toFixed(2);
+            _segmentDuration = totalSampleDur / _segmentTimeScale;
             _segmentEndTime  = _segmentStartTime + _segmentDuration;
 
         }
