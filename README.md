@@ -1,3 +1,5 @@
+### :warning: This repository is not maintained and has critical known issues (see issues section).
+
 # Flash Media Source Extensions polyfill
 
 fMSE is a library that emulates MSE in browsers that do not support it.
@@ -135,7 +137,7 @@ This demo page is here `demo/example_dash.html`. You can go to `demo` directory 
         </script>
     </body>
     ```
-    
+
 ## Requirements & Compatibilities
 
 This library requires Adobe Flash Player 11.4 or higher installed.
